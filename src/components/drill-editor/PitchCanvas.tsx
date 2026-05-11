@@ -82,6 +82,14 @@ const DRAW_SNAP_THRESHOLD = 15;
  */
 const DRAW_DRAG_THRESHOLD_PX = 4;
 
+/**
+ * Same idea for the marquee. The marquee Rect doesn't appear and the
+ * `marqueeActive` ref isn't set until the pointer crosses this distance,
+ * so a brief tap on empty pitch deselects (via the click handler) without
+ * flashing a marquee rectangle.
+ */
+const MARQUEE_DRAG_THRESHOLD_PX = 4;
+
 /** Tools that take 2+ points and therefore support the press-drag-release flow. */
 function isTwoPointDrawTool(t: DrawTool): boolean {
   if (!t) return false;
@@ -462,6 +470,17 @@ export default function PitchCanvas({
   /** Set right before we commit a drag on pointerup so the synthetic onClick that follows is ignored. */
   const didDrawDragRef = useRef(false);
 
+  /**
+   * Marquee pending — armed on pointer-down on empty pitch but the marquee
+   * Rect / active-state aren't activated until the pointer moves past a small
+   * screen-pixel threshold. Prevents tiny touch jitter from spuriously
+   * starting a marquee while the user is trying to tap an object.
+   */
+  const marqueePendingRef = useRef<{
+    startPitchPos: { x: number; y: number };
+    startStagePos: { x: number; y: number };
+  } | null>(null);
+
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [textareaStyle, setTextareaStyle] = useState<React.CSSProperties>({});
@@ -506,15 +525,31 @@ export default function PitchCanvas({
     y: (pos.y - offsetY) / scale,
   }), [offsetX, offsetY, scale]);
 
-  // Sync transformer to selected node
+  // Sync transformer to selected node(s).
+  // - Single select: attach to that one node (existing behaviour).
+  // - Multi-select (selectedIds.length > 1): attach to ALL selected nodes so
+  //   Konva computes a combined bounding box and applies the same transform
+  //   to every node when the user drags an anchor.
+  // Locked objects are skipped from the attachment list.
   useEffect(() => {
     if (!trRef.current || !stageRef.current) return;
-    const sel = selectedId ? stageRef.current.findOne('#' + selectedId) : null;
-    const selectedObj = drill.objects.find((o) => o.id === selectedId);
-    const isLocked = selectedObj && 'locked' in selectedObj && selectedObj.locked;
-    trRef.current.nodes(sel && !isLocked ? [sel] : []);
+
+    const idsForTransformer =
+      selectedIds.length > 1
+        ? selectedIds
+        : (selectedId ? [selectedId] : []);
+
+    const nodes = idsForTransformer
+      .map((id) => {
+        const obj = drill.objects.find((o) => o.id === id);
+        if (!obj || ('locked' in obj && (obj as { locked?: boolean }).locked)) return null;
+        return stageRef.current!.findOne('#' + id) ?? null;
+      })
+      .filter((n): n is Konva.Node => !!n);
+
+    trRef.current.nodes(nodes);
     trRef.current.getLayer()?.batchDraw();
-  }, [selectedId, stageRef, drill.objects]);
+  }, [selectedId, selectedIds, stageRef, drill.objects]);
 
   // Keyboard delete
   useEffect(() => {
@@ -539,10 +574,11 @@ export default function PitchCanvas({
       didDrawDragRef.current = false;
     }
     if (drawTool) {
-      // Cancel any active marquee when a draw tool becomes active
+      // Cancel any active or pending marquee when a draw tool becomes active
       setMarqueeStart(null);
       setMarqueeEnd(null);
       marqueeActiveRef.current = false;
+      marqueePendingRef.current = null;
     }
   }, [drawTool]);
 
@@ -611,14 +647,33 @@ export default function PitchCanvas({
 
     // ── Marquee start (no tool active) ─────────────────────────────────────
     if (drawTool) return;
+
+    // If the touched target (or any ancestor) corresponds to a real drill
+    // object, this gesture belongs to that object — Konva's drag system will
+    // handle the move; we must NOT start a marquee. Walking the ancestor
+    // chain is more robust than only checking stage / pitch-bg name, since
+    // shapes can have children (Text inside player Group, etc.) and future
+    // changes can't accidentally let a touch fall through to the marquee.
+    let n: Konva.Node | null = e.target;
+    const stage = e.target.getStage();
+    while (n && n !== stage) {
+      const id = n.id();
+      if (id && drill.objects.some((o) => o.id === id)) return; // on object → bail
+      n = n.getParent();
+    }
+
+    // Only proceed if the touch genuinely landed on empty pitch.
     const isEmpty = e.target === e.target.getStage() || e.target.name() === 'pitch-bg';
     if (!isEmpty) return;
+
     const pos = stageRef.current?.getPointerPosition();
     if (!pos) return;
     const pitchPos = stageToPitchRaw(pos);
-    marqueeActiveRef.current = true;
-    setMarqueeStart(pitchPos);
-    setMarqueeEnd(pitchPos);
+
+    // Arm pending marquee — the Rect only appears once the pointer moves
+    // past MARQUEE_DRAG_THRESHOLD_PX in handleMouseMove. A pure tap on
+    // empty pitch therefore deselects without ever showing a marquee.
+    marqueePendingRef.current = { startPitchPos: pitchPos, startStagePos: pos };
   };
 
   const handleStageMouseUp = (e: CanvasPointerEvent) => {
@@ -667,6 +722,10 @@ export default function PitchCanvas({
       return;
     }
     setActiveDragStart(null);
+
+    // Clear any pending marquee — if the user lifted without crossing the
+    // threshold, this is just a tap and no marquee was ever shown.
+    marqueePendingRef.current = null;
 
     // ── Marquee finish ─────────────────────────────────────────────────────
     if (!marqueeActiveRef.current) return;
@@ -757,6 +816,21 @@ export default function PitchCanvas({
   const handleMouseMove = (e: CanvasPointerEvent) => {
     const pos = stageRef.current?.getPointerPosition();
     if (!pos) return;
+
+    // Marquee pending → only activate once the pointer crosses the
+    // threshold. Below the threshold we treat the gesture as a tap, which
+    // falls through to handleStageClick for deselect.
+    const mp = marqueePendingRef.current;
+    if (mp && !marqueeActiveRef.current) {
+      const sdx = pos.x - mp.startStagePos.x;
+      const sdy = pos.y - mp.startStagePos.y;
+      if (Math.hypot(sdx, sdy) >= MARQUEE_DRAG_THRESHOLD_PX) {
+        marqueeActiveRef.current = true;
+        setMarqueeStart(mp.startPitchPos);
+        setMarqueeEnd(stageToPitchRaw(pos));
+      }
+      return;
+    }
 
     // Update marquee end while dragging
     if (marqueeActiveRef.current && marqueeStart) {
@@ -1026,6 +1100,71 @@ export default function PitchCanvas({
     onUpdateObject(obj.id, updates);
   };
 
+  /**
+   * Transform-end handler for line-family shapes (arrow / line / curved).
+   * Konva's Transformer doesn't update `points`/`data` — it changes the node's
+   * x / y / scaleX / scaleY / rotation. For our data model (which stores
+   * absolute world-coord endpoints) we must:
+   *   1. Read the node's transform matrix at end time.
+   *   2. Map each stored endpoint through that matrix to its new world coord.
+   *   3. Reset the node visually (x=y=rot=0, scale=1) so the next render
+   *      starts from identity again; the new endpoint values render to the
+   *      exact same visual position the user just released.
+   * Works for single-select and multi-select (the Transformer fires
+   * `onTransformEnd` on every attached node, so this runs per-object).
+   */
+  const handleLineLikeTransformEnd = useCallback(
+    (e: Konva.KonvaEventObject<Event>, obj: ArrowObject | LineObject | CurvedLineObject) => {
+      const node = e.target;
+      const sX = node.scaleX();
+      const sY = node.scaleY();
+      const rotRad = (node.rotation() * Math.PI) / 180;
+      const cos = Math.cos(rotRad);
+      const sin = Math.sin(rotRad);
+      const tx = node.x();
+      const ty = node.y();
+
+      // Konva applies S then R then T to a point in node-local space.
+      // Our stored endpoints are in world coords; before any transform the
+      // node was at identity so node-local == world. After the user resizes,
+      // the visual point = T(R(S(local))). Apply the same matrix to derive
+      // the new world coord.
+      const map = (px: number, py: number) => {
+        const sx = px * sX;
+        const sy = py * sY;
+        const rx = sx * cos - sy * sin;
+        const ry = sx * sin + sy * cos;
+        return { x: snap(rx + tx), y: snap(ry + ty) };
+      };
+
+      if (obj.type === 'curved') {
+        const c = obj as CurvedLineObject;
+        const p1 = map(c.startX, c.startY);
+        const pcp = map(c.cpX, c.cpY);
+        const p2 = map(c.endX, c.endY);
+        onUpdateObject(obj.id, {
+          startX: p1.x, startY: p1.y,
+          cpX: pcp.x, cpY: pcp.y,
+          endX: p2.x, endY: p2.y,
+        } as Partial<CurvedLineObject>);
+      } else {
+        const a = obj as ArrowObject | LineObject;
+        const p1 = map(a.startX, a.startY);
+        const p2 = map(a.endX, a.endY);
+        onUpdateObject(obj.id, {
+          startX: p1.x, startY: p1.y,
+          endX: p2.x, endY: p2.y,
+        } as Partial<ArrowObject | LineObject>);
+      }
+
+      // Reset the visual transform — next render uses the committed world coords.
+      node.x(0); node.y(0);
+      node.scaleX(1); node.scaleY(1);
+      node.rotation(0);
+    },
+    [onUpdateObject, snap],
+  );
+
   // ─── Object rendering ───────────────────────────────────────────────────────
 
   const sel = (id: string) => id === selectedId;
@@ -1196,7 +1335,8 @@ export default function PitchCanvas({
           const dirY = zigPts[n - 3];
           return (
             <Group key={o.id} id={o.id} draggable={drag} onClick={selectHandler}
-              onDragEnd={(e) => handleArrowDragEnd(e, o)}>
+              onDragEnd={(e) => handleArrowDragEnd(e, o)}
+              onTransformEnd={(e) => handleLineLikeTransformEnd(e, o)}>
               <KonvaLine
                 points={zigPts}
                 stroke={arrowColor}
@@ -1229,6 +1369,7 @@ export default function PitchCanvas({
             draggable={drag}
             onClick={selectHandler}
             onDragEnd={(e) => handleArrowDragEnd(e, o)}
+            onTransformEnd={(e) => handleLineLikeTransformEnd(e, o)}
           />
         );
       }
@@ -1320,6 +1461,7 @@ export default function PitchCanvas({
             draggable={drag}
             onClick={selectHandler}
             onDragEnd={(e) => handleLineDragEnd(e, o)}
+            onTransformEnd={(e) => handleLineLikeTransformEnd(e, o)}
             hitStrokeWidth={12}
           />
         );
@@ -1347,6 +1489,7 @@ export default function PitchCanvas({
               e.target.x(0); e.target.y(0);
               updateSnapGuides({});
             }}
+            onTransformEnd={(e) => handleLineLikeTransformEnd(e, o)}
             hitStrokeWidth={12}
           />
         );
@@ -1695,6 +1838,12 @@ export default function PitchCanvas({
   const resizable = resizableAll || resizableCircle;
   const rotatable = selectedObj && !isLocked && ['player', 'cone', 'goal', 'zone', 'rectangle', 'circle', 'ball'].includes(selectedObj.type);
 
+  // Multi-select transformer behaviour: 4 corners, uniform scale (keepRatio),
+  // rotation disabled. Mixed-type rotation distorts line shapes badly and
+  // proportional scale is the only sensible default across heterogeneous
+  // shapes (players + arrows + zones, etc.).
+  const isMultiSelect = selectedIds.length > 1;
+
   // ─── Layer ordering: shapes/zones below, lines/links middle, players/cones/balls/goals on top ──
   const focusZone = drill.objects.find((o) => o.type === 'focus-zone') as FocusZoneObject | undefined;
   const shapesLayer = drill.objects.filter((o) => ['zone', 'rectangle', 'circle', 'focus-zone', 'smart-cone-area'].includes(o.type));
@@ -1931,18 +2080,27 @@ export default function PitchCanvas({
           <Transformer
             ref={trRef}
             enabledAnchors={
-              resizableAll
+              isMultiSelect
+                ? ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+                : resizableAll
                 ? ['top-left', 'top-center', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-center', 'bottom-right']
                 : resizableCircle
                 ? ['top-left', 'top-right', 'bottom-left', 'bottom-right']
                 : []
             }
-            rotateEnabled={!!rotatable}
-            keepRatio={!!(selectedObj && ['cone', 'ball', 'circle'].includes(selectedObj.type))}
+            rotateEnabled={isMultiSelect ? false : !!rotatable}
+            keepRatio={isMultiSelect ? true : !!(selectedObj && ['cone', 'ball', 'circle'].includes(selectedObj.type))}
             rotationSnaps={shiftHeld ? Array.from({ length: 24 }, (_, i) => i * 15) : []}
             rotationSnapTolerance={shiftHeld ? 8 : 0}
-            borderStroke="#fbbf24" borderStrokeWidth={2}
-            anchorFill="#fbbf24" anchorStroke="#92400e" anchorSize={8}
+            // Slightly different anchor styling on multi-select so the user
+            // can tell the group transform apart from a single-object one.
+            borderStroke={isMultiSelect ? '#60a5fa' : '#fbbf24'}
+            borderStrokeWidth={2}
+            anchorFill={isMultiSelect ? '#60a5fa' : '#fbbf24'}
+            anchorStroke={isMultiSelect ? '#1e40af' : '#92400e'}
+            // Bigger anchors on tablet for thumbs/Pencil.
+            anchorSize={12}
+            anchorCornerRadius={3}
           />
         </Layer>
       </Stage>
