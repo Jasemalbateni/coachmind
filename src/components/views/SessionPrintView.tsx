@@ -62,25 +62,19 @@ export default function SessionPrintView({ sessionId }: { sessionId: string }) {
 
           .session-print-toolbar { display: none !important; }
 
-          /* Each drill block is exactly one printed page */
+          /* Each drill starts on a fresh page. We try to keep each drill on
+             one page, but if its coaching points / cues run long the content
+             must flow naturally to a second page instead of being clipped —
+             that's why we don't set max-height or overflow:hidden here. */
           .drill-print-page {
             page-break-before: always;
             break-before: page;
-            page-break-after: avoid;
-            break-after: avoid;
-            page-break-inside: avoid;
-            break-inside: avoid;
           }
-          /* Cover page does not get a break-before */
+
+          /* Cover page is the first sheet — no leading page break. */
           .cover-print-page {
             page-break-before: avoid;
             break-before: avoid;
-          }
-
-          /* Prevent overflow on printed pages */
-          .drill-print-page, .cover-print-page {
-            overflow: hidden !important;
-            max-height: 100vh;
           }
         }
       `}</style>
@@ -206,7 +200,7 @@ export default function SessionPrintView({ sessionId }: { sessionId: string }) {
           const sectionMeta = block.section ? SECTION_LABELS[block.section] : null;
 
           return (
-            <div key={block.id} className="drill-print-page p-10 print:p-0 print:overflow-hidden">
+            <div key={block.id} className="drill-print-page p-10 print:p-0">
               {/* Drill page header */}
               <div className="flex items-center gap-4 mb-6 pb-4 border-b-2" style={{ borderColor: BRAND.orange + '40' }}>
                 {/* Session name watermark */}

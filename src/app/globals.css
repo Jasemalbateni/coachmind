@@ -72,8 +72,14 @@ html, body {
 .dark-scroll::-webkit-scrollbar-thumb:hover { background: #4b5563; }
 
 /* ─── Print reset ──────────────────────────────────────────────────────────────
-   Override the app shell layout so only the intended print content is shown.
-   Applied globally so it works for any print-enabled page. */
+   Override the app shell layout so all print content is visible across pages.
+   Applied globally so every print-enabled page benefits.
+
+   Why these rules: the editor / list pages use `h-screen-dvh` + `overflow-hidden`
+   on the AppShell wrapper and on `<main>` so the on-screen UI fills the viewport
+   exactly. In print mode those exact same containers would clip everything
+   beyond the first page — only the cover + first drill would print and the rest
+   would be invisible. Each layer of the layout chain must be unbound. */
 @media print {
   /* Remove body height/overflow constraints */
   html, body {
@@ -86,20 +92,44 @@ html, body {
     print-color-adjust: exact;
   }
 
-  /* Hide the NavBar sidebar */
-  body > aside,
+  /* Hide the NavBar regardless of how deeply it's nested. */
   aside[class*="bg-brand-dark"] {
     display: none !important;
   }
 
-  /* Make main full width and scrollable for print */
-  body > main {
+  /* AppShell wrapper (body > div). Has h-screen-dvh + overflow-hidden on screen;
+     those would clip page 2+ in print. */
+  body > div {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: block !important;
+    flex: none !important;
+  }
+
+  /* Make main full width and let content overflow into more printed pages.
+     Use descendant selector so it works regardless of wrapper depth — the old
+     `body > main` rule didn't match because main is nested inside AppShell. */
+  main {
     overflow: visible !important;
     height: auto !important;
     flex: none !important;
     display: block !important;
     width: 100% !important;
     min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  /* Direct children of main are usually flex/overflow scroll containers
+     (e.g. the SessionPrintView `flex-1 overflow-y-auto` wrapper). Unbound
+     them too — otherwise their bounded viewport-height clips long sessions. */
+  main > div {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: none !important;
   }
 
   /* Generic helper used throughout components */
