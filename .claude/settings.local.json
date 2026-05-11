@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where python3:*)",
+      "Bash(where py:*)",
+      "Bash(where python:*)",
+      "Read(//c/Users/asus/AppData/Local/Programs/**)",
+      "Bash(ls /c/Python*)",
+      "Bash(\"/c/Users/asus/AppData/Local/Microsoft/WindowsApps/python3.exe\" --version)",
+      "Bash(echo \"Status: $?\")",
+      "Read(//c/ProgramData/Miniconda3/**)",
+      "Read(//c/Anaconda3/**)",
+      "Read(//c/miniconda3/**)",
+      "Bash(PYTHON=\"/c/Users/asus/AppData/Local/Programs/Python/Python311/python.exe\")",
+      "Bash(\"$PYTHON\" --version)",
+      "Bash(python generate_audit.py)",
+      "Bash(python:*)",
+      "Skill(update-config)",
+      "Bash(npm run build)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run lint)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npm install)",
+      "Bash(npm run dev)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(powershell:*)",
+      "PowerShell(Remove-Item *)"
+    ]
+  }
+}

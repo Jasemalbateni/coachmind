@@ -1,0 +1,93 @@
+{
+  // ── Identity ─────────────────────────────────────────────────────────────
+  "appId": "com.coachmind.drilldesigner",
+  "productName": "CoachMind",
+  "copyright": "Copyright © 2025 CoachMind",
+
+  // ── Entry point ───────────────────────────────────────────────────────────
+  "main": "electron/main.js",
+
+  // ── What goes into the asar (the Electron app itself) ────────────────────
+  // Keep this small — only the Electron layer, not the Next.js server.
+  "files": [
+    "electron/**/*",
+    "package.json"
+  ],
+
+  // ── Next.js standalone server goes in resources/ alongside the asar ───────
+  // This keeps it accessible via process.resourcesPath at runtime and outside
+  // the asar archive (required for Node.js require() to resolve its internals).
+  "extraResources": [
+    {
+      // The standalone server + its bundled node_modules
+      "from": ".next/standalone",
+      "to": ".next/standalone",
+      "filter": ["**/*"]
+    },
+    {
+      // Next.js compiled static assets (JS chunks, CSS, images)
+      // Must live at .next/standalone/.next/static/ for the server to serve them
+      "from": ".next/static",
+      "to": ".next/standalone/.next/static",
+      "filter": ["**/*"]
+    },
+    {
+      // Public directory (fonts, field SVGs, images)
+      "from": "public",
+      "to": ".next/standalone/public",
+      "filter": ["**/*"]
+    }
+  ],
+
+  // ── Output directory ──────────────────────────────────────────────────────
+  "directories": {
+    "output": "dist-desktop",
+    "buildResources": "build-assets"
+  },
+
+  // ── Windows ───────────────────────────────────────────────────────────────
+  "win": {
+    "target": [
+      {
+        "target": "nsis",   // Proper Windows installer with uninstaller
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "build-assets/icon.ico"
+  },
+
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "CoachMind"
+  },
+
+  // ── macOS (future) ────────────────────────────────────────────────────────
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]   // Intel + Apple Silicon
+      }
+    ],
+    "icon": "build-assets/icon.icns",
+    "category": "public.app-category.sports"
+  },
+
+  "dmg": {
+    "title": "CoachMind",
+    "background": "build-assets/dmg-background.png"
+  },
+
+  // ── Linux (future) ────────────────────────────────────────────────────────
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "icon": "build-assets/",
+    "category": "Sports"
+  },
+
+  // ── Publish (set up later for auto-updates) ───────────────────────────────
+  "publish": null
+}

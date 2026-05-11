@@ -1,0 +1,251 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 680" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#FF6A00"/>
+    </marker>
+    <marker id="a2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#00B8D4"/>
+    </marker>
+    <marker id="a3" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#22c55e"/>
+    </marker>
+    <marker id="a4" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#8b5cf6"/>
+    </marker>
+    <filter id="s" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="#00000020"/>
+    </filter>
+  </defs>
+
+  <rect width="1060" height="680" fill="#F4F4F4"/>
+  <rect x="0" y="0" width="1060" height="48" fill="#263238"/>
+  <text x="530" y="31" text-anchor="middle" font-size="17" font-weight="bold" fill="white">Data Flow Diagram — Coach Drill Designer</text>
+
+  <!-- COLUMN HEADERS -->
+  <text x="110" y="68" text-anchor="middle" font-size="10" fill="#FF6A00" font-weight="bold">USER ACTIONS</text>
+  <text x="310" y="68" text-anchor="middle" font-size="10" fill="#263238" font-weight="bold">COMPONENT HANDLERS</text>
+  <text x="530" y="68" text-anchor="middle" font-size="10" fill="#00B8D4" font-weight="bold">ZUSTAND STORES</text>
+  <text x="750" y="68" text-anchor="middle" font-size="10" fill="#22c55e" font-weight="bold">LOCALSTORAGE</text>
+  <text x="950" y="68" text-anchor="middle" font-size="10" fill="#8b5cf6" font-weight="bold">RENDERED OUTPUT</text>
+
+  <!-- Vertical dividers -->
+  <line x1="210" y1="55" x2="210" y2="670" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="420" y1="55" x2="420" y2="670" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="640" y1="55" x2="640" y2="670" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="850" y1="55" x2="850" y2="670" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ── FLOW 1: Add Object ── -->
+  <rect x="14" y="82" width="190" height="36" rx="7" fill="#FF6A00" filter="url(#s)"/>
+  <text x="109" y="100" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Click palette item</text>
+  <text x="109" y="112" text-anchor="middle" font-size="8" fill="#ffffff99">(cone / ball / goal / zone)</text>
+
+  <line x1="205" y1="100" x2="218" y2="100" stroke="#FF6A00" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="220" y="82" width="190" height="36" rx="7" fill="white" stroke="#FF6A00" stroke-width="1" filter="url(#s)"/>
+  <text x="315" y="100" text-anchor="middle" font-size="9" fill="#FF6A00" font-weight="bold">handleAddObject()</text>
+  <text x="315" y="112" text-anchor="middle" font-size="8" fill="#555">→ withUndo → stepAddObject</text>
+
+  <line x1="411" y1="100" x2="424" y2="100" stroke="#FF6A00" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="426" y="82" width="204" height="36" rx="7" fill="white" stroke="#00B8D4" stroke-width="1" filter="url(#s)"/>
+  <text x="528" y="100" text-anchor="middle" font-size="9" fill="#00B8D4" font-weight="bold">drillsStore.setObjects()</text>
+  <text x="528" y="112" text-anchor="middle" font-size="8" fill="#555">Immutable Zustand update</text>
+
+  <line x1="631" y1="100" x2="644" y2="100" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="646" y="82" width="196" height="36" rx="7" fill="white" stroke="#22c55e" stroke-width="1" filter="url(#s)"/>
+  <text x="744" y="100" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">coach-drills-v2</text>
+  <text x="744" y="112" text-anchor="middle" font-size="8" fill="#555">JSON.stringify → localStorage</text>
+
+  <line x1="843" y1="100" x2="856" y2="100" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a3)"/>
+  <rect x="858" y="82" width="186" height="36" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1" filter="url(#s)"/>
+  <text x="951" y="100" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="bold">PitchCanvas re-renders</text>
+  <text x="951" y="112" text-anchor="middle" font-size="8" fill="#555">New Konva object visible</text>
+
+  <!-- ── FLOW 2: Drag/Move ── -->
+  <rect x="14" y="134" width="190" height="36" rx="7" fill="#FF6A00" filter="url(#s)"/>
+  <text x="109" y="152" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Drag object on canvas</text>
+  <text x="109" y="164" text-anchor="middle" font-size="8" fill="#ffffff99">onDragMove (shift=axis)</text>
+
+  <line x1="205" y1="152" x2="218" y2="152" stroke="#FF6A00" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="220" y="134" width="190" height="36" rx="7" fill="white" stroke="#FF6A00" stroke-width="1" filter="url(#s)"/>
+  <text x="315" y="152" text-anchor="middle" font-size="9" fill="#FF6A00" font-weight="bold">onDragEnd handler</text>
+  <text x="315" y="164" text-anchor="middle" font-size="8" fill="#555">snapPos → updateObject</text>
+
+  <line x1="411" y1="152" x2="424" y2="152" stroke="#FF6A00" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="426" y="134" width="204" height="36" rx="7" fill="white" stroke="#00B8D4" stroke-width="1" filter="url(#s)"/>
+  <text x="528" y="152" text-anchor="middle" font-size="9" fill="#00B8D4" font-weight="bold">drillsStore.updateObject()</text>
+  <text x="528" y="164" text-anchor="middle" font-size="8" fill="#555">Merges x/y into object record</text>
+
+  <line x1="631" y1="152" x2="644" y2="152" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="646" y="134" width="196" height="36" rx="7" fill="white" stroke="#22c55e" stroke-width="1" filter="url(#s)"/>
+  <text x="744" y="152" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">Persisted automatically</text>
+  <text x="744" y="164" text-anchor="middle" font-size="8" fill="#555">Zustand persist middleware</text>
+
+  <line x1="843" y1="152" x2="856" y2="152" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a3)"/>
+  <rect x="858" y="134" width="186" height="36" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1" filter="url(#s)"/>
+  <text x="951" y="152" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="bold">Position updated live</text>
+  <text x="951" y="164" text-anchor="middle" font-size="8" fill="#555">Arrow endpoints follow player</text>
+
+  <!-- ── FLOW 3: Undo ── -->
+  <rect x="14" y="186" width="190" height="36" rx="7" fill="#263238" filter="url(#s)"/>
+  <text x="109" y="204" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Ctrl+Z (Undo)</text>
+  <text x="109" y="216" text-anchor="middle" font-size="8" fill="#ffffff99">keydown listener</text>
+
+  <line x1="205" y1="204" x2="218" y2="204" stroke="#263238" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="220" y="186" width="190" height="36" rx="7" fill="white" stroke="#263238" stroke-width="1" filter="url(#s)"/>
+  <text x="315" y="204" text-anchor="middle" font-size="9" fill="#263238" font-weight="bold">handleUndo()</text>
+  <text x="315" y="216" text-anchor="middle" font-size="8" fill="#555">pop undoStack → stepSetObjects</text>
+
+  <line x1="411" y1="204" x2="424" y2="204" stroke="#263238" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="426" y="186" width="204" height="36" rx="7" fill="white" stroke="#00B8D4" stroke-width="1" filter="url(#s)"/>
+  <text x="528" y="204" text-anchor="middle" font-size="9" fill="#00B8D4" font-weight="bold">store.setObjects(prev)</text>
+  <text x="528" y="216" text-anchor="middle" font-size="8" fill="#555">Replaces objects with snapshot</text>
+
+  <line x1="631" y1="204" x2="644" y2="204" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="646" y="186" width="196" height="36" rx="7" fill="white" stroke="#22c55e" stroke-width="1" filter="url(#s)"/>
+  <text x="744" y="204" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">localStorage updated</text>
+  <text x="744" y="216" text-anchor="middle" font-size="8" fill="#555">Previous state persisted</text>
+
+  <line x1="843" y1="204" x2="856" y2="204" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a3)"/>
+  <rect x="858" y="186" width="186" height="36" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1" filter="url(#s)"/>
+  <text x="951" y="204" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="bold">Canvas reverts</text>
+  <text x="951" y="216" text-anchor="middle" font-size="8" fill="#555">Selection cleared</text>
+
+  <!-- ── FLOW 4: Session Block D&D ── -->
+  <rect x="14" y="238" width="190" height="36" rx="7" fill="#00B8D4" filter="url(#s)"/>
+  <text x="109" y="256" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Drag session block</text>
+  <text x="109" y="268" text-anchor="middle" font-size="8" fill="#ffffff99">@dnd-kit DndContext</text>
+
+  <line x1="205" y1="256" x2="218" y2="256" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="220" y="238" width="190" height="36" rx="7" fill="white" stroke="#00B8D4" stroke-width="1" filter="url(#s)"/>
+  <text x="315" y="256" text-anchor="middle" font-size="9" fill="#00B8D4" font-weight="bold">onDragEnd → arrayMove</text>
+  <text x="315" y="268" text-anchor="middle" font-size="8" fill="#555">SessionTimeline.tsx</text>
+
+  <line x1="411" y1="256" x2="424" y2="256" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="426" y="238" width="204" height="36" rx="7" fill="white" stroke="#00B8D4" stroke-width="1" filter="url(#s)"/>
+  <text x="528" y="256" text-anchor="middle" font-size="9" fill="#00B8D4" font-weight="bold">sessionsStore.reorderBlocks()</text>
+  <text x="528" y="268" text-anchor="middle" font-size="8" fill="#555">Replaces blocks array</text>
+
+  <line x1="631" y1="256" x2="644" y2="256" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="646" y="238" width="196" height="36" rx="7" fill="white" stroke="#22c55e" stroke-width="1" filter="url(#s)"/>
+  <text x="744" y="256" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">coach-sessions-v2</text>
+  <text x="744" y="268" text-anchor="middle" font-size="8" fill="#555">New order persisted</text>
+
+  <line x1="843" y1="256" x2="856" y2="256" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a3)"/>
+  <rect x="858" y="238" width="186" height="36" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1" filter="url(#s)"/>
+  <text x="951" y="256" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="bold">Timeline re-renders</text>
+  <text x="951" y="268" text-anchor="middle" font-size="8" fill="#555">New block order shown</text>
+
+  <!-- ── FLOW 5: Team color change ── -->
+  <rect x="14" y="290" width="190" height="36" rx="7" fill="#f97316" filter="url(#s)"/>
+  <text x="109" y="308" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Change player color</text>
+  <text x="109" y="320" text-anchor="middle" font-size="8" fill="#ffffff99">InspectorPanel color picker</text>
+
+  <line x1="205" y1="308" x2="218" y2="308" stroke="#f97316" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="220" y="290" width="190" height="36" rx="7" fill="white" stroke="#f97316" stroke-width="1" filter="url(#s)"/>
+  <text x="315" y="308" text-anchor="middle" font-size="9" fill="#f97316" font-weight="bold">handleUpdateObject()</text>
+  <text x="315" y="320" text-anchor="middle" font-size="8" fill="#555">Propagates to all same-side</text>
+
+  <line x1="411" y1="308" x2="424" y2="308" stroke="#f97316" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="426" y="290" width="204" height="36" rx="7" fill="white" stroke="#00B8D4" stroke-width="1" filter="url(#s)"/>
+  <text x="528" y="308" text-anchor="middle" font-size="9" fill="#00B8D4" font-weight="bold">drillsStore + teamsStore</text>
+  <text x="528" y="320" text-anchor="middle" font-size="8" fill="#555">Both stores update in sync</text>
+
+  <line x1="631" y1="308" x2="644" y2="308" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="646" y="290" width="196" height="36" rx="7" fill="white" stroke="#22c55e" stroke-width="1" filter="url(#s)"/>
+  <text x="744" y="308" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">Both keys updated</text>
+  <text x="744" y="320" text-anchor="middle" font-size="8" fill="#555">Drill + Team persisted</text>
+
+  <line x1="843" y1="308" x2="856" y2="308" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a3)"/>
+  <rect x="858" y="290" width="186" height="36" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1" filter="url(#s)"/>
+  <text x="951" y="308" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="bold">All players same team</text>
+  <text x="951" y="320" text-anchor="middle" font-size="8" fill="#555">Update color in canvas</text>
+
+  <!-- ── FLOW 6: Season Plan ── -->
+  <rect x="14" y="342" width="190" height="36" rx="7" fill="#FFC857" filter="url(#s)"/>
+  <text x="109" y="360" text-anchor="middle" font-size="9" fill="#263238" font-weight="bold">Assign session to plan date</text>
+  <text x="109" y="372" text-anchor="middle" font-size="8" fill="#26323880">SeasonPlanEditor</text>
+
+  <line x1="205" y1="360" x2="218" y2="360" stroke="#FFC857" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="220" y="342" width="190" height="36" rx="7" fill="white" stroke="#FFC857" stroke-width="1" filter="url(#s)"/>
+  <text x="315" y="360" text-anchor="middle" font-size="9" fill="#92400e" font-weight="bold">upsertEntry() + syncSeasonPlan</text>
+  <text x="315" y="372" text-anchor="middle" font-size="8" fill="#555">Two stores in one action</text>
+
+  <line x1="411" y1="360" x2="424" y2="360" stroke="#FFC857" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="426" y="342" width="204" height="36" rx="7" fill="white" stroke="#00B8D4" stroke-width="1" filter="url(#s)"/>
+  <text x="528" y="360" text-anchor="middle" font-size="9" fill="#00B8D4" font-weight="bold">seasonPlansStore + calendarStore</text>
+  <text x="528" y="372" text-anchor="middle" font-size="8" fill="#555">Entry + CalendarEvent synced</text>
+
+  <line x1="631" y1="360" x2="644" y2="360" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="646" y="342" width="196" height="36" rx="7" fill="white" stroke="#22c55e" stroke-width="1" filter="url(#s)"/>
+  <text x="744" y="360" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">Two localStorage keys</text>
+  <text x="744" y="372" text-anchor="middle" font-size="8" fill="#555">season-plans-v1 + calendar-v1</text>
+
+  <line x1="843" y1="360" x2="856" y2="360" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a3)"/>
+  <rect x="858" y="342" width="186" height="36" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1" filter="url(#s)"/>
+  <text x="951" y="360" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="bold">Calendar shows event</text>
+  <text x="951" y="372" text-anchor="middle" font-size="8" fill="#555">Season plan shows session</text>
+
+  <!-- ── FLOW 7: Print ── -->
+  <rect x="14" y="394" width="190" height="36" rx="7" fill="#8b5cf6" filter="url(#s)"/>
+  <text x="109" y="412" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Click Print button</text>
+  <text x="109" y="424" text-anchor="middle" font-size="8" fill="#ffffff99">SessionView → /print route</text>
+
+  <line x1="205" y1="412" x2="218" y2="412" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#a4)"/>
+  <rect x="220" y="394" width="190" height="36" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1" filter="url(#s)"/>
+  <text x="315" y="412" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="bold">SessionPrintView renders</text>
+  <text x="315" y="424" text-anchor="middle" font-size="8" fill="#555">Reads stores directly</text>
+
+  <line x1="411" y1="412" x2="424" y2="412" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#a4)"/>
+  <rect x="426" y="394" width="204" height="36" rx="7" fill="white" stroke="#00B8D4" stroke-width="1" filter="url(#s)"/>
+  <text x="528" y="412" text-anchor="middle" font-size="9" fill="#00B8D4" font-weight="bold">sessionsStore + drillsStore</text>
+  <text x="528" y="424" text-anchor="middle" font-size="8" fill="#555">Read-only access for print</text>
+
+  <line x1="631" y1="412" x2="644" y2="412" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="646" y="394" width="196" height="36" rx="7" fill="white" stroke="#22c55e" stroke-width="1" filter="url(#s)"/>
+  <text x="744" y="412" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">No writes — read-only</text>
+  <text x="744" y="424" text-anchor="middle" font-size="8" fill="#555">localStorage queried on load</text>
+
+  <line x1="843" y1="412" x2="856" y2="412" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a3)"/>
+  <rect x="858" y="394" width="186" height="36" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1" filter="url(#s)"/>
+  <text x="951" y="412" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="bold">A4 landscape print</text>
+  <text x="951" y="424" text-anchor="middle" font-size="8" fill="#555">One page per drill block</text>
+
+  <!-- ── FLOW 8: Export PNG ── -->
+  <rect x="14" y="446" width="190" height="36" rx="7" fill="#ef4444" filter="url(#s)"/>
+  <text x="109" y="464" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Export PNG button</text>
+  <text x="109" y="476" text-anchor="middle" font-size="8" fill="#ffffff99">DrillEditorTopBar</text>
+
+  <line x1="205" y1="464" x2="218" y2="464" stroke="#ef4444" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="220" y="446" width="190" height="36" rx="7" fill="white" stroke="#ef4444" stroke-width="1" filter="url(#s)"/>
+  <text x="315" y="464" text-anchor="middle" font-size="9" fill="#ef4444" font-weight="bold">handleExportPNG()</text>
+  <text x="315" y="476" text-anchor="middle" font-size="8" fill="#555">stageRef.toDataURL(pixelRatio:2)</text>
+
+  <line x1="411" y1="464" x2="424" y2="464" stroke="#ef4444" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="426" y="446" width="204" height="36" rx="7" fill="white" stroke="#263238" stroke-width="1" filter="url(#s)"/>
+  <text x="528" y="464" text-anchor="middle" font-size="9" fill="#263238" font-weight="bold">No store interaction</text>
+  <text x="528" y="476" text-anchor="middle" font-size="8" fill="#555">Direct Konva API call</text>
+
+  <rect x="646" y="446" width="196" height="36" rx="7" fill="#f1f5f9" stroke="#ddd" stroke-width="1"/>
+  <text x="744" y="464" text-anchor="middle" font-size="9" fill="#999">—</text>
+  <text x="744" y="476" text-anchor="middle" font-size="8" fill="#bbb">Not persisted</text>
+
+  <line x1="843" y1="464" x2="856" y2="464" stroke="#ef4444" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="858" y="446" width="186" height="36" rx="7" fill="white" stroke="#ef4444" stroke-width="1" filter="url(#s)"/>
+  <text x="951" y="464" text-anchor="middle" font-size="9" fill="#ef4444" font-weight="bold">Download triggered</text>
+  <text x="951" y="476" text-anchor="middle" font-size="8" fill="#555">filename: drill-title.png</text>
+
+  <!-- ── LEGEND ── -->
+  <rect x="14" y="498" width="1032" height="165" rx="8" fill="white" stroke="#ddd" stroke-width="1" filter="url(#s)"/>
+  <text x="530" y="517" text-anchor="middle" font-size="11" fill="#263238" font-weight="bold">Key Data Relationships &amp; State Hydration</text>
+
+  <!-- hydration flow -->
+  <text x="30" y="537" font-size="9.5" fill="#263238" font-weight="bold">App Boot (Hydration):</text>
+  <text x="30" y="553" font-size="8.5" fill="#555">1. Next.js renders page → Client component mounts → Zustand persist rehydrates from localStorage automatically</text>
+  <text x="30" y="567" font-size="8.5" fill="#555">2. seedIfEmpty() called → if no drills exist, seeds 3 sample drills + 2 sessions + 1 team from src/lib/seed.ts</text>
+  <text x="30" y="581" font-size="8.5" fill="#555">3. SSR-safe adapter: checks typeof window !== 'undefined' before accessing localStorage — prevents hydration mismatch</text>
+
+  <text x="30" y="599" font-size="9.5" fill="#263238" font-weight="bold">Cross-Store Relationships:</text>
+  <text x="30" y="615" font-size="8.5" fill="#555">Drill.folderId → foldersStore.folders[id]     |     Drill.subcategoryId → foldersStore.subcategories[id]</text>
+  <text x="30" y="629" font-size="8.5" fill="#555">SessionBlock.drillId → drillsStore.drills[id]     |     Session.teamId → teamsStore.teams[id]</text>
+  <text x="30" y="643" font-size="8.5" fill="#555">SeasonPlanEntry.sessionId → sessionsStore.sessions[id]     |     CalendarEvent.seasonPlanEntryId → SeasonPlanEntry sync</text>
+  <text x="30" y="657" font-size="8.5" fill="#555">ArrowObject.startPlayerId / endPlayerId → PlayerObject — live position tracking on canvas</text>
+</svg>

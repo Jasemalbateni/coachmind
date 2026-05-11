@@ -1,0 +1,141 @@
+<!-- ══════════════════════════════════ SYSTEM ARCHITECTURE ═══ -->
+<div class="page page-break">
+<h2 class="h-section">2. System Architecture</h2>
+
+<h3 class="h-sub">2.1 Technology Stack</h3>
+<table>
+  <thead><tr><th>Layer</th><th>Technology</th><th>Version</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Framework</strong></td><td>Next.js App Router</td><td>14.2.5</td><td>File-based routing, React Server Components shell, client components for all interactive UI</td></tr>
+    <tr><td><strong>Language</strong></td><td>TypeScript</td><td>5.5.4</td><td>Full type safety across all components, stores, and models</td></tr>
+    <tr><td><strong>Canvas</strong></td><td>react-konva / konva</td><td>18.2 / 9.3.14</td><td>2D canvas rendering for drill diagrams, loaded via <code>dynamic()</code> with <code>ssr:false</code></td></tr>
+    <tr><td><strong>State</strong></td><td>Zustand + persist</td><td>4.5.4</td><td>6 isolated stores, each with auto-persist to localStorage via middleware</td></tr>
+    <tr><td><strong>Drag &amp; Drop</strong></td><td>@dnd-kit</td><td>6.1 / 7.0</td><td>Accessible drag-and-drop for session timeline reordering and drill library sorting</td></tr>
+    <tr><td><strong>Styling</strong></td><td>Tailwind CSS</td><td>3.4.6</td><td>Utility-first with brand color tokens (<code>brand-orange</code>, <code>brand-dark</code>)</td></tr>
+    <tr><td><strong>Config</strong></td><td>next.config.mjs</td><td>—</td><td>.mjs format required (Next 14.2 does not support .ts config)</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">2.2 Folder Structure</h3>
+<pre><code>sessionbuilder/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── layout.tsx                # Root layout — NavBar + page slot
+│   │   ├── page.tsx                  # Redirects → /drills
+│   │   ├── drills/
+│   │   │   ├── page.tsx              # Drill library list
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx          # Drill editor
+│   │   │       └── view/page.tsx     # Fullscreen drill view
+│   │   ├── sessions/
+│   │   │   ├── page.tsx              # Sessions list
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx          # Session builder
+│   │   │       ├── view/page.tsx     # Session field view
+│   │   │       └── print/page.tsx    # Session print preview
+│   │   ├── teams/
+│   │   │   ├── page.tsx              # Teams list
+│   │   │   └── [id]/page.tsx         # Team editor
+│   │   ├── season-plans/
+│   │   │   ├── page.tsx              # Season plans list
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx          # Season plan editor
+│   │   │       └── view/page.tsx     # Season plan view/print
+│   │   └── calendar/
+│   │       └── page.tsx              # Calendar month view
+│   │
+│   ├── components/
+│   │   ├── drill-editor/             # Editor engine (7 components)
+│   │   │   ├── DrillEditorPage.tsx   # Main orchestrator
+│   │   │   ├── PitchCanvas.tsx       # Konva canvas (SSR-disabled)
+│   │   │   ├── PaletteSidebar.tsx    # Left tool palette
+│   │   │   ├── InspectorPanel.tsx    # Right property inspector
+│   │   │   ├── DrillEditorTopBar.tsx # Top toolbar
+│   │   │   ├── DrillMetaPanel.tsx    # Drill info drawer
+│   │   │   ├── PlayerDock.tsx        # Bottom player panel
+│   │   │   └── FormationPicker.tsx   # Formation modal
+│   │   ├── session-builder/          # Session builder (3 components)
+│   │   │   ├── SessionBuilderPage.tsx
+│   │   │   ├── SessionTimeline.tsx
+│   │   │   └── DrillPicker.tsx
+│   │   ├── season-plans/             # Season planning (3 components)
+│   │   │   ├── SeasonPlanEditor.tsx
+│   │   │   ├── SeasonPlansList.tsx
+│   │   │   └── SeasonPlanPrintView.tsx
+│   │   ├── calendar/
+│   │   │   └── CalendarPage.tsx
+│   │   ├── views/                    # Read-only view modes
+│   │   │   ├── DrillView.tsx         # Fullscreen drill with keyboard nav
+│   │   │   ├── SessionView.tsx       # Session field view
+│   │   │   └── SessionPrintView.tsx  # Print-ready session layout
+│   │   ├── team/
+│   │   │   └── TeamPage.tsx
+│   │   ├── DrillsList.tsx            # Drill library with folders/D&D
+│   │   ├── SessionsList.tsx
+│   │   ├── TeamsList.tsx
+│   │   ├── MiniPitchPreview.tsx      # SVG thumbnail of drill canvas
+│   │   └── NavBar.tsx                # Left sidebar navigation
+│   │
+│   ├── store/                        # Zustand stores
+│   │   ├── drillsStore.ts
+│   │   ├── sessionsStore.ts
+│   │   ├── teamsStore.ts
+│   │   ├── foldersStore.ts
+│   │   ├── seasonPlansStore.ts
+│   │   └── calendarStore.ts
+│   │
+│   ├── types/
+│   │   └── index.ts                  # All TypeScript types (single source)
+│   └── lib/
+│       ├── seed.ts                   # Seed data for first load
+│       └── sessionQuality.ts         # Session analysis utility
+│
+├── next.config.mjs
+├── tailwind.config.ts
+└── package.json</code></pre>
+
+<h3 class="h-sub">2.3 Module Responsibilities</h3>
+<table>
+  <thead><tr><th>Module</th><th>Files</th><th>Responsibility</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Editor Engine</strong></td><td><code>drill-editor/</code></td><td>All drill canvas editing: object creation, selection, snapping, drawing tools, undo/redo, step management, formation placement</td></tr>
+    <tr><td><strong>Session Builder</strong></td><td><code>session-builder/</code></td><td>Building training sessions from drills: timeline with section groups, intensity setting, drag reorder, session summary</td></tr>
+    <tr><td><strong>Season Planner</strong></td><td><code>season-plans/</code></td><td>Long-term planning: assign sessions to calendar dates, generate printable weekly plan view</td></tr>
+    <tr><td><strong>Calendar</strong></td><td><code>calendar/</code></td><td>Month-view calendar of all events (training, match, rest), synced with season plan entries</td></tr>
+    <tr><td><strong>Teams</strong></td><td><code>team/</code></td><td>Team management: colors, player roster, training days; colors auto-inherit to drill canvas players</td></tr>
+    <tr><td><strong>Print System</strong></td><td><code>views/</code></td><td>Brand-styled A4 landscape print views for sessions (one drill per page) and season plans (week-by-week table)</td></tr>
+    <tr><td><strong>State Layer</strong></td><td><code>store/</code></td><td>6 isolated Zustand stores, each with persist middleware writing to separate localStorage keys</td></tr>
+    <tr><td><strong>Types</strong></td><td><code>types/index.ts</code></td><td>Single source of truth for all TypeScript interfaces and union types</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">2.4 State Management Architecture</h3>
+<div class="card card-accent">
+  <p>Every store follows the same pattern: <strong>Zustand <code>create()</code> wrapped in <code>persist()</code></strong> middleware with a custom SSR-safe storage adapter that guards all <code>localStorage</code> access behind a <code>typeof window !== 'undefined'</code> check.</p>
+</div>
+
+<table>
+  <thead><tr><th>Store</th><th>localStorage Key</th><th>State Shape</th><th>Key Actions</th></tr></thead>
+  <tbody>
+    <tr><td><code>drillsStore</code></td><td><code>coach-drills-v2</code></td><td><code>Record&lt;string, Drill&gt;</code></td><td>addDrill, updateDrill, deleteDrill, duplicateDrill, addObject, updateObject, deleteObject, setObjects, addDrillStep, setStepObjects, removeDrillStep, toggleFavorite</td></tr>
+    <tr><td><code>sessionsStore</code></td><td><code>coach-sessions-v2</code></td><td><code>Record&lt;string, Session&gt;</code></td><td>addSession, updateSession, deleteSession, duplicateSession, addBlock, updateBlock, deleteBlock, reorderBlocks</td></tr>
+    <tr><td><code>teamsStore</code></td><td><code>coach-teams-v1</code></td><td><code>Record&lt;string, Team&gt;</code></td><td>addTeam, updateTeam, deleteTeam, addPlayer, updatePlayer, deletePlayer</td></tr>
+    <tr><td><code>foldersStore</code></td><td><code>coach-folders-v1</code></td><td><code>Record&lt;string, DrillFolder&gt;</code> + subcategories</td><td>addFolder, updateFolder, deleteFolder (cascades subs), addSubcategory, updateSubcategory, deleteSubcategory</td></tr>
+    <tr><td><code>seasonPlansStore</code></td><td><code>coach-season-plans-v1</code></td><td><code>Record&lt;string, SeasonPlan&gt;</code></td><td>addPlan, updatePlan, deletePlan, upsertEntry, deleteEntry</td></tr>
+    <tr><td><code>calendarStore</code></td><td><code>coach-calendar-v1</code></td><td><code>Record&lt;string, CalendarEvent&gt;</code></td><td>addEvent, updateEvent, deleteEvent, bulkAddEvents, syncSeasonPlanEntry, clearSeasonPlanEntry</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">2.5 Persistence &amp; Seeding</h3>
+<div class="two-col">
+  <div class="card card-orange">
+    <div class="h-sub2">Auto-Persistence</div>
+    <p>Zustand <code>persist</code> middleware automatically serializes the entire store state to <code>localStorage</code> as JSON on every state mutation. Rehydration happens automatically on first render.</p>
+    <p>The SSR-safe adapter wraps all access so Next.js server-side rendering never crashes attempting to access <code>window.localStorage</code>.</p>
+  </div>
+  <div class="card card-accent">
+    <div class="h-sub2">Seed Data</div>
+    <p><code>src/lib/seed.ts</code> provides <code>buildSeedDrills()</code>, <code>buildSeedSessions()</code>, and <code>buildSeedTeams()</code> functions. These are called once via <code>seedIfEmpty()</code> on each page mount — only if the store is empty and <code>_seeded</code> flag is false. This ensures first-time users see populated examples.</p>
+  </div>
+</div>
+</div>

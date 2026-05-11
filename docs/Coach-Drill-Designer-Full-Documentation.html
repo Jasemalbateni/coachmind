@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Coach Drill Designer — Full Technical Documentation</title>
+<style>
+  :root {
+    --orange:#FF6A00; --dark:#263238; --bg:#F4F4F4;
+    --accent:#00B8D4; --highlight:#FFC857;
+    --text:#1a1a1a; --muted:#555; --border:#ddd;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.65;}
+  @media print{
+    @page{size:A4 portrait;margin:15mm 14mm 18mm 14mm;}
+    .no-print{display:none!important;}
+    .page-break{page-break-before:always;break-before:page;}
+    .avoid-break{page-break-inside:avoid;break-inside:avoid;}
+    body{background:white;font-size:11px;}
+    pre,code{font-size:10px;}
+  }
+
+  /* ── Layout ── */
+  .page{max-width:900px;margin:0 auto;padding:20px;}
+  .section{margin-bottom:48px;}
+
+  /* ── Cover ── */
+  .cover{background:var(--dark);color:white;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:80px 80px;}
+  .cover-logo{width:72px;height:72px;background:var(--orange);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:white;margin-bottom:40px;box-shadow:0 8px 32px rgba(255,106,0,0.4);}
+  .cover h1{font-size:42px;font-weight:900;line-height:1.15;margin-bottom:12px;}
+  .cover h1 span{color:var(--orange);}
+  .cover .subtitle{font-size:18px;color:rgba(255,255,255,0.55);margin-bottom:48px;}
+  .cover-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:60px;}
+  .cover-tag{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);padding:6px 14px;border-radius:20px;font-size:12px;color:rgba(255,255,255,0.7);}
+  .cover-meta{border-top:1px solid rgba(255,255,255,0.15);padding-top:28px;display:flex;gap:48px;}
+  .cover-meta div{display:flex;flex-direction:column;gap:4px;}
+  .cover-meta .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);}
+  .cover-meta .val{font-size:14px;color:rgba(255,255,255,0.8);font-weight:600;}
+
+  /* ── TOC ── */
+  .toc{background:white;border-radius:12px;padding:36px 40px;border-left:5px solid var(--orange);}
+  .toc h2{font-size:22px;color:var(--dark);margin-bottom:24px;}
+  .toc ol{list-style:none;counter-reset:toc;}
+  .toc > ol > li{counter-increment:toc;margin-bottom:10px;}
+  .toc > ol > li > span{font-weight:700;font-size:13px;color:var(--dark);}
+  .toc > ol > li > span::before{content:counter(toc)". ";color:var(--orange);}
+  .toc-sub{list-style:none;margin-top:4px;margin-left:20px;}
+  .toc-sub li{font-size:12px;color:var(--muted);padding:2px 0;}
+  .toc-sub li::before{content:"— ";color:var(--accent);}
+
+  /* ── Section headings ── */
+  .h-section{font-size:26px;font-weight:800;color:var(--dark);border-bottom:3px solid var(--orange);padding-bottom:10px;margin-bottom:24px;margin-top:48px;}
+  .h-sub{font-size:18px;font-weight:700;color:var(--dark);margin-top:32px;margin-bottom:12px;padding-left:12px;border-left:3px solid var(--accent);}
+  .h-sub2{font-size:14px;font-weight:700;color:var(--dark);margin-top:20px;margin-bottom:8px;}
+  p{margin-bottom:10px;color:var(--text);}
+
+  /* ── Cards / Boxes ── */
+  .card{background:white;border-radius:10px;padding:22px 26px;margin-bottom:16px;border:1px solid var(--border);}
+  .card-orange{border-left:4px solid var(--orange);}
+  .card-accent{border-left:4px solid var(--accent);}
+  .card-highlight{border-left:4px solid var(--highlight);}
+  .card-purple{border-left:4px solid #8b5cf6;}
+  .card-green{border-left:4px solid #22c55e;}
+  .info-box{background:#fff8f0;border:1px solid #ffd4a8;border-radius:8px;padding:14px 18px;margin-bottom:14px;}
+  .info-box-accent{background:#f0fbff;border:1px solid #a8e8f5;border-radius:8px;padding:14px 18px;margin-bottom:14px;}
+
+  /* ── Tables ── */
+  table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px;}
+  thead tr{background:var(--dark);color:white;}
+  thead th{padding:10px 12px;text-align:left;font-weight:600;}
+  tbody tr:nth-child(even){background:#f8f8f8;}
+  tbody td{padding:9px 12px;border-bottom:1px solid #eee;vertical-align:top;}
+  td code, th code{background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace;}
+  td strong{color:var(--dark);}
+
+  /* ── Code ── */
+  pre{background:#1e2a30;color:#e8f4f8;padding:16px 18px;border-radius:8px;overflow-x:auto;margin-bottom:16px;font-size:11.5px;line-height:1.55;}
+  code{font-family:'Consolas','Courier New',monospace;}
+  .inline-code{background:#f0f0f0;padding:1px 6px;border-radius:3px;font-size:11px;font-family:monospace;color:var(--orange);}
+
+  /* ── Badge grid ── */
+  .badge-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-orange{background:#fff0e6;color:var(--orange);border:1px solid #ffd4b0;}
+  .badge-accent{background:#e6f9fd;color:#007a94;border:1px solid #a8e8f5;}
+  .badge-dark{background:#e8ecee;color:var(--dark);border:1px solid #c5cdd1;}
+  .badge-green{background:#f0fdf4;color:#166534;border:1px solid #86efac;}
+  .badge-purple{background:#faf5ff;color:#6d28d9;border:1px solid #c4b5fd;}
+  .badge-yellow{background:#fffbeb;color:#92400e;border:1px solid #fde68a;}
+
+  /* ── Color swatches ── */
+  .color-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .swatch{width:60px;text-align:center;}
+  .swatch-box{width:60px;height:60px;border-radius:8px;border:1px solid rgba(0,0,0,0.1);}
+  .swatch-label{font-size:10px;color:var(--muted);margin-top:4px;}
+  .swatch-hex{font-size:10px;font-family:monospace;font-weight:600;}
+
+  /* ── Grid layouts ── */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+  /* ── Diagram embed ── */
+  .diagram-box{background:white;border-radius:10px;padding:16px;border:1px solid var(--border);margin-bottom:20px;overflow:hidden;}
+  .diagram-box img,.diagram-box object{width:100%;height:auto;display:block;}
+  .diagram-caption{text-align:center;font-size:11px;color:var(--muted);margin-top:8px;}
+
+  /* ── Suggestion card ── */
+  .suggest-card{background:white;border-radius:10px;padding:18px 22px;margin-bottom:14px;border:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;}
+  .suggest-num{width:36px;height:36px;background:var(--orange);border-radius:50%;color:white;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .suggest-title{font-weight:700;font-size:13px;color:var(--dark);margin-bottom:5px;}
+  .suggest-body{font-size:12px;color:var(--muted);line-height:1.6;}
+
+  /* ── Limitation card ── */
+  .limit-card{background:white;border-radius:8px;padding:14px 18px;margin-bottom:10px;border-left:3px solid #ef4444;border:1px solid #fee2e2;border-left:3px solid #ef4444;}
+  .limit-title{font-weight:700;color:#dc2626;font-size:12.5px;margin-bottom:4px;}
+  .limit-body{font-size:12px;color:var(--muted);}
+
+  /* ── Footer ── */
+  .doc-footer{background:var(--dark);color:rgba(255,255,255,0.4);text-align:center;padding:20px;font-size:11px;margin-top:60px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ COVER ═══ -->
+<div class="cover page-break">
+  <div class="cover-logo">C</div>
+  <h1>Coach Drill Designer<br/><span>Full Technical Documentation</span></h1>
+  <p class="subtitle">Complete architecture, feature set, data models, editor system &amp; improvement roadmap</p>
+  <div class="cover-tags">
+    <span class="cover-tag">Next.js 14.2 App Router</span>
+    <span class="cover-tag">TypeScript</span>
+    <span class="cover-tag">React-Konva Canvas</span>
+    <span class="cover-tag">Zustand State Management</span>
+    <span class="cover-tag">@dnd-kit Drag &amp; Drop</span>
+    <span class="cover-tag">Tailwind CSS</span>
+    <span class="cover-tag">localStorage Persistence</span>
+    <span class="cover-tag">Print System</span>
+  </div>
+  <div class="cover-meta">
+    <div><span class="label">Platform</span><span class="val">CoachDesigner</span></div>
+    <div><span class="label">Version</span><span class="val">Phase 10 (MVP)</span></div>
+    <div><span class="label">Date</span><span class="val">March 2026</span></div>
+    <div><span class="label">Stack</span><span class="val">Next.js 14 + Konva + Zustand</span></div>
+  </div>
+</div>
+<!-- ═══════════════════════════════════════════════ TOC ═══ -->
+<div class="page page-break">
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><span>Executive Summary</span></li>
+    <li><span>System Architecture</span>
+      <ul class="toc-sub">
+        <li>Technology Stack</li>
+        <li>Folder Structure</li>
+        <li>Module Responsibilities</li>
+        <li>State Management Architecture</li>
+        <li>Persistence Layer</li>
+      </ul>
+    </li>
+    <li><span>Architecture Diagrams</span>
+      <ul class="toc-sub">
+        <li>System Architecture Diagram</li>
+        <li>Editor Engine Diagram</li>
+        <li>Data Flow Diagram</li>
+      </ul>
+    </li>
+    <li><span>Data Models</span>
+      <ul class="toc-sub">
+        <li>Drill + DrillStep</li>
+        <li>CanvasObject union types</li>
+        <li>Session + SessionBlock</li>
+        <li>Team + TeamPlayer</li>
+        <li>DrillFolder + FolderSubcategory</li>
+        <li>SeasonPlan + SeasonPlanEntry</li>
+        <li>CalendarEvent</li>
+      </ul>
+    </li>
+    <li><span>Page Structure &amp; Routing</span></li>
+    <li><span>Drill Library System</span>
+      <ul class="toc-sub">
+        <li>Drill List View</li>
+        <li>Folders &amp; Subcategories</li>
+        <li>Favorites System</li>
+        <li>Drill Templates</li>
+        <li>Drag-to-Reorder</li>
+      </ul>
+    </li>
+    <li><span>Editor Engine</span>
+      <ul class="toc-sub">
+        <li>Canvas Architecture (Konva)</li>
+        <li>Drawing Tools</li>
+        <li>Selection System</li>
+        <li>Snapping &amp; Alignment</li>
+        <li>Undo/Redo System</li>
+        <li>Multi-Select &amp; Group Operations</li>
+        <li>Tactical Tools</li>
+        <li>Play Simulation</li>
+        <li>Step System</li>
+        <li>Player &amp; Team System</li>
+        <li>Formation Picker</li>
+        <li>Inspector Panel</li>
+        <li>Keyboard Shortcuts</li>
+      </ul>
+    </li>
+    <li><span>Session Builder</span>
+      <ul class="toc-sub">
+        <li>Timeline Structure</li>
+        <li>Section Groups</li>
+        <li>Intensity System</li>
+        <li>Drag-to-Reorder Blocks</li>
+        <li>Session Summary</li>
+      </ul>
+    </li>
+    <li><span>Season Planner</span></li>
+    <li><span>Calendar</span></li>
+    <li><span>Teams Module</span></li>
+    <li><span>Print System</span>
+      <ul class="toc-sub">
+        <li>Session Print</li>
+        <li>Season Plan Print</li>
+      </ul>
+    </li>
+    <li><span>UI &amp; Design System</span>
+      <ul class="toc-sub">
+        <li>Color Palette</li>
+        <li>Layout Structure</li>
+        <li>Component Patterns</li>
+      </ul>
+    </li>
+    <li><span>Current Capabilities</span></li>
+    <li><span>Limitations</span></li>
+    <li><span>Professional Improvement Suggestions</span></li>
+  </ol>
+</div>
+</div>
+
+<!-- ══════════════════════════════════ EXECUTIVE SUMMARY ═══ -->
+<div class="page page-break">
+<h2 class="h-section">1. Executive Summary</h2>
+
+<div class="card card-orange">
+  <p><strong>Coach Drill Designer</strong> is a fully client-side, browser-based football coaching platform built with Next.js 14 (App Router), TypeScript, and React. It enables coaches to visually design training drills on a canvas, build structured training sessions, plan seasonal schedules, and manage teams — all without a backend server or database.</p>
+  <p>All state is managed through Zustand stores with localStorage persistence, making the application fully offline-capable. The canvas editor is powered by <strong>react-konva</strong> (Konva.js), a high-performance 2D canvas engine, loaded exclusively on the client side to avoid Next.js SSR conflicts.</p>
+</div>
+
+<div class="three-col">
+  <div class="card card-accent">
+    <div class="h-sub2">Platform Type</div>
+    <p>Single-Page Application (SPA) with file-based routing via Next.js App Router. No backend. No database. All data lives in localStorage.</p>
+  </div>
+  <div class="card card-orange">
+    <div class="h-sub2">Core Value</div>
+    <p>Visual drill design with a canvas editor, session planning with drag-and-drop timeline, and a full seasonal planning system — all in one tool.</p>
+  </div>
+  <div class="card card-green">
+    <div class="h-sub2">Development Status</div>
+    <p>Phase 10 MVP. Build passes cleanly. Zero TypeScript errors. All features production-ready for local/offline use.</p>
+  </div>
+</div>
+
+<h3 class="h-sub">Key Statistics</h3>
+<table>
+  <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Framework</td><td>Next.js 14.2.5 (App Router)</td></tr>
+    <tr><td>Language</td><td>TypeScript 5.5</td></tr>
+    <tr><td>Canvas Engine</td><td>Konva 9.3 via react-konva 18.2</td></tr>
+    <tr><td>State Management</td><td>Zustand 4.5 with persist middleware</td></tr>
+    <tr><td>Drag &amp; Drop</td><td>@dnd-kit/core 6.1 + @dnd-kit/sortable 7.0</td></tr>
+    <tr><td>Styling</td><td>Tailwind CSS 3.4 with custom brand tokens</td></tr>
+    <tr><td>localStorage Keys</td><td>6 keys (drills-v2, sessions-v2, teams-v1, folders-v1, season-plans-v1, calendar-v1)</td></tr>
+    <tr><td>Canvas Object Types</td><td>11 (player, cone, ball, goal, arrow, zone, circle, rectangle, line, curved, link)</td></tr>
+    <tr><td>Pages / Routes</td><td>15 routes across 6 modules</td></tr>
+    <tr><td>Undo Stack Depth</td><td>30 levels per step context</td></tr>
+    <tr><td>Default Squad Size</td><td>25 outfield + 3 GK per side</td></tr>
+  </tbody>
+</table>
+</div>
+<!-- ══════════════════════════════════ SYSTEM ARCHITECTURE ═══ -->
+<div class="page page-break">
+<h2 class="h-section">2. System Architecture</h2>
+
+<h3 class="h-sub">2.1 Technology Stack</h3>
+<table>
+  <thead><tr><th>Layer</th><th>Technology</th><th>Version</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Framework</strong></td><td>Next.js App Router</td><td>14.2.5</td><td>File-based routing, React Server Components shell, client components for all interactive UI</td></tr>
+    <tr><td><strong>Language</strong></td><td>TypeScript</td><td>5.5.4</td><td>Full type safety across all components, stores, and models</td></tr>
+    <tr><td><strong>Canvas</strong></td><td>react-konva / konva</td><td>18.2 / 9.3.14</td><td>2D canvas rendering for drill diagrams, loaded via <code>dynamic()</code> with <code>ssr:false</code></td></tr>
+    <tr><td><strong>State</strong></td><td>Zustand + persist</td><td>4.5.4</td><td>6 isolated stores, each with auto-persist to localStorage via middleware</td></tr>
+    <tr><td><strong>Drag &amp; Drop</strong></td><td>@dnd-kit</td><td>6.1 / 7.0</td><td>Accessible drag-and-drop for session timeline reordering and drill library sorting</td></tr>
+    <tr><td><strong>Styling</strong></td><td>Tailwind CSS</td><td>3.4.6</td><td>Utility-first with brand color tokens (<code>brand-orange</code>, <code>brand-dark</code>)</td></tr>
+    <tr><td><strong>Config</strong></td><td>next.config.mjs</td><td>—</td><td>.mjs format required (Next 14.2 does not support .ts config)</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">2.2 Folder Structure</h3>
+<pre><code>sessionbuilder/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── layout.tsx                # Root layout — NavBar + page slot
+│   │   ├── page.tsx                  # Redirects → /drills
+│   │   ├── drills/
+│   │   │   ├── page.tsx              # Drill library list
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx          # Drill editor
+│   │   │       └── view/page.tsx     # Fullscreen drill view
+│   │   ├── sessions/
+│   │   │   ├── page.tsx              # Sessions list
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx          # Session builder
+│   │   │       ├── view/page.tsx     # Session field view
+│   │   │       └── print/page.tsx    # Session print preview
+│   │   ├── teams/
+│   │   │   ├── page.tsx              # Teams list
+│   │   │   └── [id]/page.tsx         # Team editor
+│   │   ├── season-plans/
+│   │   │   ├── page.tsx              # Season plans list
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx          # Season plan editor
+│   │   │       └── view/page.tsx     # Season plan view/print
+│   │   └── calendar/
+│   │       └── page.tsx              # Calendar month view
+│   │
+│   ├── components/
+│   │   ├── drill-editor/             # Editor engine (7 components)
+│   │   │   ├── DrillEditorPage.tsx   # Main orchestrator
+│   │   │   ├── PitchCanvas.tsx       # Konva canvas (SSR-disabled)
+│   │   │   ├── PaletteSidebar.tsx    # Left tool palette
+│   │   │   ├── InspectorPanel.tsx    # Right property inspector
+│   │   │   ├── DrillEditorTopBar.tsx # Top toolbar
+│   │   │   ├── DrillMetaPanel.tsx    # Drill info drawer
+│   │   │   ├── PlayerDock.tsx        # Bottom player panel
+│   │   │   └── FormationPicker.tsx   # Formation modal
+│   │   ├── session-builder/          # Session builder (3 components)
+│   │   │   ├── SessionBuilderPage.tsx
+│   │   │   ├── SessionTimeline.tsx
+│   │   │   └── DrillPicker.tsx
+│   │   ├── season-plans/             # Season planning (3 components)
+│   │   │   ├── SeasonPlanEditor.tsx
+│   │   │   ├── SeasonPlansList.tsx
+│   │   │   └── SeasonPlanPrintView.tsx
+│   │   ├── calendar/
+│   │   │   └── CalendarPage.tsx
+│   │   ├── views/                    # Read-only view modes
+│   │   │   ├── DrillView.tsx         # Fullscreen drill with keyboard nav
+│   │   │   ├── SessionView.tsx       # Session field view
+│   │   │   └── SessionPrintView.tsx  # Print-ready session layout
+│   │   ├── team/
+│   │   │   └── TeamPage.tsx
+│   │   ├── DrillsList.tsx            # Drill library with folders/D&D
+│   │   ├── SessionsList.tsx
+│   │   ├── TeamsList.tsx
+│   │   ├── MiniPitchPreview.tsx      # SVG thumbnail of drill canvas
+│   │   └── NavBar.tsx                # Left sidebar navigation
+│   │
+│   ├── store/                        # Zustand stores
+│   │   ├── drillsStore.ts
+│   │   ├── sessionsStore.ts
+│   │   ├── teamsStore.ts
+│   │   ├── foldersStore.ts
+│   │   ├── seasonPlansStore.ts
+│   │   └── calendarStore.ts
+│   │
+│   ├── types/
+│   │   └── index.ts                  # All TypeScript types (single source)
+│   └── lib/
+│       ├── seed.ts                   # Seed data for first load
+│       └── sessionQuality.ts         # Session analysis utility
+│
+├── next.config.mjs
+├── tailwind.config.ts
+└── package.json</code></pre>
+
+<h3 class="h-sub">2.3 Module Responsibilities</h3>
+<table>
+  <thead><tr><th>Module</th><th>Files</th><th>Responsibility</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Editor Engine</strong></td><td><code>drill-editor/</code></td><td>All drill canvas editing: object creation, selection, snapping, drawing tools, undo/redo, step management, formation placement</td></tr>
+    <tr><td><strong>Session Builder</strong></td><td><code>session-builder/</code></td><td>Building training sessions from drills: timeline with section groups, intensity setting, drag reorder, session summary</td></tr>
+    <tr><td><strong>Season Planner</strong></td><td><code>season-plans/</code></td><td>Long-term planning: assign sessions to calendar dates, generate printable weekly plan view</td></tr>
+    <tr><td><strong>Calendar</strong></td><td><code>calendar/</code></td><td>Month-view calendar of all events (training, match, rest), synced with season plan entries</td></tr>
+    <tr><td><strong>Teams</strong></td><td><code>team/</code></td><td>Team management: colors, player roster, training days; colors auto-inherit to drill canvas players</td></tr>
+    <tr><td><strong>Print System</strong></td><td><code>views/</code></td><td>Brand-styled A4 landscape print views for sessions (one drill per page) and season plans (week-by-week table)</td></tr>
+    <tr><td><strong>State Layer</strong></td><td><code>store/</code></td><td>6 isolated Zustand stores, each with persist middleware writing to separate localStorage keys</td></tr>
+    <tr><td><strong>Types</strong></td><td><code>types/index.ts</code></td><td>Single source of truth for all TypeScript interfaces and union types</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">2.4 State Management Architecture</h3>
+<div class="card card-accent">
+  <p>Every store follows the same pattern: <strong>Zustand <code>create()</code> wrapped in <code>persist()</code></strong> middleware with a custom SSR-safe storage adapter that guards all <code>localStorage</code> access behind a <code>typeof window !== 'undefined'</code> check.</p>
+</div>
+
+<table>
+  <thead><tr><th>Store</th><th>localStorage Key</th><th>State Shape</th><th>Key Actions</th></tr></thead>
+  <tbody>
+    <tr><td><code>drillsStore</code></td><td><code>coach-drills-v2</code></td><td><code>Record&lt;string, Drill&gt;</code></td><td>addDrill, updateDrill, deleteDrill, duplicateDrill, addObject, updateObject, deleteObject, setObjects, addDrillStep, setStepObjects, removeDrillStep, toggleFavorite</td></tr>
+    <tr><td><code>sessionsStore</code></td><td><code>coach-sessions-v2</code></td><td><code>Record&lt;string, Session&gt;</code></td><td>addSession, updateSession, deleteSession, duplicateSession, addBlock, updateBlock, deleteBlock, reorderBlocks</td></tr>
+    <tr><td><code>teamsStore</code></td><td><code>coach-teams-v1</code></td><td><code>Record&lt;string, Team&gt;</code></td><td>addTeam, updateTeam, deleteTeam, addPlayer, updatePlayer, deletePlayer</td></tr>
+    <tr><td><code>foldersStore</code></td><td><code>coach-folders-v1</code></td><td><code>Record&lt;string, DrillFolder&gt;</code> + subcategories</td><td>addFolder, updateFolder, deleteFolder (cascades subs), addSubcategory, updateSubcategory, deleteSubcategory</td></tr>
+    <tr><td><code>seasonPlansStore</code></td><td><code>coach-season-plans-v1</code></td><td><code>Record&lt;string, SeasonPlan&gt;</code></td><td>addPlan, updatePlan, deletePlan, upsertEntry, deleteEntry</td></tr>
+    <tr><td><code>calendarStore</code></td><td><code>coach-calendar-v1</code></td><td><code>Record&lt;string, CalendarEvent&gt;</code></td><td>addEvent, updateEvent, deleteEvent, bulkAddEvents, syncSeasonPlanEntry, clearSeasonPlanEntry</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">2.5 Persistence &amp; Seeding</h3>
+<div class="two-col">
+  <div class="card card-orange">
+    <div class="h-sub2">Auto-Persistence</div>
+    <p>Zustand <code>persist</code> middleware automatically serializes the entire store state to <code>localStorage</code> as JSON on every state mutation. Rehydration happens automatically on first render.</p>
+    <p>The SSR-safe adapter wraps all access so Next.js server-side rendering never crashes attempting to access <code>window.localStorage</code>.</p>
+  </div>
+  <div class="card card-accent">
+    <div class="h-sub2">Seed Data</div>
+    <p><code>src/lib/seed.ts</code> provides <code>buildSeedDrills()</code>, <code>buildSeedSessions()</code>, and <code>buildSeedTeams()</code> functions. These are called once via <code>seedIfEmpty()</code> on each page mount — only if the store is empty and <code>_seeded</code> flag is false. This ensures first-time users see populated examples.</p>
+  </div>
+</div>
+</div>
+<!-- ══════════════════════════════════ DIAGRAMS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">3. Architecture Diagrams</h2>
+
+<h3 class="h-sub">3.1 System Architecture Diagram</h3>
+<div class="diagram-box">
+  <img src="architecture-diagram.svg" alt="System Architecture Diagram"/>
+  <p class="diagram-caption">Figure 1 — Full system architecture showing browser layer, component layer, state management, persistence, and third-party libraries</p>
+</div>
+
+<p>The diagram illustrates the layered architecture: the <strong>Browser/Client Layer</strong> hosts all Next.js pages routed by the App Router. Beneath that, the <strong>Component Layer</strong> is divided into four functional groups — the Drill Editor Engine, Session Builder, Season &amp; Calendar, and Print System. All components share state through the <strong>Zustand State Management Layer</strong> which automatically persists to the <strong>localStorage Persistence Layer</strong> using six isolated keys.</p>
+
+<h3 class="h-sub">3.2 Editor Engine Diagram</h3>
+<div class="diagram-box">
+  <img src="editor-engine-diagram.svg" alt="Editor Engine Diagram"/>
+  <p class="diagram-caption">Figure 2 — Internal structure of the Drill Editor Engine showing component relationships, canvas layers, drawing tools, and data flow</p>
+</div>
+
+<p><code>DrillEditorPage.tsx</code> is the central orchestrator. It owns all editor state (selected objects, draw tool, undo stack, zoom, step context) and passes handlers down as props. The <strong>PitchCanvas</strong> is the core rendering engine: it splits rendering into a pitch layer, object layer, arrow/link layer, and transformer layer. Surrounding components (PaletteSidebar, InspectorPanel, PlayerDock, FormationPicker) communicate only through callbacks — they never write to the store directly.</p>
+
+<h3 class="h-sub">3.3 Data Flow Diagram</h3>
+<div class="diagram-box">
+  <img src="data-flow-diagram.svg" alt="Data Flow Diagram"/>
+  <p class="diagram-caption">Figure 3 — Data flow for all major user actions: add object, drag/move, undo, session reorder, team color change, season plan, print, and PNG export</p>
+</div>
+
+<p>Every mutating user action follows the same five-step flow: <em>User Action → Component Handler → Zustand Store mutation → localStorage auto-persist → React re-render</em>. Read-only operations (Print, Export PNG) bypass the store write path entirely. Cross-store operations (e.g. assigning a session to a season plan date) atomically update two stores in one handler.</p>
+</div>
+<!-- ══════════════════════════════════ DATA MODELS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">4. Data Models</h2>
+<p>All types are defined in a single source-of-truth file: <code>src/types/index.ts</code>. Every store and component imports exclusively from this file.</p>
+
+<h3 class="h-sub">4.1 Drill</h3>
+<div class="card card-orange avoid-break">
+  <p>The central entity. A drill is a canvas diagram with rich coaching metadata.</p>
+</div>
+<pre><code>interface Drill {
+  id: string;
+  title: string;
+  description?: string;
+  pitch: Pitch;                     // { type, width, height, colors? }
+  objects: CanvasObject[];          // Base layer objects
+
+  // Coaching metadata
+  objective?: string;
+  ageGroup?: string;
+  playerCount?: string;
+  areaSize?: string;
+  durationMin?: number;
+  equipment?: string[];
+  coachingPoints?: string[];
+  coachingCues?: string[];
+  commonMistakes?: string[];
+  corrections?: string[];
+  keyConstraints?: string[];
+  progression?: string;
+  regression?: string;
+  notes?: string;
+
+  // Organisation
+  folderId?: string | null;
+  subcategoryId?: string | null;
+  sortOrder?: number;               // Manual drag-to-reorder position
+  tags?: string[];
+  teamId?: string | null;
+  trainingDay?: string | null;
+
+  // Visual
+  playerScale?: number;            // 0.5–2.0, global player size multiplier
+
+  // Relationships
+  parentDrillId?: string | null;
+  relationType?: 'base'|'variation'|'progression'|'regression' | null;
+  isFavorite?: boolean;
+
+  // Multi-step system
+  steps?: DrillStep[];             // Progression/regression steps
+
+  createdAt: string;               // ISO timestamp
+  updatedAt: string;
+}</code></pre>
+
+<h3 class="h-sub">4.2 DrillStep</h3>
+<pre><code>interface DrillStep {
+  id: string;
+  label: string;                   // e.g. "Progression", "Regression", "Step 3"
+  objects: CanvasObject[];         // Independent object set for this step
+}</code></pre>
+<div class="info-box">
+  <strong>Step System:</strong> A drill can have a Base layer (Drill.objects) and N additional DrillStep objects. Each step has its own complete independent CanvasObject array, allowing coaches to show progressions without creating separate drills. Steps are labelled automatically (Progression, Regression, Step N). Switching steps clears the undo stack.
+</div>
+
+<h3 class="h-sub">4.3 Pitch</h3>
+<pre><code>type PitchType = 'full' | 'half' | 'third' | 'plain';
+
+interface Pitch {
+  type: PitchType;
+  width: number;     // Logical pixels: full=840, half=840, third=840
+  height: number;    // Logical pixels: full=540, half=420, third=300
+  colors?: {
+    grass: string;
+    grassSecondary?: string;   // Alternate stripe color
+    lines: string;
+  };
+}</code></pre>
+
+<h3 class="h-sub">4.4 CanvasObject Union</h3>
+<p>The <code>CanvasObject</code> type is a discriminated union of 11 object types, distinguished by the <code>type</code> field:</p>
+<pre><code>type CanvasObject =
+  | PlayerObject | ConeObject | BallObject | GoalObject
+  | ArrowObject | ZoneObject | CircleShapeObject | RectangleObject
+  | LineObject | CurvedLineObject | LinkObject;</code></pre>
+
+<table>
+  <thead><tr><th>Type</th><th>Key Fields</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>'player'</code></td><td>x, y, color, number, name, team ('A'|'B'), showNumber, strokeColor, numberColor, teamColorInherited, rotation, locked</td><td>Jersey-style player dot. GK detected by number 1/12/13 → gold fill. teamColorInherited enables auto-sync with team store.</td></tr>
+    <tr><td><code>'cone'</code></td><td>x, y, color, rotation, locked</td><td>Training cone placed as a colored triangle/polygon.</td></tr>
+    <tr><td><code>'ball'</code></td><td>x, y, locked</td><td>Football (soccer ball), white with black pattern.</td></tr>
+    <tr><td><code>'goal'</code></td><td>x, y, size ('small'|'full'), rotation, locked</td><td>Full-size or small/mini goal rendered as a rectangle.</td></tr>
+    <tr><td><code>'arrow'</code></td><td>startX, startY, endX, endY, color, style ('solid'|'dashed'), headStyle ('filled'|'open'), strokeWidth, tacticType?, startPlayerId?, endPlayerId?, locked</td><td>2-point arrow. startPlayerId/endPlayerId enable live tracking: arrow endpoints follow player positions. tacticType assigns football-specific visual style.</td></tr>
+    <tr><td><code>'line'</code></td><td>startX, startY, endX, endY, color, strokeWidth, dashed, tacticType?, locked</td><td>Straight line without arrowhead. Used for tactical lines (defensive line, lane).</td></tr>
+    <tr><td><code>'curved'</code></td><td>startX, startY, cpX, cpY, endX, endY, color, strokeWidth, dashed, locked</td><td>Quadratic bezier curve. 3-click creation: click start → click end → click control point.</td></tr>
+    <tr><td><code>'zone'</code></td><td>x, y, width, height, fill, opacity (0–1), label, strokeColor, strokeWidth, rotation, locked</td><td>Filled rectangular area, used to mark pitch zones or areas of play.</td></tr>
+    <tr><td><code>'circle'</code></td><td>x, y, radius, stroke, strokeWidth, fill, fillOpacity, opacity, dashed, rotation, locked</td><td>Circle shape. Center + edge click creation.</td></tr>
+    <tr><td><code>'rectangle'</code></td><td>x, y, width, height, stroke, strokeWidth, fill, fillOpacity, opacity, dashed, rotation, locked</td><td>Rectangle shape. Corner-to-corner click creation.</td></tr>
+    <tr><td><code>'link'</code></td><td>fromPlayerId, toPlayerId, color, dashed, label, locked</td><td>Dynamic line connecting two players by ID. Renders as a line between live player positions.</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">4.5 TacticType</h3>
+<pre><code>type TacticType = 'run' | 'pass' | 'dribble' | 'press' | 'lane' | 'defline' | 'support';</code></pre>
+<table>
+  <thead><tr><th>Tactic</th><th>Color</th><th>Style</th><th>Head</th><th>Object Type</th></tr></thead>
+  <tbody>
+    <tr><td>run</td><td>#fbbf24 (amber)</td><td>solid</td><td>filled</td><td>arrow</td></tr>
+    <tr><td>pass</td><td>#ffffff</td><td>dashed</td><td>open</td><td>arrow</td></tr>
+    <tr><td>dribble</td><td>#f97316 (orange)</td><td>solid</td><td>filled</td><td>arrow</td></tr>
+    <tr><td>press</td><td>#ef4444 (red)</td><td>dashed</td><td>filled</td><td>arrow</td></tr>
+    <tr><td>support</td><td>#22c55e (green)</td><td>dashed</td><td>open</td><td>arrow</td></tr>
+    <tr><td>lane</td><td>#3b82f6 (blue)</td><td>dashed</td><td>open</td><td>line</td></tr>
+    <tr><td>defline</td><td>#8b5cf6 (purple)</td><td>solid</td><td>open</td><td>line</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">4.6 Session &amp; SessionBlock</h3>
+<pre><code>type Intensity = 'low' | 'mid' | 'high';
+type SessionSection = 'warmup' | 'main' | 'game' | 'cooldown';
+
+interface SessionBlock {
+  id: string;
+  drillId: string;          // References Drill.id
+  durationMin: number;
+  intensity: Intensity;
+  notes?: string;
+  section?: SessionSection; // Which phase of the session
+}
+
+interface Session {
+  id: string;
+  title: string;
+  date?: string;
+  blocks: SessionBlock[];   // Ordered array of drill blocks
+  objective?: string;
+  ageGroup?: string;
+  playerCount?: string;
+  notes?: string;
+  teamId?: string | null;
+  trainingDay?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}</code></pre>
+
+<h3 class="h-sub">4.7 Team &amp; TeamPlayer</h3>
+<pre><code>interface TeamPlayer {
+  id: string;
+  name: string;
+  number?: string;
+  position?: string;
+  color?: string;
+  teamSide: 'home' | 'opponent';
+}
+
+interface Team {
+  id: string;
+  name: string;
+  ageGroup: string;
+  primaryColor: string;             // Home jersey color
+  secondaryColor: string;
+  opponentPrimaryColor: string;     // Away jersey color
+  opponentSecondaryColor?: string;
+  primaryStrokeColor?: string;      // Jersey ring color — home
+  opponentStrokeColor?: string;     // Jersey ring color — away
+  primaryNumberColor?: string;      // Number text color — home
+  opponentNumberColor?: string;     // Number text color — away
+  trainingDays: string[];           // ["Sunday","Tuesday","Thursday"]
+  players: TeamPlayer[];
+  createdAt: string;
+  updatedAt: string;
+}</code></pre>
+
+<h3 class="h-sub">4.8 DrillFolder &amp; FolderSubcategory</h3>
+<pre><code>interface DrillFolder {
+  id: string; name: string; createdAt: string; updatedAt: string;
+}
+
+interface FolderSubcategory {
+  id: string;
+  folderId: string;         // Parent folder reference
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}</code></pre>
+<div class="info-box-accent">Deleting a folder cascades to delete all its subcategories via <code>foldersStore.deleteFolder()</code>. Drills that were in the folder keep their <code>folderId</code> value but the folder is gone — they become "unfoldered".</div>
+
+<h3 class="h-sub">4.9 SeasonPlan &amp; SeasonPlanEntry</h3>
+<pre><code>interface SeasonPlanEntry {
+  id: string;
+  date: string;             // ISO date string
+  trainingDay?: string;
+  sessionId?: string;       // Linked session
+  notes?: string;
+}
+
+interface SeasonPlan {
+  id: string;
+  title: string;
+  teamId: string;           // Linked team
+  startDate: string;
+  endDate: string;
+  entries: SeasonPlanEntry[];
+  createdAt: string;
+  updatedAt: string;
+}</code></pre>
+
+<h3 class="h-sub">4.10 CalendarEvent</h3>
+<pre><code>type CalendarEventType = 'training' | 'match' | 'rest' | 'other';
+type CalendarEventStatus = 'planned' | 'completed' | 'cancelled';
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  date: string;
+  type: CalendarEventType;
+  teamId?: string;
+  sessionId?: string;
+  notes?: string;
+  status?: CalendarEventStatus;
+  seasonPlanEntryId?: string;  // Links to SeasonPlanEntry for sync
+}</code></pre>
+<div class="info-box">When a session is assigned to a SeasonPlanEntry, <code>calendarStore.syncSeasonPlanEntry()</code> creates or updates a corresponding CalendarEvent automatically, keeping the calendar in sync with the season plan.</div>
+</div>
+<!-- ══════════════════════════════════ PAGES ═══ -->
+<div class="page page-break">
+<h2 class="h-section">5. Page Structure &amp; Routing</h2>
+
+<table>
+  <thead><tr><th>Route</th><th>Component</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>/</code></td><td>page.tsx</td><td>Instant redirect to <code>/drills</code></td></tr>
+    <tr><td><code>/drills</code></td><td>DrillsList.tsx</td><td>Full drill library with folders, subcategories, favorites, search, drag-to-reorder, 2-step new drill modal with 8 templates</td></tr>
+    <tr><td><code>/drills/[id]</code></td><td>DrillEditorPage.tsx</td><td>Full canvas editor with all drawing tools, inspector, player dock, step tabs, simulation</td></tr>
+    <tr><td><code>/drills/[id]/view</code></td><td>DrillView.tsx</td><td>Fullscreen presentation mode; keyboard shortcuts: F=fullscreen, ←→=prev/next drill navigation</td></tr>
+    <tr><td><code>/sessions</code></td><td>SessionsList.tsx</td><td>Session cards with duration/intensity summary, mini previews, create/duplicate/delete</td></tr>
+    <tr><td><code>/sessions/[id]</code></td><td>SessionBuilderPage.tsx</td><td>Session builder with timeline, drill picker, section headers, session quality analysis</td></tr>
+    <tr><td><code>/sessions/[id]/view</code></td><td>SessionView.tsx</td><td>Read-only session view with drill progression, print button</td></tr>
+    <tr><td><code>/sessions/[id]/print</code></td><td>SessionPrintView.tsx</td><td>Brand-styled print layout: cover page + one A4 landscape page per drill block</td></tr>
+    <tr><td><code>/teams</code></td><td>TeamsList.tsx</td><td>Team cards, create new team</td></tr>
+    <tr><td><code>/teams/[id]</code></td><td>TeamPage.tsx</td><td>Team editor: colors, roster management, training days configuration</td></tr>
+    <tr><td><code>/season-plans</code></td><td>SeasonPlansList.tsx</td><td>Season plan cards, create new plan</td></tr>
+    <tr><td><code>/season-plans/[id]</code></td><td>SeasonPlanEditor.tsx</td><td>Weekly grid: assign sessions to dates, auto-syncs to calendar</td></tr>
+    <tr><td><code>/season-plans/[id]/view</code></td><td>SeasonPlanPrintView.tsx</td><td>Week-by-week table with drill thumbnails, brand styled, printable</td></tr>
+    <tr><td><code>/calendar</code></td><td>CalendarPage.tsx</td><td>Month-view calendar with event types (training/match/rest/other), status tracking</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ══════════════════════════════════ DRILL LIBRARY ═══ -->
+<div class="page page-break">
+<h2 class="h-section">6. Drill Library System</h2>
+
+<h3 class="h-sub">6.1 Drill List View</h3>
+<p>The drill library (<code>DrillsList.tsx</code>) is the main hub for managing all drills. It provides:</p>
+<div class="two-col">
+  <div class="card card-orange">
+    <div class="h-sub2">Organisation</div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+      <li>Folders sidebar (left panel)</li>
+      <li>Subcategories nested under folders</li>
+      <li>Favorites section at top (starred drills)</li>
+      <li>Unfoldered section at bottom</li>
+      <li>Drill cards sortable within a folder/subcategory</li>
+    </ul>
+  </div>
+  <div class="card card-accent">
+    <div class="h-sub2">Drill Cards</div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+      <li>MiniPitchPreview SVG thumbnail</li>
+      <li>Title, description, duration</li>
+      <li>Step count badge (if steps exist)</li>
+      <li>Star toggle for favorites</li>
+      <li>Edit / Duplicate / Delete actions</li>
+    </ul>
+  </div>
+</div>
+
+<h3 class="h-sub">6.2 New Drill Modal — 8 Templates</h3>
+<p>A 2-step creation modal: first choose a template, then set the pitch type.</p>
+<table>
+  <thead><tr><th>Template</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>Blank</td><td>Empty canvas, user starts from scratch</td></tr>
+    <tr><td>Rondo</td><td>Possession circle exercise template</td></tr>
+    <tr><td>Possession</td><td>Keep-ball drill setup</td></tr>
+    <tr><td>Build-up</td><td>Playing out from the back</td></tr>
+    <tr><td>Finishing</td><td>Shooting / finishing exercise</td></tr>
+    <tr><td>Pressing</td><td>High press / gegenpressing setup</td></tr>
+    <tr><td>Transition</td><td>Attack/defense transition drill</td></tr>
+    <tr><td>SSG</td><td>Small-sided game setup</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">6.3 Folders &amp; Subcategories</h3>
+<div class="card card-accent">
+  <p><strong>Folders</strong> are top-level organisational containers. Each folder can have <strong>subcategories</strong> — child groupings within the folder. Drills store both <code>folderId</code> and <code>subcategoryId</code> fields. Deleting a folder cascades to delete all its subcategories.</p>
+</div>
+
+<h3 class="h-sub">6.4 Drag-to-Reorder</h3>
+<p>Drill cards within a folder/subcategory are sortable using <strong>@dnd-kit/sortable</strong>. Each card uses the <code>useSortable</code> hook. Drag end triggers a <code>sortOrder</code> update in the drills store. Drill cards can also be dragged between folders/subcategories.</p>
+
+<h3 class="h-sub">6.5 Favorites</h3>
+<p>Any drill can be starred via the star icon on the card or the <code>toggleFavorite</code> store action. Starred drills appear in a dedicated <strong>Favorites</strong> section at the top of the library regardless of their folder assignment.</p>
+</div>
+<!-- ══════════════════════════════════ EDITOR ENGINE ═══ -->
+<div class="page page-break">
+<h2 class="h-section">7. Editor Engine</h2>
+<p>The editor engine is implemented across the <code>src/components/drill-editor/</code> directory. <code>DrillEditorPage.tsx</code> is the orchestrator that owns all state. <code>PitchCanvas.tsx</code> is the Konva canvas renderer, loaded via <code>dynamic()</code> with <code>ssr: false</code> to prevent server-side rendering conflicts.</p>
+
+<h3 class="h-sub">7.1 Canvas Architecture (Konva)</h3>
+<div class="card card-orange">
+  <p><code>PitchCanvas.tsx</code> renders a <strong>Konva Stage</strong> containing multiple <strong>Layers</strong> in a defined z-order. All objects are rendered as Konva nodes (Rect, Circle, Arrow, Line, Path, Text, Group).</p>
+</div>
+<table>
+  <thead><tr><th>Layer (top → bottom)</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td>Transformer Layer</td><td>Konva Transformer node for resize/rotate handles on selected objects</td></tr>
+    <tr><td>Link/Arrow Layer</td><td>ArrowObject, LineObject, CurvedLineObject (rendered below players so they appear "under" player tokens)</td></tr>
+    <tr><td>Object Layer</td><td>PlayerObject, ConeObject, BallObject, GoalObject, ZoneObject, CircleShapeObject, RectangleObject</td></tr>
+    <tr><td>Pitch Layer</td><td>Field markings (grass rectangles, white lines, penalty areas, circles, arcs) rendered from pitch.type</td></tr>
+  </tbody>
+</table>
+
+<p>The <strong>Stage</strong> handles mouse events for drawing tools (onMouseDown, onMouseMove, onMouseUp) and zoom (onWheel). Drag events on individual nodes are handled per-object for position updates.</p>
+
+<h3 class="h-sub">7.2 Drawing Tools</h3>
+<p>The active drawing tool is stored as <code>DrawTool</code> in <code>DrillEditorPage</code> state. All tool buttons in <code>PaletteSidebar</code> and all keyboard shortcuts toggle this value.</p>
+
+<table>
+  <thead><tr><th>Tool</th><th>Clicks Required</th><th>Object Created</th><th>Keyboard</th></tr></thead>
+  <tbody>
+    <tr><td>arrow</td><td>2 (start → end)</td><td>ArrowObject (red, solid, filled)</td><td>A</td></tr>
+    <tr><td>line</td><td>2 (start → end)</td><td>LineObject (white)</td><td>L</td></tr>
+    <tr><td>curved</td><td>3 (start → end → control point)</td><td>CurvedLineObject (bezier)</td><td>—</td></tr>
+    <tr><td>rect</td><td>2 (corner → opposite corner)</td><td>RectangleObject</td><td>R</td></tr>
+    <tr><td>circle</td><td>2 (center → edge)</td><td>CircleShapeObject</td><td>C</td></tr>
+    <tr><td>link</td><td>2 (player A → player B)</td><td>LinkObject</td><td>—</td></tr>
+    <tr><td>tac-run</td><td>2</td><td>ArrowObject (amber, solid)</td><td>—</td></tr>
+    <tr><td>tac-pass</td><td>2</td><td>ArrowObject (white, dashed, open)</td><td>—</td></tr>
+    <tr><td>tac-dribble</td><td>2</td><td>ArrowObject (orange, solid)</td><td>—</td></tr>
+    <tr><td>tac-press</td><td>2</td><td>ArrowObject (red, dashed)</td><td>—</td></tr>
+    <tr><td>tac-support</td><td>2</td><td>ArrowObject (green, dashed, open)</td><td>—</td></tr>
+    <tr><td>tac-lane</td><td>2</td><td>LineObject (blue, dashed)</td><td>—</td></tr>
+    <tr><td>tac-defline</td><td>2</td><td>LineObject (purple, solid)</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<div class="info-box">
+  <strong>Curved Line — 3-Click Flow:</strong> Click 1 sets <code>drawFirstPoint</code> (start). Click 2 sets <code>drawSecondPoint</code> (end). Click 3's position becomes the bezier control point (<code>cpX</code>, <code>cpY</code>). The <code>CurvedLineObject</code> is then created and added to the store.
+</div>
+<div class="info-box-accent">
+  <strong>Shift Constraint:</strong> While any draw tool is active, holding Shift constrains the drawn line/arrow to 45° angle increments. While dragging a placed object, holding Shift constrains movement to the horizontal or vertical axis.
+</div>
+
+<h3 class="h-sub">7.3 Smart Arrow Connections</h3>
+<p>When drawing an arrow or tactical arrow tool and the first click lands on a <strong>PlayerObject</strong>, the player's ID is stored as <code>arrowStartPlayerId</code>. If the second click also lands on a player, that player's ID is stored as <code>endPlayerId</code>. The resulting ArrowObject has <code>startPlayerId</code> and/or <code>endPlayerId</code> set. PitchCanvas reads these IDs on every render and substitutes the live player position for the arrow endpoints — so the arrow follows the player when they are dragged.</p>
+
+<h3 class="h-sub">7.4 Selection System</h3>
+<div class="two-col">
+  <div class="card card-accent">
+    <div class="h-sub2">Single Select</div>
+    <p>Clicking any object calls <code>handleSelect(id)</code>: sets <code>selectedId</code> and <code>selectedIds = [id]</code>. Clicking empty canvas deselects.</p>
+  </div>
+  <div class="card card-orange">
+    <div class="h-sub2">Multi-Select</div>
+    <p>Shift+click on any object calls <code>handleMultiSelect(id)</code> using a ref (<code>selectedIdsRef</code>) to avoid stale closure: toggles the object in <code>selectedIds</code>. The last selected becomes <code>selectedId</code> (shown in inspector).</p>
+  </div>
+</div>
+<div class="card card-green">
+  <div class="h-sub2">Marquee (Rubber-Band) Select</div>
+  <p>Drag on empty canvas to draw a selection rectangle. All objects whose centers fall within the rectangle are collected and passed to <code>handleMarqueeSelect(ids, additive)</code>. Additive (Shift held) merges with existing selection.</p>
+</div>
+
+<h3 class="h-sub">7.5 Snapping &amp; Alignment</h3>
+<p><strong>Alignment snap</strong> is always active when <code>snapToGrid</code> is true. During <code>onDragMove</code>, the system scans all other objects and computes candidate snap targets: their x/y positions, midpoints, and edges. If the dragged object's position is within <strong>10 pitch pixels</strong> of any snap target, it snaps to that coordinate. Visual guide lines are drawn on the canvas during drag.</p>
+<p>The <strong>Inspector Align toolbar</strong> provides manual alignment: Left, Center-X, Right, Top, Center-Y, Bottom, Distribute-H, Distribute-V. These operate on all <code>selectedIds</code> (minimum 2 objects).</p>
+
+<h3 class="h-sub">7.6 Undo / Redo System</h3>
+<div class="card card-orange">
+  <p>The undo system is a client-side snapshot stack. Before any mutating operation, <code>pushUndo()</code> takes a copy of the current <code>activeObjects</code> array and pushes it onto <code>undoStack</code> (capped at 30 entries, oldest discarded). The redo stack is cleared on any new action. Both stacks are scoped to the active step — switching steps clears both stacks.</p>
+</div>
+<pre><code>// Undo: pop previous state, push current to redo stack
+handleUndo() → undoStack.pop() → stepSetObjects(prev) → redoStack.push(current)
+
+// Redo: pop from redo stack, push current to undo stack
+handleRedo() → redoStack.pop() → stepSetObjects(next) → undoStack.push(current)</code></pre>
+
+<h3 class="h-sub">7.7 Copy / Paste / Duplicate</h3>
+<table>
+  <thead><tr><th>Action</th><th>Shortcut</th><th>Behaviour</th></tr></thead>
+  <tbody>
+    <tr><td>Copy</td><td>Ctrl+C</td><td>Copies selected objects (all selectedIds or selectedId) to <code>clipboardItems</code> state — no store write</td></tr>
+    <tr><td>Paste</td><td>Ctrl+V</td><td>Creates new objects from clipboard with new UUIDs, offset +30px on x/y. Arrow player connections are stripped (independent copy). Selects new objects.</td></tr>
+    <tr><td>Duplicate</td><td>Ctrl+D or palette button</td><td>Same as copy+paste but immediate, offset +10px. Works on multi-select.</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">7.8 Step System (Tabs)</h3>
+<div class="info-box-accent">
+  <p>The step tab bar lives between the toolbar and the canvas. The <strong>Base</strong> tab always shows <code>drill.objects</code>. Each additional step shows its own <code>DrillStep.objects</code>. Adding a step auto-clones all Base objects into the new step. <strong>Clone base</strong> button (only in step mode) overwrites the current step's objects with fresh copies from Base.</p>
+</div>
+<p>All store operations are routed through <strong>step-aware wrappers</strong>: <code>stepAddObject</code>, <code>stepUpdateObject</code>, <code>stepDeleteObject</code>, <code>stepSetObjects</code>. These check <code>activeStepId</code> and call either <code>setStepObjects(drillId, stepId, objects)</code> or the direct store action based on context.</p>
+
+<h3 class="h-sub">7.9 Play Simulation</h3>
+<p>The Play button becomes active when any ArrowObject with <code>startPlayerId</code> exists. On play:</p>
+<ol style="padding-left:20px;font-size:12px;line-height:1.9;">
+  <li>Collects all arrows with <code>startPlayerId</code>, reads the current player position and arrow end position as movement targets.</li>
+  <li>Starts a <strong>requestAnimationFrame loop</strong> over 1800ms.</li>
+  <li>Applies ease-in-out tween: <code>t &lt; 0.5 ? 2t² : -1+(4-2t)t</code>.</li>
+  <li>Updates <code>positionOverrides</code> state on every frame — a <code>Record&lt;playerId, {x,y}&gt;</code> map.</li>
+  <li>PitchCanvas substitutes overridden positions for those player nodes during rendering — players visually move.</li>
+  <li>On completion or Stop, overrides are cleared and players snap back to stored positions.</li>
+</ol>
+
+<h3 class="h-sub">7.10 Player &amp; Team System</h3>
+<div class="two-col">
+  <div class="card card-orange">
+    <div class="h-sub2">Player Dock</div>
+    <p>Bottom panel showing all players for both teams (or default squad of 25+3 GK per side). Team selector dropdown at top. Clicking a player adds it to canvas center. Formation buttons per side open the Formation Picker.</p>
+  </div>
+  <div class="card card-accent">
+    <div class="h-sub2">Team Color Inheritance</div>
+    <p>Players with <code>teamColorInherited: true</code> auto-sync color when the linked team's color changes. Manually changing a player's color in the inspector sets <code>teamColorInherited: false</code> and also propagates to all same-side players + updates the team store.</p>
+  </div>
+</div>
+
+<div class="card card-highlight">
+  <div class="h-sub2">GK Detection</div>
+  <p>Players with number <code>1</code>, <code>12</code>, or <code>13</code> are automatically treated as goalkeepers. The Inspector Panel shows a GK badge and Konva renders them with a gold fill instead of their team color.</p>
+</div>
+
+<h3 class="h-sub">7.11 Formation Picker</h3>
+<p>A modal component with a formation list (4-4-2, 4-3-3, 3-5-2, and team segment templates like back-4, mid-3, front-3). Formations use <strong>landscape percentage coordinates</strong> [lateral_pct, depth_pct] that are scaled to the current pitch dimensions. When placing a formation, the system <strong>reuses existing players</strong> on the same side (repositions them), creating only the missing ones — preventing duplicate players from accumulating.</p>
+
+<h3 class="h-sub">7.12 Inspector Panel</h3>
+<table>
+  <thead><tr><th>Object Type</th><th>Inspector Controls</th></tr></thead>
+  <tbody>
+    <tr><td>Player</td><td>Fill color, stroke color, number color, number text, name, GK badge, show/hide number toggle, lock toggle, delete, duplicate</td></tr>
+    <tr><td>Arrow</td><td>Color, line style (solid/dashed), head style (filled/open), stroke width, lock toggle</td></tr>
+    <tr><td>Zone</td><td>Fill color, opacity slider (0–1), label text, stroke color, stroke width, lock toggle</td></tr>
+    <tr><td>Circle</td><td>Stroke color, stroke width, fill color, fill opacity, overall opacity slider, dashed toggle, lock toggle</td></tr>
+    <tr><td>Rectangle</td><td>Stroke color, stroke width, fill color, fill opacity, overall opacity slider, dashed toggle, lock toggle</td></tr>
+    <tr><td>Cone</td><td>Fill color, lock toggle</td></tr>
+    <tr><td>Line/Link</td><td>Color, stroke width, dashed toggle, lock toggle</td></tr>
+    <tr><td>Multi-select (2+)</td><td>Alignment toolbar: left, center-X, right, top, center-Y, bottom, distribute-H, distribute-V</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">7.13 Keyboard Shortcuts</h3>
+<table>
+  <thead><tr><th>Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>Esc</td><td>Cancel active draw tool, clear first point, deselect</td></tr>
+    <tr><td>Ctrl+Z</td><td>Undo (30-level stack, scoped per step)</td></tr>
+    <tr><td>Ctrl+Y / Ctrl+Shift+Z</td><td>Redo</td></tr>
+    <tr><td>Ctrl+D</td><td>Duplicate selected objects (+10px offset)</td></tr>
+    <tr><td>Ctrl+C</td><td>Copy selected objects to clipboard</td></tr>
+    <tr><td>Ctrl+V</td><td>Paste clipboard (+30px offset)</td></tr>
+    <tr><td>Delete / Backspace</td><td>Delete selected objects (when not in text input)</td></tr>
+    <tr><td>A</td><td>Activate Arrow tool</td></tr>
+    <tr><td>R</td><td>Activate Rectangle tool</td></tr>
+    <tr><td>L</td><td>Activate Line tool</td></tr>
+    <tr><td>C</td><td>Activate Circle tool</td></tr>
+    <tr><td>B</td><td>Place Ball at canvas center (with ±20px jitter)</td></tr>
+    <tr><td>g (lowercase)</td><td>Place Small Goal at canvas center</td></tr>
+    <tr><td>G (uppercase)</td><td>Place Full Goal at canvas center</td></tr>
+    <tr><td>D (with arrow selected)</td><td>Toggle arrow style solid ↔ dashed</td></tr>
+    <tr><td>Shift+drag object</td><td>Constrain movement to horizontal or vertical axis</td></tr>
+    <tr><td>Shift+draw</td><td>Constrain drawn line to 45° angle increments</td></tr>
+    <tr><td>Mouse wheel</td><td>Zoom canvas in/out</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">7.14 DrillEditorTopBar Controls</h3>
+<div class="badge-grid">
+  <span class="badge badge-orange">Inline Title Edit</span>
+  <span class="badge badge-accent">Save Status Indicator</span>
+  <span class="badge badge-dark">Zoom Controls</span>
+  <span class="badge badge-green">Snap Toggle</span>
+  <span class="badge badge-dark">Show Names Toggle</span>
+  <span class="badge badge-orange">Undo / Redo Buttons</span>
+  <span class="badge badge-purple">Player Scale Slider (0.5–2×)</span>
+  <span class="badge badge-accent">Export PNG (2× pixel ratio)</span>
+  <span class="badge badge-yellow">Play / Stop Simulation</span>
+  <span class="badge badge-dark">Drill Info Drawer</span>
+</div>
+
+<h3 class="h-sub">7.15 Drill Meta Panel</h3>
+<p>A slide-out drawer (right side) for non-canvas drill metadata:</p>
+<div class="two-col">
+  <div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.9;">
+      <li>Objective, Age Group, Player Count, Area Size</li>
+      <li>Duration (minutes)</li>
+      <li>Equipment list</li>
+      <li>Coaching Points (bullet list)</li>
+      <li>Coaching Cues</li>
+    </ul>
+  </div>
+  <div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.9;">
+      <li>Common Mistakes</li>
+      <li>Corrections</li>
+      <li>Key Constraints</li>
+      <li>Progression / Regression (text)</li>
+      <li>Tags, Team link, Training Day, Notes</li>
+    </ul>
+  </div>
+</div>
+</div>
+<!-- ══════════════════════════════════ SESSION BUILDER ═══ -->
+<div class="page page-break">
+<h2 class="h-section">8. Session Builder</h2>
+
+<h3 class="h-sub">8.1 Timeline Structure</h3>
+<p>The session timeline (<code>SessionTimeline.tsx</code>) displays all blocks in a vertical chronological list. Blocks are grouped by <code>SessionSection</code>: Warm-up, Main, Game, Cool-down. Each section has a coloured header (sky, orange, amber, violet) with an icon and total duration.</p>
+
+<div class="card card-accent">
+  <p>The timeline uses <strong>@dnd-kit</strong>: each <code>BlockCard</code> is wrapped in <code>useSortable()</code> from <code>@dnd-kit/sortable</code>. The outer list is wrapped in <code>DndContext</code> with <code>closestCenter</code> collision detection. Drag end fires <code>arrayMove()</code> and calls <code>reorderBlocks(sessionId, newBlocks)</code> on the sessions store.</p>
+</div>
+
+<h3 class="h-sub">8.2 Block Card</h3>
+<p>Each block card shows:</p>
+<div class="two-col">
+  <div class="card card-orange">
+    <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+      <li>Drag handle (left edge)</li>
+      <li>MiniPitchPreview SVG thumbnail</li>
+      <li>Drill title + folder name</li>
+      <li>Duration (editable inline)</li>
+    </ul>
+  </div>
+  <div class="card card-accent">
+    <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+      <li>Intensity badge (low/mid/high) with color</li>
+      <li>Section phase selector dropdown</li>
+      <li>Per-block notes field</li>
+      <li>Duplicate / Delete actions</li>
+    </ul>
+  </div>
+</div>
+
+<h3 class="h-sub">8.3 Intensity System</h3>
+<table>
+  <thead><tr><th>Intensity</th><th>Color</th><th>Badge Style</th></tr></thead>
+  <tbody>
+    <tr><td>Low</td><td>sky-400 (#38bdf8)</td><td>sky-50 bg, sky-200 border</td></tr>
+    <tr><td>Mid</td><td>amber-400 (#fbbf24)</td><td>amber-50 bg, amber-200 border</td></tr>
+    <tr><td>High</td><td>red-400 (#f87171)</td><td>red-50 bg, red-200 border</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">8.4 Session Summary (Right Panel)</h3>
+<p>The session builder right panel shows a live summary:</p>
+<ul style="padding-left:20px;font-size:12px;line-height:1.9;">
+  <li>Total session duration (sum of all block durations)</li>
+  <li>Breakdown by section (warmup/main/game/cooldown) — total minutes each</li>
+  <li>Intensity distribution bar (count of low/mid/high blocks)</li>
+  <li>Aggregated equipment list from all linked drills</li>
+  <li>Session quality score via <code>src/lib/sessionQuality.ts</code></li>
+</ul>
+
+<h3 class="h-sub">8.5 Drill Picker</h3>
+<p><code>DrillPicker.tsx</code> is a modal/panel that lists all available drills with search and folder filter. Selecting a drill creates a new <code>SessionBlock</code> with a default 15-minute duration and mid intensity, appended to the session's blocks array.</p>
+</div>
+
+<!-- ══════════════════════════════════ SEASON PLANNER ═══ -->
+<div class="page page-break">
+<h2 class="h-section">9. Season Planner</h2>
+
+<h3 class="h-sub">9.1 Overview</h3>
+<p>The Season Planner (<code>SeasonPlanEditor.tsx</code>) provides a long-term training calendar for a team. A plan spans a date range (start → end) and belongs to one team. It renders as a week-by-week grid where each training day cell can have a session assigned.</p>
+
+<h3 class="h-sub">9.2 Entry Management</h3>
+<div class="card card-accent">
+  <p>Clicking a date cell opens a session picker. Selecting a session calls <code>seasonPlansStore.upsertEntry()</code> to save the assignment, and simultaneously calls <code>calendarStore.syncSeasonPlanEntry()</code> to create or update a <code>CalendarEvent</code> linked via <code>seasonPlanEntryId</code>. This two-store sync keeps the Calendar view automatically up to date.</p>
+</div>
+
+<h3 class="h-sub">9.3 Season Plan Print View</h3>
+<p>The <code>SeasonPlanPrintView.tsx</code> component renders a <strong>week-by-week table</strong>:</p>
+<ul style="padding-left:20px;font-size:12px;line-height:1.9;">
+  <li>Header row: week number + date range (Mon–Sun)</li>
+  <li>Each training day in that week as a column cell</li>
+  <li>Each cell shows: session title, intensity badge, a <code>MiniPitchPreview</code> thumbnail of the first drill in that session</li>
+  <li>Blank cells for non-training days</li>
+  <li>Brand colors throughout: orange headers, dark sidebar, accent accents</li>
+  <li>Designed for A4 landscape print output</li>
+</ul>
+<p>Session intensity is derived by <code>sessionIntensity(session)</code>: averages block intensities (low=1, mid=2, high=3) and rounds to nearest level.</p>
+</div>
+
+<!-- ══════════════════════════════════ CALENDAR ═══ -->
+<div class="page page-break">
+<h2 class="h-section">10. Calendar</h2>
+
+<h3 class="h-sub">10.1 Month View</h3>
+<p><code>CalendarPage.tsx</code> renders a full month grid calendar. Days with events show event chips coloured by type:</p>
+<table>
+  <thead><tr><th>Event Type</th><th>Display</th></tr></thead>
+  <tbody>
+    <tr><td>training</td><td>Brand orange chip</td></tr>
+    <tr><td>match</td><td>Red chip</td></tr>
+    <tr><td>rest</td><td>Gray chip</td></tr>
+    <tr><td>other</td><td>Accent chip</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">10.2 Event Status</h3>
+<p>Each event has a <code>CalendarEventStatus</code>: <code>'planned'</code>, <code>'completed'</code>, or <code>'cancelled'</code>. This can be changed directly in the calendar view. Cancelled events render with a strikethrough.</p>
+
+<h3 class="h-sub">10.3 Season Plan Sync</h3>
+<p>Events created from season plan entries carry a <code>seasonPlanEntryId</code> field. The <code>calendarStore.syncSeasonPlanEntry()</code> method performs an <strong>upsert</strong>: it searches for an existing event with the same <code>seasonPlanEntryId</code> and updates it, or creates a new one. <code>clearSeasonPlanEntry()</code> deletes the linked event when a season plan entry is removed.</p>
+</div>
+
+<!-- ══════════════════════════════════ TEAMS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">11. Teams Module</h2>
+
+<h3 class="h-sub">11.1 Team Configuration</h3>
+<p><code>TeamPage.tsx</code> allows full configuration of a team. Each team stores:</p>
+<div class="two-col">
+  <div class="card card-orange">
+    <div class="h-sub2">Colors (per side)</div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.9;">
+      <li>Primary (home jersey fill color)</li>
+      <li>Secondary (unused visually, stored for future)</li>
+      <li>Stroke ring color (border around player circle)</li>
+      <li>Number text color</li>
+      <li>All above for opponent side too</li>
+    </ul>
+  </div>
+  <div class="card card-accent">
+    <div class="h-sub2">Roster &amp; Schedule</div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.9;">
+      <li>Player list with name, number, position</li>
+      <li>Side assignment (home/opponent)</li>
+      <li>Training days (e.g. Sunday, Tuesday, Thursday)</li>
+    </ul>
+  </div>
+</div>
+
+<h3 class="h-sub">11.2 Color Propagation to Canvas</h3>
+<p>When a drill has <code>teamId</code> set to a team, the editor monitors the team's color keys via a <code>useEffect</code>. Any player with <code>teamColorInherited: true</code> gets automatically updated to match the team's current primary/stroke/number colors whenever those change. This means changing team colors in the Teams module reflects live in all linked drills.</p>
+</div>
+<!-- ══════════════════════════════════ PRINT SYSTEM ═══ -->
+<div class="page page-break">
+<h2 class="h-section">12. Print System</h2>
+
+<h3 class="h-sub">12.1 Session Print</h3>
+<p>Route: <code>/sessions/[id]/print</code> → <code>SessionPrintView.tsx</code></p>
+<div class="card card-purple">
+  <p>The session print view generates a <strong>branded A4 landscape document</strong> with one cover page followed by one page per session block. All print layout is controlled via a <code>&lt;style&gt;</code> tag with <code>@media print</code> rules injected directly into the component.</p>
+</div>
+
+<table>
+  <thead><tr><th>Page</th><th>Content</th></tr></thead>
+  <tbody>
+    <tr><td>Cover Page (<code>.cover-print-page</code>)</td><td>Session title, team name, date, total duration, block count, section breakdown table (warmup/main/game/cooldown with durations and intensity counts), brand header bar in #FF6A00</td></tr>
+    <tr><td>Each Drill Page (<code>.drill-print-page</code>)</td><td>Page header with session title, drill number/total; left column: drill name, duration, intensity badge, section phase badge, coaching points list, notes; right column: large MiniPitchPreview diagram (SVG), drill metadata (age group, player count, equipment)</td></tr>
+  </tbody>
+</table>
+
+<pre><code>/* Print CSS rules */
+@media print {
+  @page { size: A4 landscape; margin: 10mm 12mm; }
+  .session-print-toolbar { display: none !important; }
+  .drill-print-page {
+    page-break-before: always;
+    break-inside: avoid;
+  }
+  .cover-print-page { page-break-before: avoid; }
+}</code></pre>
+
+<div class="info-box">
+  The <code>.session-print-toolbar</code> class hides the Print / Back buttons when actually printing. The NavBar is hidden globally via a <code>.no-print</code> class applied in <code>globals.css</code>. This ensures a clean output with only the content pages.
+</div>
+
+<h3 class="h-sub">12.2 Season Plan Print</h3>
+<p>Route: <code>/season-plans/[id]/view</code> → <code>SeasonPlanPrintView.tsx</code></p>
+<div class="card card-accent">
+  <p>Renders a <strong>week-by-week training table</strong> designed for season overview printing. Weeks run Sunday-to-Saturday. Each week row spans the full page width. Cells show assigned sessions with drill thumbnail previews.</p>
+</div>
+
+<table>
+  <thead><tr><th>Element</th><th>Design</th></tr></thead>
+  <tbody>
+    <tr><td>Document header</td><td>Team name, plan title, date range — background: <code>#263238</code>, text: white</td></tr>
+    <tr><td>Week header rows</td><td>Background: <code>#FF6A00</code>, white text, week number + date range</td></tr>
+    <tr><td>Training day cells</td><td>White background, session title, intensity badge, MiniPitchPreview SVG thumbnail</td></tr>
+    <tr><td>Empty day cells</td><td>Light gray (#F4F4F4) background, centered dash</td></tr>
+    <tr><td>Intensity badges</td><td>Low: blue (#dbeafe), Mid: amber (#fef3c7), High: red (#fee2e2)</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">12.3 MiniPitchPreview (SVG Thumbnail)</h3>
+<p><code>MiniPitchPreview.tsx</code> renders a pure SVG representation of a drill's canvas objects — no Konva dependency. It is used in SessionTimeline block cards, DrillsList cards, and both print views.</p>
+<div class="info-box-accent">
+  Supported object types in SVG preview: players (circle + number text), cones (orange triangle), balls (white circle), goals (rectangle), arrows (SVG marker), lines, zones (filled rect), circles, rectangles, curved lines (SVG <code>&lt;path&gt;</code> with cubic bezier). Link objects are rendered as a line between player positions.
+</div>
+</div>
+
+<!-- ══════════════════════════════════ DESIGN SYSTEM ═══ -->
+<div class="page page-break">
+<h2 class="h-section">13. UI &amp; Design System</h2>
+
+<h3 class="h-sub">13.1 Brand Color Palette</h3>
+<div class="color-row">
+  <div class="swatch">
+    <div class="swatch-box" style="background:#FF6A00;"></div>
+    <div class="swatch-label">Primary</div>
+    <div class="swatch-hex">#FF6A00</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#263238;"></div>
+    <div class="swatch-label">Dark UI</div>
+    <div class="swatch-hex">#263238</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#F4F4F4;border:1px solid #ddd;"></div>
+    <div class="swatch-label">Background</div>
+    <div class="swatch-hex">#F4F4F4</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#00B8D4;"></div>
+    <div class="swatch-label">Accent</div>
+    <div class="swatch-hex">#00B8D4</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#FFC857;"></div>
+    <div class="swatch-label">Highlight</div>
+    <div class="swatch-hex">#FFC857</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#1a1a2e;"></div>
+    <div class="swatch-label">Canvas BG</div>
+    <div class="swatch-hex">#1a1a2e</div>
+  </div>
+</div>
+
+<p>Colors are registered as Tailwind custom tokens in <code>tailwind.config.ts</code>:</p>
+<pre><code>// tailwind.config.ts
+theme: {
+  extend: {
+    colors: {
+      'brand-orange': '#FF6A00',
+      'brand-dark': '#263238',
+    }
+  }
+}</code></pre>
+
+<h3 class="h-sub">13.2 Layout Structure</h3>
+<div class="card card-orange">
+  <p>The root layout (<code>app/layout.tsx</code>) renders a full-height flex row: <strong>NavBar</strong> (fixed left sidebar, 240px wide, <code>#263238</code> background) + <strong>main content area</strong> (flex-1, fills remaining width). The editor page adds a further horizontal split: PaletteSidebar (208px) + Canvas + InspectorPanel (288px).</p>
+</div>
+
+<table>
+  <thead><tr><th>Zone</th><th>Width</th><th>Background</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td>NavBar (left sidebar)</td><td>240px fixed</td><td>#263238</td><td>Global navigation: Drills, Sessions, Teams, Season Plans, Calendar</td></tr>
+    <tr><td>PaletteSidebar</td><td>208px fixed</td><td>gray-900</td><td>Tool palette for draw tools, equipment, shapes</td></tr>
+    <tr><td>Canvas area</td><td>flex-1 (remaining)</td><td>#1a1a2e (dark)</td><td>Konva Stage: pitch + objects</td></tr>
+    <tr><td>InspectorPanel</td><td>288px fixed</td><td>gray-900</td><td>Property inspector for selected objects</td></tr>
+    <tr><td>Player Dock</td><td>full width, collapsible</td><td>gray-900</td><td>Player avatars + formation buttons</td></tr>
+    <tr><td>Session list pages</td><td>full width</td><td>#F4F4F4</td><td>White cards on light gray background</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">13.3 Component Patterns</h3>
+<div class="two-col">
+  <div class="card card-accent">
+    <div class="h-sub2">Editor (Dark Theme)</div>
+    <p>The editor uses a dark UI: <code>bg-gray-900</code> panels, <code>bg-gray-800</code> inputs, emerald-500 active states, amber-500 draw-active states. All text uses white/gray variants.</p>
+  </div>
+  <div class="card card-orange">
+    <div class="h-sub2">List Pages (Light Theme)</div>
+    <p>Session Builder, DrillsList, SessionsList use a light theme: white cards (<code>bg-white</code>) on <code>#F4F4F4</code>, slate-200 borders, brand-orange accents, shadow-card utility class.</p>
+  </div>
+</div>
+
+<div class="card card-green">
+  <div class="h-sub2">State Indicators</div>
+  <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+    <li>Save status: "saving…" → "saved" auto-transition after 600ms debounce on any drill change</li>
+    <li>Active draw tool: amber highlight in PaletteSidebar + amber status box below showing current tool name</li>
+    <li>Active step tab: emerald highlight border on selected step</li>
+    <li>Selected object: Konva Transformer renders handles around selected node</li>
+  </ul>
+</div>
+
+<h3 class="h-sub">13.4 NavBar</h3>
+<p>The NavBar (<code>NavBar.tsx</code>) is a fixed left sidebar with:</p>
+<ul style="padding-left:20px;font-size:12px;line-height:1.9;">
+  <li>Brand logo mark ("C" in orange rounded square) + "CoachDesigner" wordmark</li>
+  <li>5 navigation links with emoji icons (⚽ Drills, 📋 Sessions, 👥 Teams, 📅 Season Plans, 🗓 Calendar)</li>
+  <li>Active link: <code>bg-brand-orange/20 text-brand-orange</code></li>
+  <li>Inactive link: <code>text-white/60 hover:text-white hover:bg-white/10</code></li>
+  <li>Hidden on print via <code>.no-print</code> class</li>
+</ul>
+</div>
+<!-- ══════════════════════════════════ CAPABILITIES ═══ -->
+<div class="page page-break">
+<h2 class="h-section">14. Current Capabilities</h2>
+
+<h3 class="h-sub">Drill Design</h3>
+<div class="badge-grid">
+  <span class="badge badge-orange">Visual canvas editor (Konva)</span>
+  <span class="badge badge-orange">4 pitch types: full, half, third, plain</span>
+  <span class="badge badge-orange">Custom pitch colors &amp; grass stripes</span>
+  <span class="badge badge-orange">11 canvas object types</span>
+  <span class="badge badge-orange">7 tactical arrow/line types</span>
+  <span class="badge badge-orange">3-click curved bezier line tool</span>
+  <span class="badge badge-orange">Smart arrow-to-player connections</span>
+  <span class="badge badge-orange">Player team assignment (A/B)</span>
+  <span class="badge badge-orange">GK detection (numbers 1, 12, 13)</span>
+  <span class="badge badge-orange">Global player scale slider (0.5×–2×)</span>
+  <span class="badge badge-orange">Zone areas with fill, opacity, label</span>
+  <span class="badge badge-orange">Shape tools: circle, rectangle</span>
+  <span class="badge badge-orange">Link objects between players</span>
+</div>
+
+<h3 class="h-sub">Editor Interaction</h3>
+<div class="badge-grid">
+  <span class="badge badge-accent">30-level undo/redo stack (per step)</span>
+  <span class="badge badge-accent">Multi-select (Shift+click)</span>
+  <span class="badge badge-accent">Marquee rubber-band selection</span>
+  <span class="badge badge-accent">Alignment snap (10px threshold)</span>
+  <span class="badge badge-accent">Shift+drag axis constraint</span>
+  <span class="badge badge-accent">Shift+draw 45° angle constraint</span>
+  <span class="badge badge-accent">Copy / paste with offset</span>
+  <span class="badge badge-accent">Duplicate (single + multi-select)</span>
+  <span class="badge badge-accent">Object lock/unlock</span>
+  <span class="badge badge-accent">Mouse wheel zoom</span>
+  <span class="badge badge-accent">Export PNG (2× pixel ratio)</span>
+  <span class="badge badge-accent">Alignment toolbar (8 modes)</span>
+</div>
+
+<h3 class="h-sub">Step &amp; Progression System</h3>
+<div class="badge-grid">
+  <span class="badge badge-dark">Base layer + unlimited progression steps</span>
+  <span class="badge badge-dark">Auto-clone base on step creation</span>
+  <span class="badge badge-dark">Clone base → current step action</span>
+  <span class="badge badge-dark">Step label editing</span>
+  <span class="badge badge-dark">Step-scoped undo/redo</span>
+</div>
+
+<h3 class="h-sub">Play Simulation</h3>
+<div class="badge-grid">
+  <span class="badge badge-yellow">rAF animation loop (1800ms)</span>
+  <span class="badge badge-yellow">ease-in-out tween</span>
+  <span class="badge badge-yellow">Players move along arrow paths</span>
+  <span class="badge badge-yellow">Play / Stop controls</span>
+</div>
+
+<h3 class="h-sub">Drill Organisation</h3>
+<div class="badge-grid">
+  <span class="badge badge-green">Folder system with CRUD</span>
+  <span class="badge badge-green">Subcategories per folder</span>
+  <span class="badge badge-green">Favorites (star toggle)</span>
+  <span class="badge badge-green">Drag-to-reorder (sortOrder)</span>
+  <span class="badge badge-green">Drag between folders/subcategories</span>
+  <span class="badge badge-green">8 drill templates at creation</span>
+  <span class="badge badge-green">Step count badge on card</span>
+</div>
+
+<h3 class="h-sub">Drill Metadata</h3>
+<div class="badge-grid">
+  <span class="badge badge-dark">Objective, age group, player count</span>
+  <span class="badge badge-dark">Area size, duration</span>
+  <span class="badge badge-dark">Equipment list</span>
+  <span class="badge badge-dark">Coaching points, cues, mistakes</span>
+  <span class="badge badge-dark">Corrections, key constraints</span>
+  <span class="badge badge-dark">Progression/regression notes</span>
+  <span class="badge badge-dark">Tags, team link, training day</span>
+  <span class="badge badge-dark">Drill relationships (parent/variation)</span>
+</div>
+
+<h3 class="h-sub">Session Builder</h3>
+<div class="badge-grid">
+  <span class="badge badge-orange">Session blocks with drill references</span>
+  <span class="badge badge-orange">4 session sections (warmup/main/game/cooldown)</span>
+  <span class="badge badge-orange">Intensity per block (low/mid/high)</span>
+  <span class="badge badge-orange">Drag-to-reorder blocks</span>
+  <span class="badge badge-orange">Per-block notes</span>
+  <span class="badge badge-orange">Duplicate blocks</span>
+  <span class="badge badge-orange">Session duration summary</span>
+  <span class="badge badge-orange">Equipment aggregation</span>
+</div>
+
+<h3 class="h-sub">Teams, Season &amp; Calendar</h3>
+<div class="badge-grid">
+  <span class="badge badge-accent">Team color configuration (6 color fields)</span>
+  <span class="badge badge-accent">Player roster management</span>
+  <span class="badge badge-accent">Color inheritance to canvas players</span>
+  <span class="badge badge-accent">Season plan with date range</span>
+  <span class="badge badge-accent">Session assignment to training days</span>
+  <span class="badge badge-accent">Calendar auto-sync from season plan</span>
+  <span class="badge badge-accent">Calendar event status (planned/completed/cancelled)</span>
+  <span class="badge badge-accent">Month-view calendar</span>
+</div>
+
+<h3 class="h-sub">Print &amp; Export</h3>
+<div class="badge-grid">
+  <span class="badge badge-purple">Session print: cover + one page per drill</span>
+  <span class="badge badge-purple">Season plan print: week-by-week table</span>
+  <span class="badge badge-purple">A4 landscape with brand styling</span>
+  <span class="badge badge-purple">MiniPitchPreview in print output</span>
+  <span class="badge badge-purple">Drill PNG export (2× quality)</span>
+  <span class="badge badge-purple">Fullscreen drill view (Fullscreen API)</span>
+</div>
+</div>
+
+<!-- ══════════════════════════════════ LIMITATIONS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">15. Limitations</h2>
+
+<div class="limit-card">
+  <div class="limit-title">1. Client-Only Storage (localStorage)</div>
+  <div class="limit-body">All data lives in the browser's localStorage. There is no backend, no database, and no cloud sync. Data is device-specific and will be lost if the browser data is cleared. There is no sharing, collaboration, or multi-device access.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">2. No User Authentication</div>
+  <div class="limit-body">The application has no user accounts or login system. Anyone who opens the app on the same device has full access to all data. Multiple coaches cannot use separate workspaces on the same device.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">3. localStorage Size Constraints</div>
+  <div class="limit-body">Browsers typically limit localStorage to 5–10MB per origin. Large drills with many objects or many drills/sessions stored simultaneously can approach this limit. There is no data compression or pagination of storage. The application will silently fail to save if the quota is exceeded (the storage adapter catches errors with empty catch blocks).</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">4. No Real-Time Collaboration</div>
+  <div class="limit-body">Multiple coaches cannot work on the same drill simultaneously. There is no conflict resolution, no operational transforms, and no WebSocket connection. This is a single-user offline tool.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">5. Canvas Performance at Scale</div>
+  <div class="limit-body">The Konva canvas renders all objects in a single pass without virtualization. Drills with 50+ objects may experience performance degradation. Group move (multi-select drag) uses <code>stageRef.findOne()</code> for live updates which can be expensive on complex canvases.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">6. SVG Print Limitations</div>
+  <div class="limit-body">The MiniPitchPreview used in print is SVG-based and does not perfectly match the Konva canvas rendering (especially for curved lines, rotated objects, and GK gold fill). Complex drills may look simplified in print.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">7. No Drill Search/Filter</div>
+  <div class="limit-body">The drill library lacks a full-text search across all drills. Filtering is only by folder/subcategory selection. A coach with hundreds of drills cannot quickly find one by keyword, tag, or metadata.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">8. No Versioning or History</div>
+  <div class="limit-body">There is no version history for drills beyond the in-session undo stack. Once the page is closed, the undo stack is lost. There is no "version history" for a drill over time — edits overwrite the stored state permanently.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">9. Formation Coordinates Are Fixed</div>
+  <div class="limit-body">Formation templates use hardcoded percentage coordinates. There is no visual formation editor — coaches cannot create custom formations from scratch within the app.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">10. No Mobile / Touch Optimisation</div>
+  <div class="limit-body">The canvas editor and multi-panel layout are designed for desktop use. The application is not optimised for touch input, mobile screen sizes, or stylus/tablet drawing. Konva touch events are not configured.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">11. Session Quality Analysis is Minimal</div>
+  <div class="limit-body"><code>src/lib/sessionQuality.ts</code> exists but the analysis logic is basic. There are no AI-driven insights, no intensity curve visualisation, and no warm-up/cool-down time recommendations based on session load.</div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════ SUGGESTIONS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">16. Professional Improvement Suggestions</h2>
+
+<div class="suggest-card">
+  <div class="suggest-num">1</div>
+  <div>
+    <div class="suggest-title">Cloud Backend &amp; Multi-Device Sync</div>
+    <div class="suggest-body">Replace localStorage with a proper backend (Supabase, PlanetScale, or a Node.js/PostgreSQL API). Use Zustand middleware to sync store mutations to the server via REST or GraphQL. This enables multi-device access, backup, and future collaboration. A lightweight approach: Supabase with Row Level Security + Zustand's <code>subscribeWithSelector</code> for optimistic UI.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">2</div>
+  <div>
+    <div class="suggest-title">User Authentication &amp; Multi-Coach Workspaces</div>
+    <div class="suggest-body">Add authentication (NextAuth.js or Supabase Auth) to enable multiple coaches per club to have isolated workspaces. Add coach profiles, admin roles, and club-level sharing. This is the single highest-value change to make the product multi-tenant and commercially viable.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">3</div>
+  <div>
+    <div class="suggest-title">Real-Time Collaborative Editing</div>
+    <div class="suggest-body">Implement operational transforms or CRDTs (e.g. Yjs) over WebSockets (Socket.io or Partykit) to allow multiple coaches to edit the same drill canvas simultaneously. Show live cursors and user avatars on the canvas. This elevates the platform to a professional coaching tool comparable to Miro or Figma for sports.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">4</div>
+  <div>
+    <div class="suggest-title">AI Drill Generation &amp; Coaching Assistant</div>
+    <div class="suggest-body">Integrate the Claude API or OpenAI API to provide: (a) natural language drill generation ("Create a 4v2 rondo with pressing triggers"), (b) automatic coaching point suggestions based on the drill type, (c) session structure recommendations based on player age/objective. This transforms the tool from a drawing app into an intelligent coaching assistant.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">5</div>
+  <div>
+    <div class="suggest-title">Canvas Performance &amp; Infinite Canvas</div>
+    <div class="suggest-body">Implement canvas virtualisation for large drills: only render objects within the current viewport. Add infinite pan with minimap navigation. Use Konva's built-in caching (<code>node.cache()</code>) for static pitch layer. Consider a WebGL renderer (Pixi.js) for very large formation diagrams or animation-heavy simulations.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">6</div>
+  <div>
+    <div class="suggest-title">Video &amp; Animation Export</div>
+    <div class="suggest-body">Extend the Play Simulation system to record frames and export as a GIF or MP4 video. Use <code>MediaRecorder API</code> with canvas <code>captureStream()</code>. Coaches could share animated drill previews directly to messaging platforms. Add multi-step sequential animation (play step 1, then step 2 automatically).</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">7</div>
+  <div>
+    <div class="suggest-title">Full-Text Drill Search &amp; Smart Filtering</div>
+    <div class="suggest-body">Add a search index (Fuse.js for client-side fuzzy search) across all drill fields: title, description, objective, tags, coaching points. Add filter chips for age group, player count, duration range, intensity, equipment. A coach with 200+ drills needs to find "4v2 rondo with GK" in under 2 seconds.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">8</div>
+  <div>
+    <div class="suggest-title">Custom Formation Editor</div>
+    <div class="suggest-body">Replace the hardcoded formation templates with a visual formation builder: drag players freely on a mini-pitch to define custom formations, then save them as named templates. Support tactical variations within a formation (e.g. defensive shape vs. attacking shape from the same formation base).</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">9</div>
+  <div>
+    <div class="suggest-title">Drill Versioning &amp; History</div>
+    <div class="suggest-body">Store a version history for each drill (e.g. last 20 saves with timestamps). Allow coaches to browse history, preview, and restore a previous version. This is critical for professional use where coaches frequently iterate drills over a season and may want to revert to an earlier concept.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">10</div>
+  <div>
+    <div class="suggest-title">Training Load Analytics Dashboard</div>
+    <div class="suggest-body">Add an analytics view showing: weekly/monthly intensity distribution across sessions, training volume trends, intensity periodization chart (tapering into matchdays), most-used drills and equipment. Integrate with the season plan and calendar to derive load data automatically from the stored sessions.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">11</div>
+  <div>
+    <div class="suggest-title">Mobile &amp; Tablet Optimisation</div>
+    <div class="suggest-body">Redesign the UI with responsive breakpoints and touch-first interactions for iPad/tablet use. Konva supports touch events — add pinch-to-zoom, two-finger pan, and tap-to-select. A touchscreen canvas editor would allow coaches to design drills directly from the pitch with a tablet. This opens the product to a significantly larger user base.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">12</div>
+  <div>
+    <div class="suggest-title">Drill Library Sharing &amp; Community</div>
+    <div class="suggest-body">Build a public drill library where coaches can publish drills with a one-click "share". Add import/export (JSON or custom format) for individual drills or entire season plans. Create a community browser where coaches can discover and fork drills from others. This creates network effects and makes the platform defensible.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">13</div>
+  <div>
+    <div class="suggest-title">GPS / Wearable Data Integration</div>
+    <div class="suggest-body">For advanced clubs, integrate with GPS tracking providers (STATSports, Catapult, Polar) to import actual training load data and overlay it against planned sessions. Show planned-vs-actual intensity, distance, and HRV recovery data alongside the season plan.</div>
+  </div>
+</div>
+</div>
+</body></html>

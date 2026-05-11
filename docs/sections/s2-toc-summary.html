@@ -1,0 +1,134 @@
+<!-- ═══════════════════════════════════════════════ TOC ═══ -->
+<div class="page page-break">
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><span>Executive Summary</span></li>
+    <li><span>System Architecture</span>
+      <ul class="toc-sub">
+        <li>Technology Stack</li>
+        <li>Folder Structure</li>
+        <li>Module Responsibilities</li>
+        <li>State Management Architecture</li>
+        <li>Persistence Layer</li>
+      </ul>
+    </li>
+    <li><span>Architecture Diagrams</span>
+      <ul class="toc-sub">
+        <li>System Architecture Diagram</li>
+        <li>Editor Engine Diagram</li>
+        <li>Data Flow Diagram</li>
+      </ul>
+    </li>
+    <li><span>Data Models</span>
+      <ul class="toc-sub">
+        <li>Drill + DrillStep</li>
+        <li>CanvasObject union types</li>
+        <li>Session + SessionBlock</li>
+        <li>Team + TeamPlayer</li>
+        <li>DrillFolder + FolderSubcategory</li>
+        <li>SeasonPlan + SeasonPlanEntry</li>
+        <li>CalendarEvent</li>
+      </ul>
+    </li>
+    <li><span>Page Structure &amp; Routing</span></li>
+    <li><span>Drill Library System</span>
+      <ul class="toc-sub">
+        <li>Drill List View</li>
+        <li>Folders &amp; Subcategories</li>
+        <li>Favorites System</li>
+        <li>Drill Templates</li>
+        <li>Drag-to-Reorder</li>
+      </ul>
+    </li>
+    <li><span>Editor Engine</span>
+      <ul class="toc-sub">
+        <li>Canvas Architecture (Konva)</li>
+        <li>Drawing Tools</li>
+        <li>Selection System</li>
+        <li>Snapping &amp; Alignment</li>
+        <li>Undo/Redo System</li>
+        <li>Multi-Select &amp; Group Operations</li>
+        <li>Tactical Tools</li>
+        <li>Play Simulation</li>
+        <li>Step System</li>
+        <li>Player &amp; Team System</li>
+        <li>Formation Picker</li>
+        <li>Inspector Panel</li>
+        <li>Keyboard Shortcuts</li>
+      </ul>
+    </li>
+    <li><span>Session Builder</span>
+      <ul class="toc-sub">
+        <li>Timeline Structure</li>
+        <li>Section Groups</li>
+        <li>Intensity System</li>
+        <li>Drag-to-Reorder Blocks</li>
+        <li>Session Summary</li>
+      </ul>
+    </li>
+    <li><span>Season Planner</span></li>
+    <li><span>Calendar</span></li>
+    <li><span>Teams Module</span></li>
+    <li><span>Print System</span>
+      <ul class="toc-sub">
+        <li>Session Print</li>
+        <li>Season Plan Print</li>
+      </ul>
+    </li>
+    <li><span>UI &amp; Design System</span>
+      <ul class="toc-sub">
+        <li>Color Palette</li>
+        <li>Layout Structure</li>
+        <li>Component Patterns</li>
+      </ul>
+    </li>
+    <li><span>Current Capabilities</span></li>
+    <li><span>Limitations</span></li>
+    <li><span>Professional Improvement Suggestions</span></li>
+  </ol>
+</div>
+</div>
+
+<!-- ══════════════════════════════════ EXECUTIVE SUMMARY ═══ -->
+<div class="page page-break">
+<h2 class="h-section">1. Executive Summary</h2>
+
+<div class="card card-orange">
+  <p><strong>Coach Drill Designer</strong> is a fully client-side, browser-based football coaching platform built with Next.js 14 (App Router), TypeScript, and React. It enables coaches to visually design training drills on a canvas, build structured training sessions, plan seasonal schedules, and manage teams — all without a backend server or database.</p>
+  <p>All state is managed through Zustand stores with localStorage persistence, making the application fully offline-capable. The canvas editor is powered by <strong>react-konva</strong> (Konva.js), a high-performance 2D canvas engine, loaded exclusively on the client side to avoid Next.js SSR conflicts.</p>
+</div>
+
+<div class="three-col">
+  <div class="card card-accent">
+    <div class="h-sub2">Platform Type</div>
+    <p>Single-Page Application (SPA) with file-based routing via Next.js App Router. No backend. No database. All data lives in localStorage.</p>
+  </div>
+  <div class="card card-orange">
+    <div class="h-sub2">Core Value</div>
+    <p>Visual drill design with a canvas editor, session planning with drag-and-drop timeline, and a full seasonal planning system — all in one tool.</p>
+  </div>
+  <div class="card card-green">
+    <div class="h-sub2">Development Status</div>
+    <p>Phase 10 MVP. Build passes cleanly. Zero TypeScript errors. All features production-ready for local/offline use.</p>
+  </div>
+</div>
+
+<h3 class="h-sub">Key Statistics</h3>
+<table>
+  <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Framework</td><td>Next.js 14.2.5 (App Router)</td></tr>
+    <tr><td>Language</td><td>TypeScript 5.5</td></tr>
+    <tr><td>Canvas Engine</td><td>Konva 9.3 via react-konva 18.2</td></tr>
+    <tr><td>State Management</td><td>Zustand 4.5 with persist middleware</td></tr>
+    <tr><td>Drag &amp; Drop</td><td>@dnd-kit/core 6.1 + @dnd-kit/sortable 7.0</td></tr>
+    <tr><td>Styling</td><td>Tailwind CSS 3.4 with custom brand tokens</td></tr>
+    <tr><td>localStorage Keys</td><td>6 keys (drills-v2, sessions-v2, teams-v1, folders-v1, season-plans-v1, calendar-v1)</td></tr>
+    <tr><td>Canvas Object Types</td><td>11 (player, cone, ball, goal, arrow, zone, circle, rectangle, line, curved, link)</td></tr>
+    <tr><td>Pages / Routes</td><td>15 routes across 6 modules</td></tr>
+    <tr><td>Undo Stack Depth</td><td>30 levels per step context</td></tr>
+    <tr><td>Default Squad Size</td><td>25 outfield + 3 GK per side</td></tr>
+  </tbody>
+</table>
+</div>

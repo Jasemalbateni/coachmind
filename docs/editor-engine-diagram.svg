@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 700" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#FF6A00"/>
+    </marker>
+    <marker id="arr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#00B8D4"/>
+    </marker>
+    <filter id="sh" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="3" flood-color="#00000025"/>
+    </filter>
+  </defs>
+
+  <rect width="1060" height="700" fill="#F4F4F4"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1060" height="48" fill="#263238"/>
+  <text x="530" y="31" text-anchor="middle" font-size="17" font-weight="bold" fill="white">Drill Editor Engine — Internal Architecture</text>
+
+  <!-- DrillEditorPage orchestrator -->
+  <rect x="340" y="62" width="380" height="54" rx="9" fill="#FF6A00" filter="url(#sh)"/>
+  <text x="530" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="white">DrillEditorPage.tsx</text>
+  <text x="530" y="103" text-anchor="middle" font-size="10" fill="#fff9">State orchestrator · keyboard shortcuts · undo/redo · simulation</text>
+
+  <!-- Arrows from DrillEditorPage to children -->
+  <line x1="530" y1="116" x2="530" y2="132" stroke="#FF6A00" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- PitchCanvas Central -->
+  <rect x="290" y="132" width="480" height="200" rx="9" fill="white" stroke="#FF6A00" stroke-width="2.5" filter="url(#sh)"/>
+  <rect x="290" y="132" width="480" height="28" rx="9" fill="#FF6A00"/>
+  <rect x="290" y="148" width="480" height="12" fill="#FF6A00"/>
+  <text x="530" y="151" text-anchor="middle" font-size="12" font-weight="bold" fill="white">PitchCanvas.tsx — Konva Stage (SSR-disabled)</text>
+
+  <!-- Inner canvas boxes -->
+  <rect x="302" y="170" width="115" height="50" rx="5" fill="#fff7ed" stroke="#FF6A00" stroke-width="1"/>
+  <text x="359" y="191" text-anchor="middle" font-size="9" fill="#FF6A00" font-weight="bold">Pitch Layer</text>
+  <text x="359" y="204" text-anchor="middle" font-size="8" fill="#555">SVG field markings</text>
+  <text x="359" y="216" text-anchor="middle" font-size="8" fill="#555">full/half/third/plain</text>
+
+  <rect x="428" y="170" width="115" height="50" rx="5" fill="#f0fdf4" stroke="#22c55e" stroke-width="1"/>
+  <text x="485" y="191" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">Object Layer</text>
+  <text x="485" y="204" text-anchor="middle" font-size="8" fill="#555">Players, Cones, Balls</text>
+  <text x="485" y="216" text-anchor="middle" font-size="8" fill="#555">Goals, Zones, Shapes</text>
+
+  <rect x="554" y="170" width="115" height="50" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+  <text x="611" y="191" text-anchor="middle" font-size="9" fill="#3b82f6" font-weight="bold">Arrow/Link Layer</text>
+  <text x="611" y="204" text-anchor="middle" font-size="8" fill="#555">Arrows, Lines, Links</text>
+  <text x="611" y="216" text-anchor="middle" font-size="8" fill="#555">Curved (bezier)</text>
+
+  <rect x="680" y="170" width="80" height="50" rx="5" fill="#fdf4ff" stroke="#a855f7" stroke-width="1"/>
+  <text x="720" y="191" text-anchor="middle" font-size="9" fill="#a855f7" font-weight="bold">Transformer</text>
+  <text x="720" y="204" text-anchor="middle" font-size="8" fill="#555">Multi-select</text>
+  <text x="720" y="216" text-anchor="middle" font-size="8" fill="#555">resize/rotate</text>
+
+  <!-- Sub-systems inside canvas -->
+  <rect x="302" y="230" width="100" height="40" rx="5" fill="#fef3c7" stroke="#FFC857" stroke-width="1"/>
+  <text x="352" y="248" text-anchor="middle" font-size="8.5" fill="#92400e" font-weight="bold">Snap System</text>
+  <text x="352" y="260" text-anchor="middle" font-size="7.5" fill="#555">alignSnap (10px)</text>
+
+  <rect x="412" y="230" width="100" height="40" rx="5" fill="#fef3c7" stroke="#FFC857" stroke-width="1"/>
+  <text x="462" y="248" text-anchor="middle" font-size="8.5" fill="#92400e" font-weight="bold">Marquee Select</text>
+  <text x="462" y="260" text-anchor="middle" font-size="7.5" fill="#555">rubber-band box</text>
+
+  <rect x="522" y="230" width="110" height="40" rx="5" fill="#fef3c7" stroke="#FFC857" stroke-width="1"/>
+  <text x="577" y="248" text-anchor="middle" font-size="8.5" fill="#92400e" font-weight="bold">Wheel Zoom</text>
+  <text x="577" y="260" text-anchor="middle" font-size="7.5" fill="#555">onZoomChange prop</text>
+
+  <rect x="642" y="230" width="118" height="40" rx="5" fill="#fef3c7" stroke="#FFC857" stroke-width="1"/>
+  <text x="701" y="248" text-anchor="middle" font-size="8.5" fill="#92400e" font-weight="bold">positionOverrides</text>
+  <text x="701" y="260" text-anchor="middle" font-size="7.5" fill="#555">play simulation</text>
+
+  <!-- Surrounding components -->
+
+  <!-- PaletteSidebar (left) -->
+  <rect x="30" y="148" width="180" height="185" rx="8" fill="white" stroke="#00B8D4" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="30" y="148" width="180" height="24" rx="8" fill="#00B8D4"/>
+  <rect x="30" y="160" width="180" height="12" fill="#00B8D4"/>
+  <text x="120" y="165" text-anchor="middle" font-size="10" fill="white" font-weight="bold">PaletteSidebar</text>
+  <text x="120" y="186" text-anchor="middle" font-size="8.5" fill="#555">Equipment: Cone, Ball</text>
+  <text x="120" y="199" text-anchor="middle" font-size="8.5" fill="#555">Goals: Full, Small</text>
+  <text x="120" y="212" text-anchor="middle" font-size="8.5" fill="#555">Draw: Arrow, Line, Curved</text>
+  <text x="120" y="225" text-anchor="middle" font-size="8.5" fill="#555">Draw: Circle, Rect, Link</text>
+  <text x="120" y="238" text-anchor="middle" font-size="8.5" fill="#555">Shapes: Zone</text>
+  <text x="120" y="251" text-anchor="middle" font-size="8.5" fill="#555">Actions: Duplicate</text>
+  <text x="120" y="264" text-anchor="middle" font-size="8" fill="#888">Tactical: run/pass/dribble</text>
+  <text x="120" y="277" text-anchor="middle" font-size="8" fill="#888">press/lane/defline/support</text>
+  <text x="120" y="290" text-anchor="middle" font-size="8" fill="#888">Drawing status indicator</text>
+  <text x="120" y="316" text-anchor="middle" font-size="8" fill="#FF6A00">⟶ sends DrawTool to Page</text>
+
+  <!-- InspectorPanel (right) -->
+  <rect x="848" y="148" width="192" height="185" rx="8" fill="white" stroke="#8b5cf6" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="848" y="148" width="192" height="24" rx="8" fill="#8b5cf6"/>
+  <rect x="848" y="160" width="192" height="12" fill="#8b5cf6"/>
+  <text x="944" y="165" text-anchor="middle" font-size="10" fill="white" font-weight="bold">InspectorPanel</text>
+  <text x="944" y="186" text-anchor="middle" font-size="8.5" fill="#555">Player: color, stroke, number</text>
+  <text x="944" y="199" text-anchor="middle" font-size="8.5" fill="#555">Player: GK badge, showNumber</text>
+  <text x="944" y="212" text-anchor="middle" font-size="8.5" fill="#555">Arrow: color, style, headStyle</text>
+  <text x="944" y="225" text-anchor="middle" font-size="8.5" fill="#555">Zone: fill, opacity, label</text>
+  <text x="944" y="238" text-anchor="middle" font-size="8.5" fill="#555">Shape: fill, stroke, opacity</text>
+  <text x="944" y="251" text-anchor="middle" font-size="8.5" fill="#555">Align: L/C/R/T/B/distribute</text>
+  <text x="944" y="264" text-anchor="middle" font-size="8.5" fill="#555">Lock/Unlock toggle</text>
+  <text x="944" y="277" text-anchor="middle" font-size="8.5" fill="#555">Delete / Duplicate</text>
+  <text x="944" y="316" text-anchor="middle" font-size="8" fill="#8b5cf6">⟶ onUpdate/onDelete/onAlign</text>
+
+  <!-- Arrows: PaletteSidebar <-> Page -->
+  <line x1="210" y1="240" x2="290" y2="240" stroke="#00B8D4" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+  <!-- Arrows: InspectorPanel <-> Page -->
+  <line x1="770" y1="240" x2="848" y2="240" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr2)"/>
+
+  <!-- DrillEditorTopBar (top) -->
+  <rect x="30" y="62" width="290" height="54" rx="8" fill="white" stroke="#FFC857" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="175" y="84" text-anchor="middle" font-size="10" fill="#92400e" font-weight="bold">DrillEditorTopBar</text>
+  <text x="175" y="98" text-anchor="middle" font-size="8.5" fill="#555">Title edit · Save status · Zoom · Snap · Names</text>
+  <text x="175" y="110" text-anchor="middle" font-size="8.5" fill="#555">Undo/Redo · Export PNG · Play/Stop · Player Scale</text>
+
+  <rect x="740" y="62" width="290" height="54" rx="8" fill="white" stroke="#22c55e" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="885" y="84" text-anchor="middle" font-size="10" fill="#15803d" font-weight="bold">DrillMetaPanel (Drawer)</text>
+  <text x="885" y="98" text-anchor="middle" font-size="8.5" fill="#555">Objective · Age group · Player count · Equipment</text>
+  <text x="885" y="110" text-anchor="middle" font-size="8.5" fill="#555">Coaching pts · Mistakes · Corrections · Tags</text>
+
+  <!-- PlayerDock (bottom) -->
+  <rect x="30" y="356" width="245" height="80" rx="8" fill="white" stroke="#f97316" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="152" y="376" text-anchor="middle" font-size="10" fill="#ea580c" font-weight="bold">PlayerDock</text>
+  <text x="152" y="391" text-anchor="middle" font-size="8.5" fill="#555">Team selector dropdown</text>
+  <text x="152" y="404" text-anchor="middle" font-size="8.5" fill="#555">Default squad (25 players, 3 GK)</text>
+  <text x="152" y="417" text-anchor="middle" font-size="8.5" fill="#555">Formation button per side (A/B)</text>
+  <text x="152" y="430" text-anchor="middle" font-size="8.5" fill="#888">Click player → adds to canvas</text>
+
+  <!-- FormationPicker -->
+  <rect x="300" y="356" width="245" height="80" rx="8" fill="white" stroke="#3b82f6" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="422" y="376" text-anchor="middle" font-size="10" fill="#1d4ed8" font-weight="bold">FormationPicker (Modal)</text>
+  <text x="422" y="391" text-anchor="middle" font-size="8.5" fill="#555">Formations: 4-4-2, 4-3-3, 3-5-2…</text>
+  <text x="422" y="404" text-anchor="middle" font-size="8.5" fill="#555">Team segment templates</text>
+  <text x="422" y="417" text-anchor="middle" font-size="8.5" fill="#555">Reuses existing players same side</text>
+  <text x="422" y="430" text-anchor="middle" font-size="8.5" fill="#888">Creates only missing players</text>
+
+  <!-- Step System -->
+  <rect x="565" y="356" width="245" height="80" rx="8" fill="white" stroke="#FF6A00" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="687" y="376" text-anchor="middle" font-size="10" fill="#FF6A00" font-weight="bold">Step System (Tabs)</text>
+  <text x="687" y="391" text-anchor="middle" font-size="8.5" fill="#555">Base + N progression/regression steps</text>
+  <text x="687" y="404" text-anchor="middle" font-size="8.5" fill="#555">Each step has own CanvasObjects[]</text>
+  <text x="687" y="417" text-anchor="middle" font-size="8.5" fill="#555">Clone Base → current step</text>
+  <text x="687" y="430" text-anchor="middle" font-size="8.5" fill="#888">Undo/redo scoped per step</text>
+
+  <!-- Play Simulation -->
+  <rect x="830" y="356" width="200" height="80" rx="8" fill="white" stroke="#ef4444" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="930" y="376" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="bold">Play Simulation</text>
+  <text x="930" y="391" text-anchor="middle" font-size="8.5" fill="#555">rAF animation loop</text>
+  <text x="930" y="404" text-anchor="middle" font-size="8.5" fill="#555">ease-in-out tween (1800ms)</text>
+  <text x="930" y="417" text-anchor="middle" font-size="8.5" fill="#555">Moves players along arrows</text>
+  <text x="930" y="430" text-anchor="middle" font-size="8.5" fill="#888">startPlayerId tracking</text>
+
+  <!-- Keyboard Shortcuts box -->
+  <rect x="30" y="455" width="490" height="125" rx="8" fill="white" stroke="#263238" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="30" y="455" width="490" height="24" rx="8" fill="#263238"/>
+  <rect x="30" y="467" width="490" height="12" fill="#263238"/>
+  <text x="275" y="472" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Keyboard Shortcuts</text>
+  <text x="60" y="494" font-size="8.5" fill="#555">Esc — cancel draw / deselect</text>
+  <text x="60" y="507" font-size="8.5" fill="#555">Ctrl+Z / Ctrl+Y — Undo / Redo (30-level stack)</text>
+  <text x="60" y="520" font-size="8.5" fill="#555">Ctrl+D — Duplicate selection</text>
+  <text x="60" y="533" font-size="8.5" fill="#555">Ctrl+C / Ctrl+V — Copy / Paste (offset +30px)</text>
+  <text x="60" y="546" font-size="8.5" fill="#555">Delete / Backspace — Remove selected</text>
+  <text x="280" y="494" font-size="8.5" fill="#555">A — Arrow tool</text>
+  <text x="280" y="507" font-size="8.5" fill="#555">R — Rectangle tool</text>
+  <text x="280" y="520" font-size="8.5" fill="#555">L — Line tool</text>
+  <text x="280" y="533" font-size="8.5" fill="#555">C — Circle tool</text>
+  <text x="280" y="546" font-size="8.5" fill="#555">B/G/g — Ball / Small Goal / Full Goal</text>
+  <text x="60" y="564" font-size="8" fill="#888">Shift+drag — constrain to H/V axis · Shift+draw — constrain to 45° angle</text>
+
+  <!-- Data flow: Undo/Redo -->
+  <rect x="540" y="455" width="490" height="125" rx="8" fill="white" stroke="#FF6A00" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="540" y="455" width="490" height="24" rx="8" fill="#FF6A00"/>
+  <rect x="540" y="467" width="490" height="12" fill="#FF6A00"/>
+  <text x="785" y="472" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Editor Action Flow</text>
+  <text x="560" y="494" font-size="8.5" fill="#555">1. User action (click/drag/keyboard)</text>
+  <text x="560" y="507" font-size="8.5" fill="#555">2. pushUndo() — snapshot activeObjects (max 30)</text>
+  <text x="560" y="520" font-size="8.5" fill="#555">3. stepAddObject / stepUpdateObject / stepDeleteObject</text>
+  <text x="560" y="533" font-size="8.5" fill="#555">4. → setStepObjects (if step active) else setObjects</text>
+  <text x="560" y="546" font-size="8.5" fill="#555">5. Zustand store updates → localStorage auto-saves</text>
+  <text x="560" y="559" font-size="8.5" fill="#555">6. React re-renders PitchCanvas with new objects</text>
+  <text x="560" y="572" font-size="8.5" fill="#888">Team color change propagates to all same-side players + teamsStore</text>
+
+  <!-- Legend -->
+  <rect x="30" y="598" width="490" height="82" rx="8" fill="#f8f8f8" stroke="#ddd" stroke-width="1"/>
+  <text x="45" y="615" font-size="10" fill="#263238" font-weight="bold">Drawing Tool Modes (DrawTool type)</text>
+  <text x="45" y="630" font-size="8.5" fill="#555">arrow · line · curved (3-click bezier) · rect · circle · link</text>
+  <text x="45" y="643" font-size="8.5" fill="#555">tac-run · tac-pass · tac-dribble · tac-press · tac-lane · tac-defline · tac-support</text>
+  <text x="45" y="656" font-size="8.5" fill="#888">Each tac-* maps to TACTIC_CONFIGS: { color, style, headStyle, tacticType, isLine? }</text>
+  <text x="45" y="669" font-size="8.5" fill="#888">Smart connection: arrow start/end snaps to nearest player (startPlayerId / endPlayerId)</text>
+</svg>

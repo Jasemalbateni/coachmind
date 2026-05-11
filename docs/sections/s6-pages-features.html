@@ -1,0 +1,81 @@
+<!-- ══════════════════════════════════ PAGES ═══ -->
+<div class="page page-break">
+<h2 class="h-section">5. Page Structure &amp; Routing</h2>
+
+<table>
+  <thead><tr><th>Route</th><th>Component</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>/</code></td><td>page.tsx</td><td>Instant redirect to <code>/drills</code></td></tr>
+    <tr><td><code>/drills</code></td><td>DrillsList.tsx</td><td>Full drill library with folders, subcategories, favorites, search, drag-to-reorder, 2-step new drill modal with 8 templates</td></tr>
+    <tr><td><code>/drills/[id]</code></td><td>DrillEditorPage.tsx</td><td>Full canvas editor with all drawing tools, inspector, player dock, step tabs, simulation</td></tr>
+    <tr><td><code>/drills/[id]/view</code></td><td>DrillView.tsx</td><td>Fullscreen presentation mode; keyboard shortcuts: F=fullscreen, ←→=prev/next drill navigation</td></tr>
+    <tr><td><code>/sessions</code></td><td>SessionsList.tsx</td><td>Session cards with duration/intensity summary, mini previews, create/duplicate/delete</td></tr>
+    <tr><td><code>/sessions/[id]</code></td><td>SessionBuilderPage.tsx</td><td>Session builder with timeline, drill picker, section headers, session quality analysis</td></tr>
+    <tr><td><code>/sessions/[id]/view</code></td><td>SessionView.tsx</td><td>Read-only session view with drill progression, print button</td></tr>
+    <tr><td><code>/sessions/[id]/print</code></td><td>SessionPrintView.tsx</td><td>Brand-styled print layout: cover page + one A4 landscape page per drill block</td></tr>
+    <tr><td><code>/teams</code></td><td>TeamsList.tsx</td><td>Team cards, create new team</td></tr>
+    <tr><td><code>/teams/[id]</code></td><td>TeamPage.tsx</td><td>Team editor: colors, roster management, training days configuration</td></tr>
+    <tr><td><code>/season-plans</code></td><td>SeasonPlansList.tsx</td><td>Season plan cards, create new plan</td></tr>
+    <tr><td><code>/season-plans/[id]</code></td><td>SeasonPlanEditor.tsx</td><td>Weekly grid: assign sessions to dates, auto-syncs to calendar</td></tr>
+    <tr><td><code>/season-plans/[id]/view</code></td><td>SeasonPlanPrintView.tsx</td><td>Week-by-week table with drill thumbnails, brand styled, printable</td></tr>
+    <tr><td><code>/calendar</code></td><td>CalendarPage.tsx</td><td>Month-view calendar with event types (training/match/rest/other), status tracking</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ══════════════════════════════════ DRILL LIBRARY ═══ -->
+<div class="page page-break">
+<h2 class="h-section">6. Drill Library System</h2>
+
+<h3 class="h-sub">6.1 Drill List View</h3>
+<p>The drill library (<code>DrillsList.tsx</code>) is the main hub for managing all drills. It provides:</p>
+<div class="two-col">
+  <div class="card card-orange">
+    <div class="h-sub2">Organisation</div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+      <li>Folders sidebar (left panel)</li>
+      <li>Subcategories nested under folders</li>
+      <li>Favorites section at top (starred drills)</li>
+      <li>Unfoldered section at bottom</li>
+      <li>Drill cards sortable within a folder/subcategory</li>
+    </ul>
+  </div>
+  <div class="card card-accent">
+    <div class="h-sub2">Drill Cards</div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+      <li>MiniPitchPreview SVG thumbnail</li>
+      <li>Title, description, duration</li>
+      <li>Step count badge (if steps exist)</li>
+      <li>Star toggle for favorites</li>
+      <li>Edit / Duplicate / Delete actions</li>
+    </ul>
+  </div>
+</div>
+
+<h3 class="h-sub">6.2 New Drill Modal — 8 Templates</h3>
+<p>A 2-step creation modal: first choose a template, then set the pitch type.</p>
+<table>
+  <thead><tr><th>Template</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>Blank</td><td>Empty canvas, user starts from scratch</td></tr>
+    <tr><td>Rondo</td><td>Possession circle exercise template</td></tr>
+    <tr><td>Possession</td><td>Keep-ball drill setup</td></tr>
+    <tr><td>Build-up</td><td>Playing out from the back</td></tr>
+    <tr><td>Finishing</td><td>Shooting / finishing exercise</td></tr>
+    <tr><td>Pressing</td><td>High press / gegenpressing setup</td></tr>
+    <tr><td>Transition</td><td>Attack/defense transition drill</td></tr>
+    <tr><td>SSG</td><td>Small-sided game setup</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">6.3 Folders &amp; Subcategories</h3>
+<div class="card card-accent">
+  <p><strong>Folders</strong> are top-level organisational containers. Each folder can have <strong>subcategories</strong> — child groupings within the folder. Drills store both <code>folderId</code> and <code>subcategoryId</code> fields. Deleting a folder cascades to delete all its subcategories.</p>
+</div>
+
+<h3 class="h-sub">6.4 Drag-to-Reorder</h3>
+<p>Drill cards within a folder/subcategory are sortable using <strong>@dnd-kit/sortable</strong>. Each card uses the <code>useSortable</code> hook. Drag end triggers a <code>sortOrder</code> update in the drills store. Drill cards can also be dragged between folders/subcategories.</p>
+
+<h3 class="h-sub">6.5 Favorites</h3>
+<p>Any drill can be starred via the star icon on the card or the <code>toggleFavorite</code> store action. Starred drills appear in a dedicated <strong>Favorites</strong> section at the top of the library regardless of their folder assignment.</p>
+</div>

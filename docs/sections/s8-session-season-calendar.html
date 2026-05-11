@@ -1,0 +1,134 @@
+<!-- ══════════════════════════════════ SESSION BUILDER ═══ -->
+<div class="page page-break">
+<h2 class="h-section">8. Session Builder</h2>
+
+<h3 class="h-sub">8.1 Timeline Structure</h3>
+<p>The session timeline (<code>SessionTimeline.tsx</code>) displays all blocks in a vertical chronological list. Blocks are grouped by <code>SessionSection</code>: Warm-up, Main, Game, Cool-down. Each section has a coloured header (sky, orange, amber, violet) with an icon and total duration.</p>
+
+<div class="card card-accent">
+  <p>The timeline uses <strong>@dnd-kit</strong>: each <code>BlockCard</code> is wrapped in <code>useSortable()</code> from <code>@dnd-kit/sortable</code>. The outer list is wrapped in <code>DndContext</code> with <code>closestCenter</code> collision detection. Drag end fires <code>arrayMove()</code> and calls <code>reorderBlocks(sessionId, newBlocks)</code> on the sessions store.</p>
+</div>
+
+<h3 class="h-sub">8.2 Block Card</h3>
+<p>Each block card shows:</p>
+<div class="two-col">
+  <div class="card card-orange">
+    <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+      <li>Drag handle (left edge)</li>
+      <li>MiniPitchPreview SVG thumbnail</li>
+      <li>Drill title + folder name</li>
+      <li>Duration (editable inline)</li>
+    </ul>
+  </div>
+  <div class="card card-accent">
+    <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+      <li>Intensity badge (low/mid/high) with color</li>
+      <li>Section phase selector dropdown</li>
+      <li>Per-block notes field</li>
+      <li>Duplicate / Delete actions</li>
+    </ul>
+  </div>
+</div>
+
+<h3 class="h-sub">8.3 Intensity System</h3>
+<table>
+  <thead><tr><th>Intensity</th><th>Color</th><th>Badge Style</th></tr></thead>
+  <tbody>
+    <tr><td>Low</td><td>sky-400 (#38bdf8)</td><td>sky-50 bg, sky-200 border</td></tr>
+    <tr><td>Mid</td><td>amber-400 (#fbbf24)</td><td>amber-50 bg, amber-200 border</td></tr>
+    <tr><td>High</td><td>red-400 (#f87171)</td><td>red-50 bg, red-200 border</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">8.4 Session Summary (Right Panel)</h3>
+<p>The session builder right panel shows a live summary:</p>
+<ul style="padding-left:20px;font-size:12px;line-height:1.9;">
+  <li>Total session duration (sum of all block durations)</li>
+  <li>Breakdown by section (warmup/main/game/cooldown) — total minutes each</li>
+  <li>Intensity distribution bar (count of low/mid/high blocks)</li>
+  <li>Aggregated equipment list from all linked drills</li>
+  <li>Session quality score via <code>src/lib/sessionQuality.ts</code></li>
+</ul>
+
+<h3 class="h-sub">8.5 Drill Picker</h3>
+<p><code>DrillPicker.tsx</code> is a modal/panel that lists all available drills with search and folder filter. Selecting a drill creates a new <code>SessionBlock</code> with a default 15-minute duration and mid intensity, appended to the session's blocks array.</p>
+</div>
+
+<!-- ══════════════════════════════════ SEASON PLANNER ═══ -->
+<div class="page page-break">
+<h2 class="h-section">9. Season Planner</h2>
+
+<h3 class="h-sub">9.1 Overview</h3>
+<p>The Season Planner (<code>SeasonPlanEditor.tsx</code>) provides a long-term training calendar for a team. A plan spans a date range (start → end) and belongs to one team. It renders as a week-by-week grid where each training day cell can have a session assigned.</p>
+
+<h3 class="h-sub">9.2 Entry Management</h3>
+<div class="card card-accent">
+  <p>Clicking a date cell opens a session picker. Selecting a session calls <code>seasonPlansStore.upsertEntry()</code> to save the assignment, and simultaneously calls <code>calendarStore.syncSeasonPlanEntry()</code> to create or update a <code>CalendarEvent</code> linked via <code>seasonPlanEntryId</code>. This two-store sync keeps the Calendar view automatically up to date.</p>
+</div>
+
+<h3 class="h-sub">9.3 Season Plan Print View</h3>
+<p>The <code>SeasonPlanPrintView.tsx</code> component renders a <strong>week-by-week table</strong>:</p>
+<ul style="padding-left:20px;font-size:12px;line-height:1.9;">
+  <li>Header row: week number + date range (Mon–Sun)</li>
+  <li>Each training day in that week as a column cell</li>
+  <li>Each cell shows: session title, intensity badge, a <code>MiniPitchPreview</code> thumbnail of the first drill in that session</li>
+  <li>Blank cells for non-training days</li>
+  <li>Brand colors throughout: orange headers, dark sidebar, accent accents</li>
+  <li>Designed for A4 landscape print output</li>
+</ul>
+<p>Session intensity is derived by <code>sessionIntensity(session)</code>: averages block intensities (low=1, mid=2, high=3) and rounds to nearest level.</p>
+</div>
+
+<!-- ══════════════════════════════════ CALENDAR ═══ -->
+<div class="page page-break">
+<h2 class="h-section">10. Calendar</h2>
+
+<h3 class="h-sub">10.1 Month View</h3>
+<p><code>CalendarPage.tsx</code> renders a full month grid calendar. Days with events show event chips coloured by type:</p>
+<table>
+  <thead><tr><th>Event Type</th><th>Display</th></tr></thead>
+  <tbody>
+    <tr><td>training</td><td>Brand orange chip</td></tr>
+    <tr><td>match</td><td>Red chip</td></tr>
+    <tr><td>rest</td><td>Gray chip</td></tr>
+    <tr><td>other</td><td>Accent chip</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">10.2 Event Status</h3>
+<p>Each event has a <code>CalendarEventStatus</code>: <code>'planned'</code>, <code>'completed'</code>, or <code>'cancelled'</code>. This can be changed directly in the calendar view. Cancelled events render with a strikethrough.</p>
+
+<h3 class="h-sub">10.3 Season Plan Sync</h3>
+<p>Events created from season plan entries carry a <code>seasonPlanEntryId</code> field. The <code>calendarStore.syncSeasonPlanEntry()</code> method performs an <strong>upsert</strong>: it searches for an existing event with the same <code>seasonPlanEntryId</code> and updates it, or creates a new one. <code>clearSeasonPlanEntry()</code> deletes the linked event when a season plan entry is removed.</p>
+</div>
+
+<!-- ══════════════════════════════════ TEAMS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">11. Teams Module</h2>
+
+<h3 class="h-sub">11.1 Team Configuration</h3>
+<p><code>TeamPage.tsx</code> allows full configuration of a team. Each team stores:</p>
+<div class="two-col">
+  <div class="card card-orange">
+    <div class="h-sub2">Colors (per side)</div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.9;">
+      <li>Primary (home jersey fill color)</li>
+      <li>Secondary (unused visually, stored for future)</li>
+      <li>Stroke ring color (border around player circle)</li>
+      <li>Number text color</li>
+      <li>All above for opponent side too</li>
+    </ul>
+  </div>
+  <div class="card card-accent">
+    <div class="h-sub2">Roster &amp; Schedule</div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.9;">
+      <li>Player list with name, number, position</li>
+      <li>Side assignment (home/opponent)</li>
+      <li>Training days (e.g. Sunday, Tuesday, Thursday)</li>
+    </ul>
+  </div>
+</div>
+
+<h3 class="h-sub">11.2 Color Propagation to Canvas</h3>
+<p>When a drill has <code>teamId</code> set to a team, the editor monitors the team's color keys via a <code>useEffect</code>. Any player with <code>teamColorInherited: true</code> gets automatically updated to match the team's current primary/stroke/number colors whenever those change. This means changing team colors in the Teams module reflects live in all linked drills.</p>
+</div>

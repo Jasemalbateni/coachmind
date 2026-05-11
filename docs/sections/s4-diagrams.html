@@ -1,0 +1,28 @@
+<!-- ══════════════════════════════════ DIAGRAMS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">3. Architecture Diagrams</h2>
+
+<h3 class="h-sub">3.1 System Architecture Diagram</h3>
+<div class="diagram-box">
+  <img src="architecture-diagram.svg" alt="System Architecture Diagram"/>
+  <p class="diagram-caption">Figure 1 — Full system architecture showing browser layer, component layer, state management, persistence, and third-party libraries</p>
+</div>
+
+<p>The diagram illustrates the layered architecture: the <strong>Browser/Client Layer</strong> hosts all Next.js pages routed by the App Router. Beneath that, the <strong>Component Layer</strong> is divided into four functional groups — the Drill Editor Engine, Session Builder, Season &amp; Calendar, and Print System. All components share state through the <strong>Zustand State Management Layer</strong> which automatically persists to the <strong>localStorage Persistence Layer</strong> using six isolated keys.</p>
+
+<h3 class="h-sub">3.2 Editor Engine Diagram</h3>
+<div class="diagram-box">
+  <img src="editor-engine-diagram.svg" alt="Editor Engine Diagram"/>
+  <p class="diagram-caption">Figure 2 — Internal structure of the Drill Editor Engine showing component relationships, canvas layers, drawing tools, and data flow</p>
+</div>
+
+<p><code>DrillEditorPage.tsx</code> is the central orchestrator. It owns all editor state (selected objects, draw tool, undo stack, zoom, step context) and passes handlers down as props. The <strong>PitchCanvas</strong> is the core rendering engine: it splits rendering into a pitch layer, object layer, arrow/link layer, and transformer layer. Surrounding components (PaletteSidebar, InspectorPanel, PlayerDock, FormationPicker) communicate only through callbacks — they never write to the store directly.</p>
+
+<h3 class="h-sub">3.3 Data Flow Diagram</h3>
+<div class="diagram-box">
+  <img src="data-flow-diagram.svg" alt="Data Flow Diagram"/>
+  <p class="diagram-caption">Figure 3 — Data flow for all major user actions: add object, drag/move, undo, session reorder, team color change, season plan, print, and PNG export</p>
+</div>
+
+<p>Every mutating user action follows the same five-step flow: <em>User Action → Component Handler → Zustand Store mutation → localStorage auto-persist → React re-render</em>. Read-only operations (Print, Export PNG) bypass the store write path entirely. Cross-store operations (e.g. assigning a session to a season plan date) atomically update two stores in one handler.</p>
+</div>

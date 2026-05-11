@@ -1,0 +1,207 @@
+<!-- ══════════════════════════════════ EDITOR ENGINE ═══ -->
+<div class="page page-break">
+<h2 class="h-section">7. Editor Engine</h2>
+<p>The editor engine is implemented across the <code>src/components/drill-editor/</code> directory. <code>DrillEditorPage.tsx</code> is the orchestrator that owns all state. <code>PitchCanvas.tsx</code> is the Konva canvas renderer, loaded via <code>dynamic()</code> with <code>ssr: false</code> to prevent server-side rendering conflicts.</p>
+
+<h3 class="h-sub">7.1 Canvas Architecture (Konva)</h3>
+<div class="card card-orange">
+  <p><code>PitchCanvas.tsx</code> renders a <strong>Konva Stage</strong> containing multiple <strong>Layers</strong> in a defined z-order. All objects are rendered as Konva nodes (Rect, Circle, Arrow, Line, Path, Text, Group).</p>
+</div>
+<table>
+  <thead><tr><th>Layer (top → bottom)</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td>Transformer Layer</td><td>Konva Transformer node for resize/rotate handles on selected objects</td></tr>
+    <tr><td>Link/Arrow Layer</td><td>ArrowObject, LineObject, CurvedLineObject (rendered below players so they appear "under" player tokens)</td></tr>
+    <tr><td>Object Layer</td><td>PlayerObject, ConeObject, BallObject, GoalObject, ZoneObject, CircleShapeObject, RectangleObject</td></tr>
+    <tr><td>Pitch Layer</td><td>Field markings (grass rectangles, white lines, penalty areas, circles, arcs) rendered from pitch.type</td></tr>
+  </tbody>
+</table>
+
+<p>The <strong>Stage</strong> handles mouse events for drawing tools (onMouseDown, onMouseMove, onMouseUp) and zoom (onWheel). Drag events on individual nodes are handled per-object for position updates.</p>
+
+<h3 class="h-sub">7.2 Drawing Tools</h3>
+<p>The active drawing tool is stored as <code>DrawTool</code> in <code>DrillEditorPage</code> state. All tool buttons in <code>PaletteSidebar</code> and all keyboard shortcuts toggle this value.</p>
+
+<table>
+  <thead><tr><th>Tool</th><th>Clicks Required</th><th>Object Created</th><th>Keyboard</th></tr></thead>
+  <tbody>
+    <tr><td>arrow</td><td>2 (start → end)</td><td>ArrowObject (red, solid, filled)</td><td>A</td></tr>
+    <tr><td>line</td><td>2 (start → end)</td><td>LineObject (white)</td><td>L</td></tr>
+    <tr><td>curved</td><td>3 (start → end → control point)</td><td>CurvedLineObject (bezier)</td><td>—</td></tr>
+    <tr><td>rect</td><td>2 (corner → opposite corner)</td><td>RectangleObject</td><td>R</td></tr>
+    <tr><td>circle</td><td>2 (center → edge)</td><td>CircleShapeObject</td><td>C</td></tr>
+    <tr><td>link</td><td>2 (player A → player B)</td><td>LinkObject</td><td>—</td></tr>
+    <tr><td>tac-run</td><td>2</td><td>ArrowObject (amber, solid)</td><td>—</td></tr>
+    <tr><td>tac-pass</td><td>2</td><td>ArrowObject (white, dashed, open)</td><td>—</td></tr>
+    <tr><td>tac-dribble</td><td>2</td><td>ArrowObject (orange, solid)</td><td>—</td></tr>
+    <tr><td>tac-press</td><td>2</td><td>ArrowObject (red, dashed)</td><td>—</td></tr>
+    <tr><td>tac-support</td><td>2</td><td>ArrowObject (green, dashed, open)</td><td>—</td></tr>
+    <tr><td>tac-lane</td><td>2</td><td>LineObject (blue, dashed)</td><td>—</td></tr>
+    <tr><td>tac-defline</td><td>2</td><td>LineObject (purple, solid)</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<div class="info-box">
+  <strong>Curved Line — 3-Click Flow:</strong> Click 1 sets <code>drawFirstPoint</code> (start). Click 2 sets <code>drawSecondPoint</code> (end). Click 3's position becomes the bezier control point (<code>cpX</code>, <code>cpY</code>). The <code>CurvedLineObject</code> is then created and added to the store.
+</div>
+<div class="info-box-accent">
+  <strong>Shift Constraint:</strong> While any draw tool is active, holding Shift constrains the drawn line/arrow to 45° angle increments. While dragging a placed object, holding Shift constrains movement to the horizontal or vertical axis.
+</div>
+
+<h3 class="h-sub">7.3 Smart Arrow Connections</h3>
+<p>When drawing an arrow or tactical arrow tool and the first click lands on a <strong>PlayerObject</strong>, the player's ID is stored as <code>arrowStartPlayerId</code>. If the second click also lands on a player, that player's ID is stored as <code>endPlayerId</code>. The resulting ArrowObject has <code>startPlayerId</code> and/or <code>endPlayerId</code> set. PitchCanvas reads these IDs on every render and substitutes the live player position for the arrow endpoints — so the arrow follows the player when they are dragged.</p>
+
+<h3 class="h-sub">7.4 Selection System</h3>
+<div class="two-col">
+  <div class="card card-accent">
+    <div class="h-sub2">Single Select</div>
+    <p>Clicking any object calls <code>handleSelect(id)</code>: sets <code>selectedId</code> and <code>selectedIds = [id]</code>. Clicking empty canvas deselects.</p>
+  </div>
+  <div class="card card-orange">
+    <div class="h-sub2">Multi-Select</div>
+    <p>Shift+click on any object calls <code>handleMultiSelect(id)</code> using a ref (<code>selectedIdsRef</code>) to avoid stale closure: toggles the object in <code>selectedIds</code>. The last selected becomes <code>selectedId</code> (shown in inspector).</p>
+  </div>
+</div>
+<div class="card card-green">
+  <div class="h-sub2">Marquee (Rubber-Band) Select</div>
+  <p>Drag on empty canvas to draw a selection rectangle. All objects whose centers fall within the rectangle are collected and passed to <code>handleMarqueeSelect(ids, additive)</code>. Additive (Shift held) merges with existing selection.</p>
+</div>
+
+<h3 class="h-sub">7.5 Snapping &amp; Alignment</h3>
+<p><strong>Alignment snap</strong> is always active when <code>snapToGrid</code> is true. During <code>onDragMove</code>, the system scans all other objects and computes candidate snap targets: their x/y positions, midpoints, and edges. If the dragged object's position is within <strong>10 pitch pixels</strong> of any snap target, it snaps to that coordinate. Visual guide lines are drawn on the canvas during drag.</p>
+<p>The <strong>Inspector Align toolbar</strong> provides manual alignment: Left, Center-X, Right, Top, Center-Y, Bottom, Distribute-H, Distribute-V. These operate on all <code>selectedIds</code> (minimum 2 objects).</p>
+
+<h3 class="h-sub">7.6 Undo / Redo System</h3>
+<div class="card card-orange">
+  <p>The undo system is a client-side snapshot stack. Before any mutating operation, <code>pushUndo()</code> takes a copy of the current <code>activeObjects</code> array and pushes it onto <code>undoStack</code> (capped at 30 entries, oldest discarded). The redo stack is cleared on any new action. Both stacks are scoped to the active step — switching steps clears both stacks.</p>
+</div>
+<pre><code>// Undo: pop previous state, push current to redo stack
+handleUndo() → undoStack.pop() → stepSetObjects(prev) → redoStack.push(current)
+
+// Redo: pop from redo stack, push current to undo stack
+handleRedo() → redoStack.pop() → stepSetObjects(next) → undoStack.push(current)</code></pre>
+
+<h3 class="h-sub">7.7 Copy / Paste / Duplicate</h3>
+<table>
+  <thead><tr><th>Action</th><th>Shortcut</th><th>Behaviour</th></tr></thead>
+  <tbody>
+    <tr><td>Copy</td><td>Ctrl+C</td><td>Copies selected objects (all selectedIds or selectedId) to <code>clipboardItems</code> state — no store write</td></tr>
+    <tr><td>Paste</td><td>Ctrl+V</td><td>Creates new objects from clipboard with new UUIDs, offset +30px on x/y. Arrow player connections are stripped (independent copy). Selects new objects.</td></tr>
+    <tr><td>Duplicate</td><td>Ctrl+D or palette button</td><td>Same as copy+paste but immediate, offset +10px. Works on multi-select.</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">7.8 Step System (Tabs)</h3>
+<div class="info-box-accent">
+  <p>The step tab bar lives between the toolbar and the canvas. The <strong>Base</strong> tab always shows <code>drill.objects</code>. Each additional step shows its own <code>DrillStep.objects</code>. Adding a step auto-clones all Base objects into the new step. <strong>Clone base</strong> button (only in step mode) overwrites the current step's objects with fresh copies from Base.</p>
+</div>
+<p>All store operations are routed through <strong>step-aware wrappers</strong>: <code>stepAddObject</code>, <code>stepUpdateObject</code>, <code>stepDeleteObject</code>, <code>stepSetObjects</code>. These check <code>activeStepId</code> and call either <code>setStepObjects(drillId, stepId, objects)</code> or the direct store action based on context.</p>
+
+<h3 class="h-sub">7.9 Play Simulation</h3>
+<p>The Play button becomes active when any ArrowObject with <code>startPlayerId</code> exists. On play:</p>
+<ol style="padding-left:20px;font-size:12px;line-height:1.9;">
+  <li>Collects all arrows with <code>startPlayerId</code>, reads the current player position and arrow end position as movement targets.</li>
+  <li>Starts a <strong>requestAnimationFrame loop</strong> over 1800ms.</li>
+  <li>Applies ease-in-out tween: <code>t &lt; 0.5 ? 2t² : -1+(4-2t)t</code>.</li>
+  <li>Updates <code>positionOverrides</code> state on every frame — a <code>Record&lt;playerId, {x,y}&gt;</code> map.</li>
+  <li>PitchCanvas substitutes overridden positions for those player nodes during rendering — players visually move.</li>
+  <li>On completion or Stop, overrides are cleared and players snap back to stored positions.</li>
+</ol>
+
+<h3 class="h-sub">7.10 Player &amp; Team System</h3>
+<div class="two-col">
+  <div class="card card-orange">
+    <div class="h-sub2">Player Dock</div>
+    <p>Bottom panel showing all players for both teams (or default squad of 25+3 GK per side). Team selector dropdown at top. Clicking a player adds it to canvas center. Formation buttons per side open the Formation Picker.</p>
+  </div>
+  <div class="card card-accent">
+    <div class="h-sub2">Team Color Inheritance</div>
+    <p>Players with <code>teamColorInherited: true</code> auto-sync color when the linked team's color changes. Manually changing a player's color in the inspector sets <code>teamColorInherited: false</code> and also propagates to all same-side players + updates the team store.</p>
+  </div>
+</div>
+
+<div class="card card-highlight">
+  <div class="h-sub2">GK Detection</div>
+  <p>Players with number <code>1</code>, <code>12</code>, or <code>13</code> are automatically treated as goalkeepers. The Inspector Panel shows a GK badge and Konva renders them with a gold fill instead of their team color.</p>
+</div>
+
+<h3 class="h-sub">7.11 Formation Picker</h3>
+<p>A modal component with a formation list (4-4-2, 4-3-3, 3-5-2, and team segment templates like back-4, mid-3, front-3). Formations use <strong>landscape percentage coordinates</strong> [lateral_pct, depth_pct] that are scaled to the current pitch dimensions. When placing a formation, the system <strong>reuses existing players</strong> on the same side (repositions them), creating only the missing ones — preventing duplicate players from accumulating.</p>
+
+<h3 class="h-sub">7.12 Inspector Panel</h3>
+<table>
+  <thead><tr><th>Object Type</th><th>Inspector Controls</th></tr></thead>
+  <tbody>
+    <tr><td>Player</td><td>Fill color, stroke color, number color, number text, name, GK badge, show/hide number toggle, lock toggle, delete, duplicate</td></tr>
+    <tr><td>Arrow</td><td>Color, line style (solid/dashed), head style (filled/open), stroke width, lock toggle</td></tr>
+    <tr><td>Zone</td><td>Fill color, opacity slider (0–1), label text, stroke color, stroke width, lock toggle</td></tr>
+    <tr><td>Circle</td><td>Stroke color, stroke width, fill color, fill opacity, overall opacity slider, dashed toggle, lock toggle</td></tr>
+    <tr><td>Rectangle</td><td>Stroke color, stroke width, fill color, fill opacity, overall opacity slider, dashed toggle, lock toggle</td></tr>
+    <tr><td>Cone</td><td>Fill color, lock toggle</td></tr>
+    <tr><td>Line/Link</td><td>Color, stroke width, dashed toggle, lock toggle</td></tr>
+    <tr><td>Multi-select (2+)</td><td>Alignment toolbar: left, center-X, right, top, center-Y, bottom, distribute-H, distribute-V</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">7.13 Keyboard Shortcuts</h3>
+<table>
+  <thead><tr><th>Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>Esc</td><td>Cancel active draw tool, clear first point, deselect</td></tr>
+    <tr><td>Ctrl+Z</td><td>Undo (30-level stack, scoped per step)</td></tr>
+    <tr><td>Ctrl+Y / Ctrl+Shift+Z</td><td>Redo</td></tr>
+    <tr><td>Ctrl+D</td><td>Duplicate selected objects (+10px offset)</td></tr>
+    <tr><td>Ctrl+C</td><td>Copy selected objects to clipboard</td></tr>
+    <tr><td>Ctrl+V</td><td>Paste clipboard (+30px offset)</td></tr>
+    <tr><td>Delete / Backspace</td><td>Delete selected objects (when not in text input)</td></tr>
+    <tr><td>A</td><td>Activate Arrow tool</td></tr>
+    <tr><td>R</td><td>Activate Rectangle tool</td></tr>
+    <tr><td>L</td><td>Activate Line tool</td></tr>
+    <tr><td>C</td><td>Activate Circle tool</td></tr>
+    <tr><td>B</td><td>Place Ball at canvas center (with ±20px jitter)</td></tr>
+    <tr><td>g (lowercase)</td><td>Place Small Goal at canvas center</td></tr>
+    <tr><td>G (uppercase)</td><td>Place Full Goal at canvas center</td></tr>
+    <tr><td>D (with arrow selected)</td><td>Toggle arrow style solid ↔ dashed</td></tr>
+    <tr><td>Shift+drag object</td><td>Constrain movement to horizontal or vertical axis</td></tr>
+    <tr><td>Shift+draw</td><td>Constrain drawn line to 45° angle increments</td></tr>
+    <tr><td>Mouse wheel</td><td>Zoom canvas in/out</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">7.14 DrillEditorTopBar Controls</h3>
+<div class="badge-grid">
+  <span class="badge badge-orange">Inline Title Edit</span>
+  <span class="badge badge-accent">Save Status Indicator</span>
+  <span class="badge badge-dark">Zoom Controls</span>
+  <span class="badge badge-green">Snap Toggle</span>
+  <span class="badge badge-dark">Show Names Toggle</span>
+  <span class="badge badge-orange">Undo / Redo Buttons</span>
+  <span class="badge badge-purple">Player Scale Slider (0.5–2×)</span>
+  <span class="badge badge-accent">Export PNG (2× pixel ratio)</span>
+  <span class="badge badge-yellow">Play / Stop Simulation</span>
+  <span class="badge badge-dark">Drill Info Drawer</span>
+</div>
+
+<h3 class="h-sub">7.15 Drill Meta Panel</h3>
+<p>A slide-out drawer (right side) for non-canvas drill metadata:</p>
+<div class="two-col">
+  <div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.9;">
+      <li>Objective, Age Group, Player Count, Area Size</li>
+      <li>Duration (minutes)</li>
+      <li>Equipment list</li>
+      <li>Coaching Points (bullet list)</li>
+      <li>Coaching Cues</li>
+    </ul>
+  </div>
+  <div>
+    <ul style="padding-left:18px;font-size:12px;line-height:1.9;">
+      <li>Common Mistakes</li>
+      <li>Corrections</li>
+      <li>Key Constraints</li>
+      <li>Progression / Regression (text)</li>
+      <li>Tags, Team link, Training Day, Notes</li>
+    </ul>
+  </div>
+</div>
+</div>

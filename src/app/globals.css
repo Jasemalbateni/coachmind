@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-w: 240px;
+  --inspector-w: 280px;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* iOS Safari URL-bar adjustment: prefer the dynamic viewport unit when
+     available. Falls back to 100% on browsers that don't support `dvh`. */
+}
+
+@supports (height: 100dvh) {
+  html, body { height: 100dvh; }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ── Safe-area helpers ──────────────────────────────────────────────────────
+   For iPad home-screen / full-screen mode where notches and the home-indicator
+   would otherwise overlap content. Apply these to any container that sits at
+   a screen edge in standalone mode. */
+.safe-pt { padding-top: env(safe-area-inset-top); }
+.safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+.safe-pl { padding-left: env(safe-area-inset-left); }
+.safe-pr { padding-right: env(safe-area-inset-right); }
+.safe-px {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.safe-py {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Dynamic viewport units — explicit utility classes for when Tailwind's
+   h-screen (100vh) is wrong on iPad Safari with the URL bar visible. */
+.h-screen-dvh { height: 100vh; height: 100dvh; }
+.min-h-screen-dvh { min-height: 100vh; min-height: 100dvh; }
+
+/* Light-mode scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #e2e8f0; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* Dark-surface scrollbar (used inside canvas editor panels) */
+.dark-scroll::-webkit-scrollbar-track { background: #1e2330; }
+.dark-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+.dark-scroll::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+/* ─── Print reset ──────────────────────────────────────────────────────────────
+   Override the app shell layout so only the intended print content is shown.
+   Applied globally so it works for any print-enabled page. */
+@media print {
+  /* Remove body height/overflow constraints */
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide the NavBar sidebar */
+  body > aside,
+  aside[class*="bg-brand-dark"] {
+    display: none !important;
+  }
+
+  /* Make main full width and scrollable for print */
+  body > main {
+    overflow: visible !important;
+    height: auto !important;
+    flex: none !important;
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+  }
+
+  /* Generic helper used throughout components */
+  .no-print {
+    display: none !important;
+  }
+}

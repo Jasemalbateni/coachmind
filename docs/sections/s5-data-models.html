@@ -1,0 +1,225 @@
+<!-- ══════════════════════════════════ DATA MODELS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">4. Data Models</h2>
+<p>All types are defined in a single source-of-truth file: <code>src/types/index.ts</code>. Every store and component imports exclusively from this file.</p>
+
+<h3 class="h-sub">4.1 Drill</h3>
+<div class="card card-orange avoid-break">
+  <p>The central entity. A drill is a canvas diagram with rich coaching metadata.</p>
+</div>
+<pre><code>interface Drill {
+  id: string;
+  title: string;
+  description?: string;
+  pitch: Pitch;                     // { type, width, height, colors? }
+  objects: CanvasObject[];          // Base layer objects
+
+  // Coaching metadata
+  objective?: string;
+  ageGroup?: string;
+  playerCount?: string;
+  areaSize?: string;
+  durationMin?: number;
+  equipment?: string[];
+  coachingPoints?: string[];
+  coachingCues?: string[];
+  commonMistakes?: string[];
+  corrections?: string[];
+  keyConstraints?: string[];
+  progression?: string;
+  regression?: string;
+  notes?: string;
+
+  // Organisation
+  folderId?: string | null;
+  subcategoryId?: string | null;
+  sortOrder?: number;               // Manual drag-to-reorder position
+  tags?: string[];
+  teamId?: string | null;
+  trainingDay?: string | null;
+
+  // Visual
+  playerScale?: number;            // 0.5–2.0, global player size multiplier
+
+  // Relationships
+  parentDrillId?: string | null;
+  relationType?: 'base'|'variation'|'progression'|'regression' | null;
+  isFavorite?: boolean;
+
+  // Multi-step system
+  steps?: DrillStep[];             // Progression/regression steps
+
+  createdAt: string;               // ISO timestamp
+  updatedAt: string;
+}</code></pre>
+
+<h3 class="h-sub">4.2 DrillStep</h3>
+<pre><code>interface DrillStep {
+  id: string;
+  label: string;                   // e.g. "Progression", "Regression", "Step 3"
+  objects: CanvasObject[];         // Independent object set for this step
+}</code></pre>
+<div class="info-box">
+  <strong>Step System:</strong> A drill can have a Base layer (Drill.objects) and N additional DrillStep objects. Each step has its own complete independent CanvasObject array, allowing coaches to show progressions without creating separate drills. Steps are labelled automatically (Progression, Regression, Step N). Switching steps clears the undo stack.
+</div>
+
+<h3 class="h-sub">4.3 Pitch</h3>
+<pre><code>type PitchType = 'full' | 'half' | 'third' | 'plain';
+
+interface Pitch {
+  type: PitchType;
+  width: number;     // Logical pixels: full=840, half=840, third=840
+  height: number;    // Logical pixels: full=540, half=420, third=300
+  colors?: {
+    grass: string;
+    grassSecondary?: string;   // Alternate stripe color
+    lines: string;
+  };
+}</code></pre>
+
+<h3 class="h-sub">4.4 CanvasObject Union</h3>
+<p>The <code>CanvasObject</code> type is a discriminated union of 11 object types, distinguished by the <code>type</code> field:</p>
+<pre><code>type CanvasObject =
+  | PlayerObject | ConeObject | BallObject | GoalObject
+  | ArrowObject | ZoneObject | CircleShapeObject | RectangleObject
+  | LineObject | CurvedLineObject | LinkObject;</code></pre>
+
+<table>
+  <thead><tr><th>Type</th><th>Key Fields</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>'player'</code></td><td>x, y, color, number, name, team ('A'|'B'), showNumber, strokeColor, numberColor, teamColorInherited, rotation, locked</td><td>Jersey-style player dot. GK detected by number 1/12/13 → gold fill. teamColorInherited enables auto-sync with team store.</td></tr>
+    <tr><td><code>'cone'</code></td><td>x, y, color, rotation, locked</td><td>Training cone placed as a colored triangle/polygon.</td></tr>
+    <tr><td><code>'ball'</code></td><td>x, y, locked</td><td>Football (soccer ball), white with black pattern.</td></tr>
+    <tr><td><code>'goal'</code></td><td>x, y, size ('small'|'full'), rotation, locked</td><td>Full-size or small/mini goal rendered as a rectangle.</td></tr>
+    <tr><td><code>'arrow'</code></td><td>startX, startY, endX, endY, color, style ('solid'|'dashed'), headStyle ('filled'|'open'), strokeWidth, tacticType?, startPlayerId?, endPlayerId?, locked</td><td>2-point arrow. startPlayerId/endPlayerId enable live tracking: arrow endpoints follow player positions. tacticType assigns football-specific visual style.</td></tr>
+    <tr><td><code>'line'</code></td><td>startX, startY, endX, endY, color, strokeWidth, dashed, tacticType?, locked</td><td>Straight line without arrowhead. Used for tactical lines (defensive line, lane).</td></tr>
+    <tr><td><code>'curved'</code></td><td>startX, startY, cpX, cpY, endX, endY, color, strokeWidth, dashed, locked</td><td>Quadratic bezier curve. 3-click creation: click start → click end → click control point.</td></tr>
+    <tr><td><code>'zone'</code></td><td>x, y, width, height, fill, opacity (0–1), label, strokeColor, strokeWidth, rotation, locked</td><td>Filled rectangular area, used to mark pitch zones or areas of play.</td></tr>
+    <tr><td><code>'circle'</code></td><td>x, y, radius, stroke, strokeWidth, fill, fillOpacity, opacity, dashed, rotation, locked</td><td>Circle shape. Center + edge click creation.</td></tr>
+    <tr><td><code>'rectangle'</code></td><td>x, y, width, height, stroke, strokeWidth, fill, fillOpacity, opacity, dashed, rotation, locked</td><td>Rectangle shape. Corner-to-corner click creation.</td></tr>
+    <tr><td><code>'link'</code></td><td>fromPlayerId, toPlayerId, color, dashed, label, locked</td><td>Dynamic line connecting two players by ID. Renders as a line between live player positions.</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">4.5 TacticType</h3>
+<pre><code>type TacticType = 'run' | 'pass' | 'dribble' | 'press' | 'lane' | 'defline' | 'support';</code></pre>
+<table>
+  <thead><tr><th>Tactic</th><th>Color</th><th>Style</th><th>Head</th><th>Object Type</th></tr></thead>
+  <tbody>
+    <tr><td>run</td><td>#fbbf24 (amber)</td><td>solid</td><td>filled</td><td>arrow</td></tr>
+    <tr><td>pass</td><td>#ffffff</td><td>dashed</td><td>open</td><td>arrow</td></tr>
+    <tr><td>dribble</td><td>#f97316 (orange)</td><td>solid</td><td>filled</td><td>arrow</td></tr>
+    <tr><td>press</td><td>#ef4444 (red)</td><td>dashed</td><td>filled</td><td>arrow</td></tr>
+    <tr><td>support</td><td>#22c55e (green)</td><td>dashed</td><td>open</td><td>arrow</td></tr>
+    <tr><td>lane</td><td>#3b82f6 (blue)</td><td>dashed</td><td>open</td><td>line</td></tr>
+    <tr><td>defline</td><td>#8b5cf6 (purple)</td><td>solid</td><td>open</td><td>line</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">4.6 Session &amp; SessionBlock</h3>
+<pre><code>type Intensity = 'low' | 'mid' | 'high';
+type SessionSection = 'warmup' | 'main' | 'game' | 'cooldown';
+
+interface SessionBlock {
+  id: string;
+  drillId: string;          // References Drill.id
+  durationMin: number;
+  intensity: Intensity;
+  notes?: string;
+  section?: SessionSection; // Which phase of the session
+}
+
+interface Session {
+  id: string;
+  title: string;
+  date?: string;
+  blocks: SessionBlock[];   // Ordered array of drill blocks
+  objective?: string;
+  ageGroup?: string;
+  playerCount?: string;
+  notes?: string;
+  teamId?: string | null;
+  trainingDay?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}</code></pre>
+
+<h3 class="h-sub">4.7 Team &amp; TeamPlayer</h3>
+<pre><code>interface TeamPlayer {
+  id: string;
+  name: string;
+  number?: string;
+  position?: string;
+  color?: string;
+  teamSide: 'home' | 'opponent';
+}
+
+interface Team {
+  id: string;
+  name: string;
+  ageGroup: string;
+  primaryColor: string;             // Home jersey color
+  secondaryColor: string;
+  opponentPrimaryColor: string;     // Away jersey color
+  opponentSecondaryColor?: string;
+  primaryStrokeColor?: string;      // Jersey ring color — home
+  opponentStrokeColor?: string;     // Jersey ring color — away
+  primaryNumberColor?: string;      // Number text color — home
+  opponentNumberColor?: string;     // Number text color — away
+  trainingDays: string[];           // ["Sunday","Tuesday","Thursday"]
+  players: TeamPlayer[];
+  createdAt: string;
+  updatedAt: string;
+}</code></pre>
+
+<h3 class="h-sub">4.8 DrillFolder &amp; FolderSubcategory</h3>
+<pre><code>interface DrillFolder {
+  id: string; name: string; createdAt: string; updatedAt: string;
+}
+
+interface FolderSubcategory {
+  id: string;
+  folderId: string;         // Parent folder reference
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}</code></pre>
+<div class="info-box-accent">Deleting a folder cascades to delete all its subcategories via <code>foldersStore.deleteFolder()</code>. Drills that were in the folder keep their <code>folderId</code> value but the folder is gone — they become "unfoldered".</div>
+
+<h3 class="h-sub">4.9 SeasonPlan &amp; SeasonPlanEntry</h3>
+<pre><code>interface SeasonPlanEntry {
+  id: string;
+  date: string;             // ISO date string
+  trainingDay?: string;
+  sessionId?: string;       // Linked session
+  notes?: string;
+}
+
+interface SeasonPlan {
+  id: string;
+  title: string;
+  teamId: string;           // Linked team
+  startDate: string;
+  endDate: string;
+  entries: SeasonPlanEntry[];
+  createdAt: string;
+  updatedAt: string;
+}</code></pre>
+
+<h3 class="h-sub">4.10 CalendarEvent</h3>
+<pre><code>type CalendarEventType = 'training' | 'match' | 'rest' | 'other';
+type CalendarEventStatus = 'planned' | 'completed' | 'cancelled';
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  date: string;
+  type: CalendarEventType;
+  teamId?: string;
+  sessionId?: string;
+  notes?: string;
+  status?: CalendarEventStatus;
+  seasonPlanEntryId?: string;  // Links to SeasonPlanEntry for sync
+}</code></pre>
+<div class="info-box">When a session is assigned to a SeasonPlanEntry, <code>calendarStore.syncSeasonPlanEntry()</code> creates or updates a corresponding CalendarEvent automatically, keeping the calendar in sync with the season plan.</div>
+</div>

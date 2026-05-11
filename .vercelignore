@@ -1,0 +1,21 @@
+# Files / folders Vercel doesn't need in its build context.
+# Reduces upload size; Vercel already auto-ignores node_modules and .next.
+
+# Electron desktop wrapper — not used by the web build
+electron/
+build-assets/
+dist-electron/
+release/
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.snap
+
+# Electron-builder config — irrelevant on Vercel
+electron-builder.json5
+
+# Local artefacts
+*.log
+.DS_Store
+Thumbs.db

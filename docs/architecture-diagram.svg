@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#00B8D4"/>
+    </marker>
+    <marker id="arrowhead-orange" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#FF6A00"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#00000030"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="720" fill="#F4F4F4"/>
+
+  <!-- Title -->
+  <rect x="0" y="0" width="1100" height="50" fill="#263238"/>
+  <text x="550" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Coach Drill Designer — System Architecture</text>
+
+  <!-- ── BROWSER LAYER ── -->
+  <rect x="20" y="65" width="1060" height="80" rx="10" fill="#263238" opacity="0.08" stroke="#263238" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="35" y="82" font-size="11" fill="#263238" font-weight="bold" opacity="0.5">BROWSER / CLIENT LAYER</text>
+
+  <!-- NavBar -->
+  <rect x="35" y="88" width="120" height="44" rx="6" fill="#263238" filter="url(#shadow)"/>
+  <text x="95" y="111" text-anchor="middle" font-size="11" fill="white" font-weight="bold">NavBar</text>
+  <text x="95" y="124" text-anchor="middle" font-size="9" fill="#ffffff80">5 routes</text>
+
+  <!-- Pages -->
+  <rect x="175" y="88" width="880" height="44" rx="6" fill="#FF6A00" opacity="0.12" stroke="#FF6A00" stroke-width="1"/>
+  <text x="615" y="104" text-anchor="middle" font-size="10" fill="#FF6A00" font-weight="bold">NEXT.JS APP ROUTER PAGES</text>
+  <text x="300" y="122" text-anchor="middle" font-size="9" fill="#263238">/drills</text>
+  <text x="400" y="122" text-anchor="middle" font-size="9" fill="#263238">/drills/[id]</text>
+  <text x="510" y="122" text-anchor="middle" font-size="9" fill="#263238">/sessions/[id]</text>
+  <text x="630" y="122" text-anchor="middle" font-size="9" fill="#263238">/teams/[id]</text>
+  <text x="740" y="122" text-anchor="middle" font-size="9" fill="#263238">/season-plans/[id]</text>
+  <text x="860" y="122" text-anchor="middle" font-size="9" fill="#263238">/calendar</text>
+  <text x="960" y="122" text-anchor="middle" font-size="9" fill="#263238">/sessions/[id]/print</text>
+
+  <!-- ── COMPONENT LAYER ── -->
+  <rect x="20" y="158" width="1060" height="200" rx="10" fill="#00B8D4" opacity="0.06" stroke="#00B8D4" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="35" y="175" font-size="11" fill="#00B8D4" font-weight="bold" opacity="0.8">COMPONENT LAYER</text>
+
+  <!-- Drill Editor Box -->
+  <rect x="35" y="182" width="260" height="160" rx="8" fill="white" stroke="#FF6A00" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="35" y="182" width="260" height="28" rx="8" fill="#FF6A00"/>
+  <rect x="35" y="198" width="260" height="12" fill="#FF6A00"/>
+  <text x="165" y="200" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Drill Editor Engine</text>
+  <text x="55" y="224" font-size="9" fill="#263238">DrillEditorPage.tsx</text>
+  <text x="55" y="238" font-size="9" fill="#555">PitchCanvas.tsx (Konva, SSR-disabled)</text>
+  <text x="55" y="252" font-size="9" fill="#555">PaletteSidebar.tsx</text>
+  <text x="55" y="266" font-size="9" fill="#555">InspectorPanel.tsx</text>
+  <text x="55" y="280" font-size="9" fill="#555">DrillEditorTopBar.tsx</text>
+  <text x="55" y="294" font-size="9" fill="#555">PlayerDock.tsx + FormationPicker.tsx</text>
+  <text x="55" y="308" font-size="9" fill="#555">DrillMetaPanel.tsx</text>
+  <text x="55" y="322" font-size="9" fill="#555">DrillsList.tsx</text>
+
+  <!-- Session Builder Box -->
+  <rect x="315" y="182" width="230" height="160" rx="8" fill="white" stroke="#00B8D4" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="315" y="182" width="230" height="28" rx="8" fill="#00B8D4"/>
+  <rect x="315" y="198" width="230" height="12" fill="#00B8D4"/>
+  <text x="430" y="200" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Session Builder</text>
+  <text x="330" y="224" font-size="9" fill="#263238">SessionBuilderPage.tsx</text>
+  <text x="330" y="238" font-size="9" fill="#555">SessionTimeline.tsx (@dnd-kit)</text>
+  <text x="330" y="252" font-size="9" fill="#555">DrillPicker.tsx</text>
+  <text x="330" y="266" font-size="9" fill="#555">SessionsList.tsx</text>
+  <text x="330" y="280" font-size="9" fill="#555">SessionView.tsx</text>
+  <text x="330" y="294" font-size="9" fill="#555">MiniPitchPreview.tsx</text>
+
+  <!-- Season / Calendar Box -->
+  <rect x="565" y="182" width="230" height="160" rx="8" fill="white" stroke="#FFC857" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="565" y="182" width="230" height="28" rx="8" fill="#FFC857"/>
+  <rect x="565" y="198" width="230" height="12" fill="#FFC857"/>
+  <text x="680" y="200" text-anchor="middle" font-size="11" fill="#263238" font-weight="bold">Season &amp; Calendar</text>
+  <text x="580" y="224" font-size="9" fill="#263238">SeasonPlanEditor.tsx</text>
+  <text x="580" y="238" font-size="9" fill="#555">SeasonPlansList.tsx</text>
+  <text x="580" y="252" font-size="9" fill="#555">CalendarPage.tsx</text>
+  <text x="580" y="266" font-size="9" fill="#555">TeamPage.tsx / TeamsList.tsx</text>
+
+  <!-- Print Box -->
+  <rect x="815" y="182" width="250" height="160" rx="8" fill="white" stroke="#8b5cf6" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="815" y="182" width="250" height="28" rx="8" fill="#8b5cf6"/>
+  <rect x="815" y="198" width="250" height="12" fill="#8b5cf6"/>
+  <text x="940" y="200" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Print System</text>
+  <text x="830" y="224" font-size="9" fill="#263238">SessionPrintView.tsx</text>
+  <text x="830" y="238" font-size="9" fill="#555">SeasonPlanPrintView.tsx</text>
+  <text x="830" y="252" font-size="9" fill="#555">A4 Landscape — print CSS</text>
+  <text x="830" y="266" font-size="9" fill="#555">Brand-styled pages</text>
+  <text x="830" y="280" font-size="9" fill="#555">One drill per page (session)</text>
+  <text x="830" y="294" font-size="9" fill="#555">Week-by-week table (season)</text>
+
+  <!-- ── STATE LAYER ── -->
+  <rect x="20" y="372" width="1060" height="130" rx="10" fill="#FF6A00" opacity="0.05" stroke="#FF6A00" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="35" y="390" font-size="11" fill="#FF6A00" font-weight="bold" opacity="0.8">STATE MANAGEMENT LAYER — ZUSTAND + PERSIST</text>
+
+  <!-- Stores -->
+  <rect x="35" y="396" width="155" height="90" rx="7" fill="white" stroke="#FF6A00" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="112" y="413" text-anchor="middle" font-size="10" fill="#FF6A00" font-weight="bold">drillsStore</text>
+  <text x="112" y="428" text-anchor="middle" font-size="8.5" fill="#555">coach-drills-v2</text>
+  <text x="112" y="442" text-anchor="middle" font-size="8" fill="#888">drills, steps, favorites</text>
+  <text x="112" y="455" text-anchor="middle" font-size="8" fill="#888">CRUD + undo wrappers</text>
+  <text x="112" y="468" text-anchor="middle" font-size="8" fill="#888">duplicate, toggleFavorite</text>
+
+  <rect x="210" y="396" width="155" height="90" rx="7" fill="white" stroke="#00B8D4" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="287" y="413" text-anchor="middle" font-size="10" fill="#00B8D4" font-weight="bold">sessionsStore</text>
+  <text x="287" y="428" text-anchor="middle" font-size="8.5" fill="#555">coach-sessions-v2</text>
+  <text x="287" y="442" text-anchor="middle" font-size="8" fill="#888">sessions, blocks</text>
+  <text x="287" y="455" text-anchor="middle" font-size="8" fill="#888">reorderBlocks</text>
+
+  <rect x="385" y="396" width="155" height="90" rx="7" fill="white" stroke="#FFC857" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="462" y="413" text-anchor="middle" font-size="10" fill="#bf8c00" font-weight="bold">teamsStore</text>
+  <text x="462" y="428" text-anchor="middle" font-size="8.5" fill="#555">coach-teams-v1</text>
+  <text x="462" y="442" text-anchor="middle" font-size="8" fill="#888">teams, players</text>
+  <text x="462" y="455" text-anchor="middle" font-size="8" fill="#888">color inheritance</text>
+
+  <rect x="560" y="396" width="155" height="90" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="637" y="413" text-anchor="middle" font-size="10" fill="#8b5cf6" font-weight="bold">foldersStore</text>
+  <text x="637" y="428" text-anchor="middle" font-size="8.5" fill="#555">coach-folders-v1</text>
+  <text x="637" y="442" text-anchor="middle" font-size="8" fill="#888">folders, subcategories</text>
+
+  <rect x="735" y="396" width="155" height="90" rx="7" fill="white" stroke="#22c55e" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="812" y="413" text-anchor="middle" font-size="10" fill="#22c55e" font-weight="bold">seasonPlansStore</text>
+  <text x="812" y="428" text-anchor="middle" font-size="8.5" fill="#555">coach-season-plans-v1</text>
+  <text x="812" y="442" text-anchor="middle" font-size="8" fill="#888">plans, entries</text>
+
+  <rect x="910" y="396" width="155" height="90" rx="7" fill="white" stroke="#f97316" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="987" y="413" text-anchor="middle" font-size="10" fill="#f97316" font-weight="bold">calendarStore</text>
+  <text x="987" y="428" text-anchor="middle" font-size="8.5" fill="#555">coach-calendar-v1</text>
+  <text x="987" y="442" text-anchor="middle" font-size="8" fill="#888">events, syncSeasonPlan</text>
+
+  <!-- ── PERSISTENCE LAYER ── -->
+  <rect x="20" y="516" width="1060" height="60" rx="10" fill="#263238" opacity="0.06" stroke="#263238" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="35" y="533" font-size="11" fill="#263238" font-weight="bold" opacity="0.5">PERSISTENCE LAYER — BROWSER localStorage (SSR-safe adapter)</text>
+  <rect x="55" y="540" width="140" height="24" rx="5" fill="#263238" opacity="0.15"/>
+  <text x="125" y="556" text-anchor="middle" font-size="9" fill="#263238">coach-drills-v2</text>
+  <rect x="215" y="540" width="145" height="24" rx="5" fill="#263238" opacity="0.15"/>
+  <text x="287" y="556" text-anchor="middle" font-size="9" fill="#263238">coach-sessions-v2</text>
+  <rect x="380" y="540" width="140" height="24" rx="5" fill="#263238" opacity="0.15"/>
+  <text x="450" y="556" text-anchor="middle" font-size="9" fill="#263238">coach-teams-v1</text>
+  <rect x="540" y="540" width="140" height="24" rx="5" fill="#263238" opacity="0.15"/>
+  <text x="610" y="556" text-anchor="middle" font-size="9" fill="#263238">coach-folders-v1</text>
+  <rect x="700" y="540" width="165" height="24" rx="5" fill="#263238" opacity="0.15"/>
+  <text x="782" y="556" text-anchor="middle" font-size="9" fill="#263238">coach-season-plans-v1</text>
+  <rect x="885" y="540" width="170" height="24" rx="5" fill="#263238" opacity="0.15"/>
+  <text x="970" y="556" text-anchor="middle" font-size="9" fill="#263238">coach-calendar-v1</text>
+
+  <!-- ── THIRD-PARTY LAYER ── -->
+  <rect x="20" y="590" width="1060" height="110" rx="10" fill="#00B8D4" opacity="0.05" stroke="#00B8D4" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="35" y="608" font-size="11" fill="#00B8D4" font-weight="bold" opacity="0.8">THIRD-PARTY LIBRARIES</text>
+
+  <rect x="35" y="615" width="180" height="70" rx="7" fill="white" stroke="#00B8D4" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="125" y="634" text-anchor="middle" font-size="10" fill="#00B8D4" font-weight="bold">react-konva / konva</text>
+  <text x="125" y="649" text-anchor="middle" font-size="8.5" fill="#555">Canvas 2D engine</text>
+  <text x="125" y="663" text-anchor="middle" font-size="8" fill="#888">Stage / Layer / Transformer</text>
+  <text x="125" y="676" text-anchor="middle" font-size="8" fill="#888">SSR-disabled (dynamic import)</text>
+
+  <rect x="235" y="615" width="180" height="70" rx="7" fill="white" stroke="#FF6A00" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="325" y="634" text-anchor="middle" font-size="10" fill="#FF6A00" font-weight="bold">@dnd-kit</text>
+  <text x="325" y="649" text-anchor="middle" font-size="8.5" fill="#555">Drag and Drop</text>
+  <text x="325" y="663" text-anchor="middle" font-size="8" fill="#888">Session timeline reorder</text>
+  <text x="325" y="676" text-anchor="middle" font-size="8" fill="#888">Drill library sort/reorder</text>
+
+  <rect x="435" y="615" width="180" height="70" rx="7" fill="white" stroke="#FFC857" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="525" y="634" text-anchor="middle" font-size="10" fill="#bf8c00" font-weight="bold">Zustand 4.5</text>
+  <text x="525" y="649" text-anchor="middle" font-size="8.5" fill="#555">Global state management</text>
+  <text x="525" y="663" text-anchor="middle" font-size="8" fill="#888">persist middleware</text>
+  <text x="525" y="676" text-anchor="middle" font-size="8" fill="#888">SSR-safe storage adapter</text>
+
+  <rect x="635" y="615" width="180" height="70" rx="7" fill="white" stroke="#8b5cf6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="725" y="634" text-anchor="middle" font-size="10" fill="#8b5cf6" font-weight="bold">Next.js 14.2 (App Router)</text>
+  <text x="725" y="649" text-anchor="middle" font-size="8.5" fill="#555">React 18 + TypeScript</text>
+  <text x="725" y="663" text-anchor="middle" font-size="8" fill="#888">File-based routing</text>
+  <text x="725" y="676" text-anchor="middle" font-size="8" fill="#888">dynamic() for SSR guard</text>
+
+  <rect x="835" y="615" width="220" height="70" rx="7" fill="white" stroke="#22c55e" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="945" y="634" text-anchor="middle" font-size="10" fill="#22c55e" font-weight="bold">Tailwind CSS 3.4</text>
+  <text x="945" y="649" text-anchor="middle" font-size="8.5" fill="#555">Utility-first styling</text>
+  <text x="945" y="663" text-anchor="middle" font-size="8" fill="#888">Custom brand tokens</text>
+  <text x="945" y="676" text-anchor="middle" font-size="8" fill="#888">brand-orange, brand-dark</text>
+
+  <!-- Arrows between layers -->
+  <line x1="550" y1="148" x2="550" y2="162" stroke="#00B8D4" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <line x1="550" y1="358" x2="550" y2="372" stroke="#FF6A00" stroke-width="1.5" marker-end="url(#arrowhead-orange)"/>
+  <line x1="550" y1="486" x2="550" y2="516" stroke="#263238" stroke-width="1.5" stroke-dasharray="4,2"/>
+</svg>

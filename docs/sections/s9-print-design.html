@@ -1,0 +1,155 @@
+<!-- ══════════════════════════════════ PRINT SYSTEM ═══ -->
+<div class="page page-break">
+<h2 class="h-section">12. Print System</h2>
+
+<h3 class="h-sub">12.1 Session Print</h3>
+<p>Route: <code>/sessions/[id]/print</code> → <code>SessionPrintView.tsx</code></p>
+<div class="card card-purple">
+  <p>The session print view generates a <strong>branded A4 landscape document</strong> with one cover page followed by one page per session block. All print layout is controlled via a <code>&lt;style&gt;</code> tag with <code>@media print</code> rules injected directly into the component.</p>
+</div>
+
+<table>
+  <thead><tr><th>Page</th><th>Content</th></tr></thead>
+  <tbody>
+    <tr><td>Cover Page (<code>.cover-print-page</code>)</td><td>Session title, team name, date, total duration, block count, section breakdown table (warmup/main/game/cooldown with durations and intensity counts), brand header bar in #FF6A00</td></tr>
+    <tr><td>Each Drill Page (<code>.drill-print-page</code>)</td><td>Page header with session title, drill number/total; left column: drill name, duration, intensity badge, section phase badge, coaching points list, notes; right column: large MiniPitchPreview diagram (SVG), drill metadata (age group, player count, equipment)</td></tr>
+  </tbody>
+</table>
+
+<pre><code>/* Print CSS rules */
+@media print {
+  @page { size: A4 landscape; margin: 10mm 12mm; }
+  .session-print-toolbar { display: none !important; }
+  .drill-print-page {
+    page-break-before: always;
+    break-inside: avoid;
+  }
+  .cover-print-page { page-break-before: avoid; }
+}</code></pre>
+
+<div class="info-box">
+  The <code>.session-print-toolbar</code> class hides the Print / Back buttons when actually printing. The NavBar is hidden globally via a <code>.no-print</code> class applied in <code>globals.css</code>. This ensures a clean output with only the content pages.
+</div>
+
+<h3 class="h-sub">12.2 Season Plan Print</h3>
+<p>Route: <code>/season-plans/[id]/view</code> → <code>SeasonPlanPrintView.tsx</code></p>
+<div class="card card-accent">
+  <p>Renders a <strong>week-by-week training table</strong> designed for season overview printing. Weeks run Sunday-to-Saturday. Each week row spans the full page width. Cells show assigned sessions with drill thumbnail previews.</p>
+</div>
+
+<table>
+  <thead><tr><th>Element</th><th>Design</th></tr></thead>
+  <tbody>
+    <tr><td>Document header</td><td>Team name, plan title, date range — background: <code>#263238</code>, text: white</td></tr>
+    <tr><td>Week header rows</td><td>Background: <code>#FF6A00</code>, white text, week number + date range</td></tr>
+    <tr><td>Training day cells</td><td>White background, session title, intensity badge, MiniPitchPreview SVG thumbnail</td></tr>
+    <tr><td>Empty day cells</td><td>Light gray (#F4F4F4) background, centered dash</td></tr>
+    <tr><td>Intensity badges</td><td>Low: blue (#dbeafe), Mid: amber (#fef3c7), High: red (#fee2e2)</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">12.3 MiniPitchPreview (SVG Thumbnail)</h3>
+<p><code>MiniPitchPreview.tsx</code> renders a pure SVG representation of a drill's canvas objects — no Konva dependency. It is used in SessionTimeline block cards, DrillsList cards, and both print views.</p>
+<div class="info-box-accent">
+  Supported object types in SVG preview: players (circle + number text), cones (orange triangle), balls (white circle), goals (rectangle), arrows (SVG marker), lines, zones (filled rect), circles, rectangles, curved lines (SVG <code>&lt;path&gt;</code> with cubic bezier). Link objects are rendered as a line between player positions.
+</div>
+</div>
+
+<!-- ══════════════════════════════════ DESIGN SYSTEM ═══ -->
+<div class="page page-break">
+<h2 class="h-section">13. UI &amp; Design System</h2>
+
+<h3 class="h-sub">13.1 Brand Color Palette</h3>
+<div class="color-row">
+  <div class="swatch">
+    <div class="swatch-box" style="background:#FF6A00;"></div>
+    <div class="swatch-label">Primary</div>
+    <div class="swatch-hex">#FF6A00</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#263238;"></div>
+    <div class="swatch-label">Dark UI</div>
+    <div class="swatch-hex">#263238</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#F4F4F4;border:1px solid #ddd;"></div>
+    <div class="swatch-label">Background</div>
+    <div class="swatch-hex">#F4F4F4</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#00B8D4;"></div>
+    <div class="swatch-label">Accent</div>
+    <div class="swatch-hex">#00B8D4</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#FFC857;"></div>
+    <div class="swatch-label">Highlight</div>
+    <div class="swatch-hex">#FFC857</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-box" style="background:#1a1a2e;"></div>
+    <div class="swatch-label">Canvas BG</div>
+    <div class="swatch-hex">#1a1a2e</div>
+  </div>
+</div>
+
+<p>Colors are registered as Tailwind custom tokens in <code>tailwind.config.ts</code>:</p>
+<pre><code>// tailwind.config.ts
+theme: {
+  extend: {
+    colors: {
+      'brand-orange': '#FF6A00',
+      'brand-dark': '#263238',
+    }
+  }
+}</code></pre>
+
+<h3 class="h-sub">13.2 Layout Structure</h3>
+<div class="card card-orange">
+  <p>The root layout (<code>app/layout.tsx</code>) renders a full-height flex row: <strong>NavBar</strong> (fixed left sidebar, 240px wide, <code>#263238</code> background) + <strong>main content area</strong> (flex-1, fills remaining width). The editor page adds a further horizontal split: PaletteSidebar (208px) + Canvas + InspectorPanel (288px).</p>
+</div>
+
+<table>
+  <thead><tr><th>Zone</th><th>Width</th><th>Background</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td>NavBar (left sidebar)</td><td>240px fixed</td><td>#263238</td><td>Global navigation: Drills, Sessions, Teams, Season Plans, Calendar</td></tr>
+    <tr><td>PaletteSidebar</td><td>208px fixed</td><td>gray-900</td><td>Tool palette for draw tools, equipment, shapes</td></tr>
+    <tr><td>Canvas area</td><td>flex-1 (remaining)</td><td>#1a1a2e (dark)</td><td>Konva Stage: pitch + objects</td></tr>
+    <tr><td>InspectorPanel</td><td>288px fixed</td><td>gray-900</td><td>Property inspector for selected objects</td></tr>
+    <tr><td>Player Dock</td><td>full width, collapsible</td><td>gray-900</td><td>Player avatars + formation buttons</td></tr>
+    <tr><td>Session list pages</td><td>full width</td><td>#F4F4F4</td><td>White cards on light gray background</td></tr>
+  </tbody>
+</table>
+
+<h3 class="h-sub">13.3 Component Patterns</h3>
+<div class="two-col">
+  <div class="card card-accent">
+    <div class="h-sub2">Editor (Dark Theme)</div>
+    <p>The editor uses a dark UI: <code>bg-gray-900</code> panels, <code>bg-gray-800</code> inputs, emerald-500 active states, amber-500 draw-active states. All text uses white/gray variants.</p>
+  </div>
+  <div class="card card-orange">
+    <div class="h-sub2">List Pages (Light Theme)</div>
+    <p>Session Builder, DrillsList, SessionsList use a light theme: white cards (<code>bg-white</code>) on <code>#F4F4F4</code>, slate-200 borders, brand-orange accents, shadow-card utility class.</p>
+  </div>
+</div>
+
+<div class="card card-green">
+  <div class="h-sub2">State Indicators</div>
+  <ul style="padding-left:18px;font-size:12px;line-height:1.8;">
+    <li>Save status: "saving…" → "saved" auto-transition after 600ms debounce on any drill change</li>
+    <li>Active draw tool: amber highlight in PaletteSidebar + amber status box below showing current tool name</li>
+    <li>Active step tab: emerald highlight border on selected step</li>
+    <li>Selected object: Konva Transformer renders handles around selected node</li>
+  </ul>
+</div>
+
+<h3 class="h-sub">13.4 NavBar</h3>
+<p>The NavBar (<code>NavBar.tsx</code>) is a fixed left sidebar with:</p>
+<ul style="padding-left:20px;font-size:12px;line-height:1.9;">
+  <li>Brand logo mark ("C" in orange rounded square) + "CoachDesigner" wordmark</li>
+  <li>5 navigation links with emoji icons (⚽ Drills, 📋 Sessions, 👥 Teams, 📅 Season Plans, 🗓 Calendar)</li>
+  <li>Active link: <code>bg-brand-orange/20 text-brand-orange</code></li>
+  <li>Inactive link: <code>text-white/60 hover:text-white hover:bg-white/10</code></li>
+  <li>Hidden on print via <code>.no-print</code> class</li>
+</ul>
+</div>

@@ -1,0 +1,280 @@
+<!-- ══════════════════════════════════ CAPABILITIES ═══ -->
+<div class="page page-break">
+<h2 class="h-section">14. Current Capabilities</h2>
+
+<h3 class="h-sub">Drill Design</h3>
+<div class="badge-grid">
+  <span class="badge badge-orange">Visual canvas editor (Konva)</span>
+  <span class="badge badge-orange">4 pitch types: full, half, third, plain</span>
+  <span class="badge badge-orange">Custom pitch colors &amp; grass stripes</span>
+  <span class="badge badge-orange">11 canvas object types</span>
+  <span class="badge badge-orange">7 tactical arrow/line types</span>
+  <span class="badge badge-orange">3-click curved bezier line tool</span>
+  <span class="badge badge-orange">Smart arrow-to-player connections</span>
+  <span class="badge badge-orange">Player team assignment (A/B)</span>
+  <span class="badge badge-orange">GK detection (numbers 1, 12, 13)</span>
+  <span class="badge badge-orange">Global player scale slider (0.5×–2×)</span>
+  <span class="badge badge-orange">Zone areas with fill, opacity, label</span>
+  <span class="badge badge-orange">Shape tools: circle, rectangle</span>
+  <span class="badge badge-orange">Link objects between players</span>
+</div>
+
+<h3 class="h-sub">Editor Interaction</h3>
+<div class="badge-grid">
+  <span class="badge badge-accent">30-level undo/redo stack (per step)</span>
+  <span class="badge badge-accent">Multi-select (Shift+click)</span>
+  <span class="badge badge-accent">Marquee rubber-band selection</span>
+  <span class="badge badge-accent">Alignment snap (10px threshold)</span>
+  <span class="badge badge-accent">Shift+drag axis constraint</span>
+  <span class="badge badge-accent">Shift+draw 45° angle constraint</span>
+  <span class="badge badge-accent">Copy / paste with offset</span>
+  <span class="badge badge-accent">Duplicate (single + multi-select)</span>
+  <span class="badge badge-accent">Object lock/unlock</span>
+  <span class="badge badge-accent">Mouse wheel zoom</span>
+  <span class="badge badge-accent">Export PNG (2× pixel ratio)</span>
+  <span class="badge badge-accent">Alignment toolbar (8 modes)</span>
+</div>
+
+<h3 class="h-sub">Step &amp; Progression System</h3>
+<div class="badge-grid">
+  <span class="badge badge-dark">Base layer + unlimited progression steps</span>
+  <span class="badge badge-dark">Auto-clone base on step creation</span>
+  <span class="badge badge-dark">Clone base → current step action</span>
+  <span class="badge badge-dark">Step label editing</span>
+  <span class="badge badge-dark">Step-scoped undo/redo</span>
+</div>
+
+<h3 class="h-sub">Play Simulation</h3>
+<div class="badge-grid">
+  <span class="badge badge-yellow">rAF animation loop (1800ms)</span>
+  <span class="badge badge-yellow">ease-in-out tween</span>
+  <span class="badge badge-yellow">Players move along arrow paths</span>
+  <span class="badge badge-yellow">Play / Stop controls</span>
+</div>
+
+<h3 class="h-sub">Drill Organisation</h3>
+<div class="badge-grid">
+  <span class="badge badge-green">Folder system with CRUD</span>
+  <span class="badge badge-green">Subcategories per folder</span>
+  <span class="badge badge-green">Favorites (star toggle)</span>
+  <span class="badge badge-green">Drag-to-reorder (sortOrder)</span>
+  <span class="badge badge-green">Drag between folders/subcategories</span>
+  <span class="badge badge-green">8 drill templates at creation</span>
+  <span class="badge badge-green">Step count badge on card</span>
+</div>
+
+<h3 class="h-sub">Drill Metadata</h3>
+<div class="badge-grid">
+  <span class="badge badge-dark">Objective, age group, player count</span>
+  <span class="badge badge-dark">Area size, duration</span>
+  <span class="badge badge-dark">Equipment list</span>
+  <span class="badge badge-dark">Coaching points, cues, mistakes</span>
+  <span class="badge badge-dark">Corrections, key constraints</span>
+  <span class="badge badge-dark">Progression/regression notes</span>
+  <span class="badge badge-dark">Tags, team link, training day</span>
+  <span class="badge badge-dark">Drill relationships (parent/variation)</span>
+</div>
+
+<h3 class="h-sub">Session Builder</h3>
+<div class="badge-grid">
+  <span class="badge badge-orange">Session blocks with drill references</span>
+  <span class="badge badge-orange">4 session sections (warmup/main/game/cooldown)</span>
+  <span class="badge badge-orange">Intensity per block (low/mid/high)</span>
+  <span class="badge badge-orange">Drag-to-reorder blocks</span>
+  <span class="badge badge-orange">Per-block notes</span>
+  <span class="badge badge-orange">Duplicate blocks</span>
+  <span class="badge badge-orange">Session duration summary</span>
+  <span class="badge badge-orange">Equipment aggregation</span>
+</div>
+
+<h3 class="h-sub">Teams, Season &amp; Calendar</h3>
+<div class="badge-grid">
+  <span class="badge badge-accent">Team color configuration (6 color fields)</span>
+  <span class="badge badge-accent">Player roster management</span>
+  <span class="badge badge-accent">Color inheritance to canvas players</span>
+  <span class="badge badge-accent">Season plan with date range</span>
+  <span class="badge badge-accent">Session assignment to training days</span>
+  <span class="badge badge-accent">Calendar auto-sync from season plan</span>
+  <span class="badge badge-accent">Calendar event status (planned/completed/cancelled)</span>
+  <span class="badge badge-accent">Month-view calendar</span>
+</div>
+
+<h3 class="h-sub">Print &amp; Export</h3>
+<div class="badge-grid">
+  <span class="badge badge-purple">Session print: cover + one page per drill</span>
+  <span class="badge badge-purple">Season plan print: week-by-week table</span>
+  <span class="badge badge-purple">A4 landscape with brand styling</span>
+  <span class="badge badge-purple">MiniPitchPreview in print output</span>
+  <span class="badge badge-purple">Drill PNG export (2× quality)</span>
+  <span class="badge badge-purple">Fullscreen drill view (Fullscreen API)</span>
+</div>
+</div>
+
+<!-- ══════════════════════════════════ LIMITATIONS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">15. Limitations</h2>
+
+<div class="limit-card">
+  <div class="limit-title">1. Client-Only Storage (localStorage)</div>
+  <div class="limit-body">All data lives in the browser's localStorage. There is no backend, no database, and no cloud sync. Data is device-specific and will be lost if the browser data is cleared. There is no sharing, collaboration, or multi-device access.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">2. No User Authentication</div>
+  <div class="limit-body">The application has no user accounts or login system. Anyone who opens the app on the same device has full access to all data. Multiple coaches cannot use separate workspaces on the same device.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">3. localStorage Size Constraints</div>
+  <div class="limit-body">Browsers typically limit localStorage to 5–10MB per origin. Large drills with many objects or many drills/sessions stored simultaneously can approach this limit. There is no data compression or pagination of storage. The application will silently fail to save if the quota is exceeded (the storage adapter catches errors with empty catch blocks).</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">4. No Real-Time Collaboration</div>
+  <div class="limit-body">Multiple coaches cannot work on the same drill simultaneously. There is no conflict resolution, no operational transforms, and no WebSocket connection. This is a single-user offline tool.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">5. Canvas Performance at Scale</div>
+  <div class="limit-body">The Konva canvas renders all objects in a single pass without virtualization. Drills with 50+ objects may experience performance degradation. Group move (multi-select drag) uses <code>stageRef.findOne()</code> for live updates which can be expensive on complex canvases.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">6. SVG Print Limitations</div>
+  <div class="limit-body">The MiniPitchPreview used in print is SVG-based and does not perfectly match the Konva canvas rendering (especially for curved lines, rotated objects, and GK gold fill). Complex drills may look simplified in print.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">7. No Drill Search/Filter</div>
+  <div class="limit-body">The drill library lacks a full-text search across all drills. Filtering is only by folder/subcategory selection. A coach with hundreds of drills cannot quickly find one by keyword, tag, or metadata.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">8. No Versioning or History</div>
+  <div class="limit-body">There is no version history for drills beyond the in-session undo stack. Once the page is closed, the undo stack is lost. There is no "version history" for a drill over time — edits overwrite the stored state permanently.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">9. Formation Coordinates Are Fixed</div>
+  <div class="limit-body">Formation templates use hardcoded percentage coordinates. There is no visual formation editor — coaches cannot create custom formations from scratch within the app.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">10. No Mobile / Touch Optimisation</div>
+  <div class="limit-body">The canvas editor and multi-panel layout are designed for desktop use. The application is not optimised for touch input, mobile screen sizes, or stylus/tablet drawing. Konva touch events are not configured.</div>
+</div>
+
+<div class="limit-card">
+  <div class="limit-title">11. Session Quality Analysis is Minimal</div>
+  <div class="limit-body"><code>src/lib/sessionQuality.ts</code> exists but the analysis logic is basic. There are no AI-driven insights, no intensity curve visualisation, and no warm-up/cool-down time recommendations based on session load.</div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════ SUGGESTIONS ═══ -->
+<div class="page page-break">
+<h2 class="h-section">16. Professional Improvement Suggestions</h2>
+
+<div class="suggest-card">
+  <div class="suggest-num">1</div>
+  <div>
+    <div class="suggest-title">Cloud Backend &amp; Multi-Device Sync</div>
+    <div class="suggest-body">Replace localStorage with a proper backend (Supabase, PlanetScale, or a Node.js/PostgreSQL API). Use Zustand middleware to sync store mutations to the server via REST or GraphQL. This enables multi-device access, backup, and future collaboration. A lightweight approach: Supabase with Row Level Security + Zustand's <code>subscribeWithSelector</code> for optimistic UI.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">2</div>
+  <div>
+    <div class="suggest-title">User Authentication &amp; Multi-Coach Workspaces</div>
+    <div class="suggest-body">Add authentication (NextAuth.js or Supabase Auth) to enable multiple coaches per club to have isolated workspaces. Add coach profiles, admin roles, and club-level sharing. This is the single highest-value change to make the product multi-tenant and commercially viable.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">3</div>
+  <div>
+    <div class="suggest-title">Real-Time Collaborative Editing</div>
+    <div class="suggest-body">Implement operational transforms or CRDTs (e.g. Yjs) over WebSockets (Socket.io or Partykit) to allow multiple coaches to edit the same drill canvas simultaneously. Show live cursors and user avatars on the canvas. This elevates the platform to a professional coaching tool comparable to Miro or Figma for sports.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">4</div>
+  <div>
+    <div class="suggest-title">AI Drill Generation &amp; Coaching Assistant</div>
+    <div class="suggest-body">Integrate the Claude API or OpenAI API to provide: (a) natural language drill generation ("Create a 4v2 rondo with pressing triggers"), (b) automatic coaching point suggestions based on the drill type, (c) session structure recommendations based on player age/objective. This transforms the tool from a drawing app into an intelligent coaching assistant.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">5</div>
+  <div>
+    <div class="suggest-title">Canvas Performance &amp; Infinite Canvas</div>
+    <div class="suggest-body">Implement canvas virtualisation for large drills: only render objects within the current viewport. Add infinite pan with minimap navigation. Use Konva's built-in caching (<code>node.cache()</code>) for static pitch layer. Consider a WebGL renderer (Pixi.js) for very large formation diagrams or animation-heavy simulations.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">6</div>
+  <div>
+    <div class="suggest-title">Video &amp; Animation Export</div>
+    <div class="suggest-body">Extend the Play Simulation system to record frames and export as a GIF or MP4 video. Use <code>MediaRecorder API</code> with canvas <code>captureStream()</code>. Coaches could share animated drill previews directly to messaging platforms. Add multi-step sequential animation (play step 1, then step 2 automatically).</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">7</div>
+  <div>
+    <div class="suggest-title">Full-Text Drill Search &amp; Smart Filtering</div>
+    <div class="suggest-body">Add a search index (Fuse.js for client-side fuzzy search) across all drill fields: title, description, objective, tags, coaching points. Add filter chips for age group, player count, duration range, intensity, equipment. A coach with 200+ drills needs to find "4v2 rondo with GK" in under 2 seconds.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">8</div>
+  <div>
+    <div class="suggest-title">Custom Formation Editor</div>
+    <div class="suggest-body">Replace the hardcoded formation templates with a visual formation builder: drag players freely on a mini-pitch to define custom formations, then save them as named templates. Support tactical variations within a formation (e.g. defensive shape vs. attacking shape from the same formation base).</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">9</div>
+  <div>
+    <div class="suggest-title">Drill Versioning &amp; History</div>
+    <div class="suggest-body">Store a version history for each drill (e.g. last 20 saves with timestamps). Allow coaches to browse history, preview, and restore a previous version. This is critical for professional use where coaches frequently iterate drills over a season and may want to revert to an earlier concept.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">10</div>
+  <div>
+    <div class="suggest-title">Training Load Analytics Dashboard</div>
+    <div class="suggest-body">Add an analytics view showing: weekly/monthly intensity distribution across sessions, training volume trends, intensity periodization chart (tapering into matchdays), most-used drills and equipment. Integrate with the season plan and calendar to derive load data automatically from the stored sessions.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">11</div>
+  <div>
+    <div class="suggest-title">Mobile &amp; Tablet Optimisation</div>
+    <div class="suggest-body">Redesign the UI with responsive breakpoints and touch-first interactions for iPad/tablet use. Konva supports touch events — add pinch-to-zoom, two-finger pan, and tap-to-select. A touchscreen canvas editor would allow coaches to design drills directly from the pitch with a tablet. This opens the product to a significantly larger user base.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">12</div>
+  <div>
+    <div class="suggest-title">Drill Library Sharing &amp; Community</div>
+    <div class="suggest-body">Build a public drill library where coaches can publish drills with a one-click "share". Add import/export (JSON or custom format) for individual drills or entire season plans. Create a community browser where coaches can discover and fork drills from others. This creates network effects and makes the platform defensible.</div>
+  </div>
+</div>
+
+<div class="suggest-card">
+  <div class="suggest-num">13</div>
+  <div>
+    <div class="suggest-title">GPS / Wearable Data Integration</div>
+    <div class="suggest-body">For advanced clubs, integrate with GPS tracking providers (STATSports, Catapult, Polar) to import actual training load data and overlay it against planned sessions. Show planned-vs-actual intensity, distance, and HRV recovery data alongside the season plan.</div>
+  </div>
+</div>
+</div>
