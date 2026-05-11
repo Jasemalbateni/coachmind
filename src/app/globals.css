@@ -46,6 +46,20 @@ html, body {
 .h-screen-dvh { height: 100vh; height: 100dvh; }
 .min-h-screen-dvh { min-height: 100vh; min-height: 100dvh; }
 
+/* ── Drill editor NavBar visibility ─────────────────────────────────────────
+   The main app sidebar (Drills / Sessions / Teams / Season Plans / Calendar)
+   must be hidden inside the drill editor on any tablet — including iPad Pro
+   12.9" in landscape (1366 × 1024) which exceeds Tailwind's `xl` breakpoint.
+   A width-only check therefore leaves the sidebar visible on those devices.
+
+   Hide by default; only restore on REAL desktop: wide viewport AND a mouse-
+   class input device (hover + fine pointer). iPad finger or Apple Pencil
+   never satisfies both, so the sidebar stays hidden regardless of orientation. */
+.editor-navbar-hide { display: none; }
+@media (min-width: 1280px) and (hover: hover) and (pointer: fine) {
+  .editor-navbar-hide { display: contents; }
+}
+
 /* Light-mode scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #e2e8f0; }

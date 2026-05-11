@@ -30,16 +30,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="bg-brand-bg text-slate-900 min-h-screen-dvh flex overflow-hidden h-screen-dvh">
       {/*
         Sidebar behaviour:
-        - All non-editor pages: NavBar visible everywhere (collapses to icons
-          under 900 px via NavBar's own `nav:` breakpoint).
-        - Drill editor on tablet (< xl, < 1280 px): NavBar hidden entirely so
-          the canvas + palette + inspector get the full viewport.
-        - Drill editor on desktop (≥ xl): NavBar visible as usual.
+        - Non-editor pages: NavBar is always rendered (collapses to a 64-px
+          icon rail under 900 px via NavBar's own `nav:` breakpoint).
+        - Drill editor on real desktop (≥ 1280 px AND mouse/trackpad): NavBar
+          visible exactly as on other pages.
+        - Drill editor on any tablet — iPad portrait, iPad landscape, iPad Pro
+          landscape: NavBar fully hidden, no icon rail either. The canvas /
+          palette / inspector get the full viewport width.
 
-        Using a `display: contents` wrapper lets us hide the NavBar via CSS
-        without re-rendering the layout tree.
+        Tablet detection lives in `editor-navbar-hide` (see globals.css) which
+        combines width + pointer + hover media queries — width alone is not
+        enough because iPad Pro 12.9" landscape exceeds the `xl` breakpoint.
       */}
-      <div className={inEditor ? 'hidden xl:contents' : 'contents'}>
+      <div className={inEditor ? 'editor-navbar-hide' : 'contents'}>
         <NavBar />
       </div>
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden">{children}</main>

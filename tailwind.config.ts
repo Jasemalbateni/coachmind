@@ -8,10 +8,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // Custom breakpoint at 900px so the NavBar can collapse to icon-only on
-      // iPad portrait while staying full-width on desktop. Used as `nav:` modifier.
+      // Custom breakpoints:
+      //  - `nav` (900 px): NavBar text/labels collapse below this width.
+      //  - `desktop`: real desktop signal — wide viewport AND mouse-class input
+      //    (hover + fine pointer). iPad Pro 12.9" in landscape is 1366 × 1024,
+      //    which exceeds the default `xl` (1280 px) — so width-only checks let
+      //    the desktop sidebar slip back in on iPad. Layering the pointer/hover
+      //    media query filters that case out without changing real desktop.
       screens: {
         nav: '900px',
+        desktop: { raw: '(min-width: 1280px) and (hover: hover) and (pointer: fine)' },
       },
       colors: {
         brand: {

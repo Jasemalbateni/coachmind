@@ -185,7 +185,7 @@ export default function PaletteSidebar({
   const toggle = (tool: DrawTool) => onSetDrawTool(drawTool === tool ? null : tool);
 
   return (
-    <aside className="w-52 bg-gray-900 border-r border-gray-800 p-3 flex flex-col gap-0.5 overflow-y-auto shrink-0">
+    <aside className="w-40 desktop:w-52 bg-gray-900 border-r border-gray-800 p-2.5 desktop:p-3 flex flex-col gap-0.5 overflow-y-auto shrink-0">
       <SectionLabel>Equipment</SectionLabel>
 
       {/* Cone — with variant dropdown */}

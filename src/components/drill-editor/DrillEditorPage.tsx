@@ -1032,7 +1032,10 @@ export default function DrillEditorPage({ drillId }: Props) {
         onStop={handleStop}
       />
 
-      <div className="flex-1 flex min-h-0">
+      {/* `relative` so the inspector drawer can absolute-position itself
+          to the right edge of this row on tablet. Desktop keeps the inspector
+          as a regular static flex sibling. */}
+      <div className="flex-1 flex min-h-0 relative">
         <PaletteSidebar
           drawTool={drawTool}
           onAddCone={(variant) => handleAddObject({ id: crypto.randomUUID(), type: 'cone', ...center(), color: '#f97316', imageVariant: variant ?? 'cone', size: 16 } as ConeObject)}
@@ -1139,10 +1142,18 @@ export default function DrillEditorPage({ drillId }: Props) {
           </div>
         </div>
 
-        {/* Right panel — Inspector only.
-            iPad / tablet: narrower so the canvas gets more space (w-56 = 224px).
-            Desktop (xl ≥ 1280px): full inspector width (w-72 = 288px). */}
-        <div className="w-56 xl:w-72 bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 overflow-y-auto">
+        {/* Right panel — Inspector.
+            iPad / tablet: absolute-positioned drawer anchored to the right edge.
+            It slides in from off-screen when an object is selected and slides
+            back out when nothing is selected (auto-driven so the user never
+            has to manually close it — tapping empty pitch deselects and the
+            drawer disappears, restoring full canvas width).
+            Desktop: regular static flex sibling at 288 px, no slide. */}
+        <div
+          className={`bg-gray-900 border-l border-gray-800 flex flex-col overflow-y-auto shrink-0 absolute top-0 bottom-0 right-0 z-30 w-64 shadow-2xl transition-transform duration-200 desktop:static desktop:translate-x-0 desktop:w-72 desktop:shadow-none desktop:z-auto ${
+            (selectedId !== null || selectedIds.length > 0) ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
           <InspectorPanel
             selectedObject={selectedObject}
             selectedIds={selectedIds}
