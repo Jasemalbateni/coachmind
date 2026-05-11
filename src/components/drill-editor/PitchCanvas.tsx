@@ -570,10 +570,18 @@ export default function PitchCanvas({
   }, [editingTextId, editingValue, onUpdateObject]);
 
   // ─── Event handlers ────────────────────────────────────────────────────────
+  // Stage handlers accept both MouseEvent and TouchEvent because we bind the
+  // same functions to onMouseDown/Move/Up AND onTouchStart/Move/End on the
+  // Stage. iPad Safari doesn't reliably synthesise mousemove from touchmove
+  // in Konva's normalisation path, so listening for both is the most robust
+  // way to get smooth press-drag-release on touch and Apple Pencil.
 
-  const handleStageMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    // Right/middle button → never start marquee or drag-draw
-    if (e.evt.button !== undefined && e.evt.button !== 0) return;
+  type CanvasPointerEvent = Konva.KonvaEventObject<MouseEvent | TouchEvent>;
+
+  const handleStageMouseDown = (e: CanvasPointerEvent) => {
+    // Right/middle button → never start marquee or drag-draw. TouchEvent has
+    // no `button` property — only branch when it's actually a MouseEvent.
+    if ('button' in e.evt && e.evt.button !== undefined && e.evt.button !== 0) return;
 
     // ── Draw drag-flow start ───────────────────────────────────────────────
     // Only arm a drag when we're at the *start* of a draw gesture (no points
@@ -613,7 +621,7 @@ export default function PitchCanvas({
     setMarqueeEnd(pitchPos);
   };
 
-  const handleStageMouseUp = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleStageMouseUp = (e: CanvasPointerEvent) => {
     // ── Draw drag-flow: commit on release if we actually dragged ───────────
     const dd = drawDragRef.current;
     drawDragRef.current = null;
@@ -690,7 +698,7 @@ export default function PitchCanvas({
     if (onMarqueeSelect) onMarqueeSelect(hitIds, e.evt.shiftKey);
   };
 
-  const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleStageClick = (e: CanvasPointerEvent) => {
     // Suppress click deselect if we just completed a marquee drag
     if (didMarqueeRef.current) {
       didMarqueeRef.current = false;
@@ -715,12 +723,38 @@ export default function PitchCanvas({
       return;
     }
 
-    if (e.target === e.target.getStage() || e.target.name() === 'pitch-bg') {
+    // Empty area → deselect.
+    const target = e.target;
+    if (target === target.getStage() || target.name() === 'pitch-bg') {
       onSelect(null);
+      return;
+    }
+
+    // Tap-on-shape fallback for iPad / Apple Pencil.
+    //
+    // Konva 9 fires `click` for mouse events and `tap` for touch events as
+    // separate events. Shapes have `onClick={selectHandler}` only, so on
+    // mouse the shape selects itself and stops the bubble via
+    // `e.cancelBubble = true` — this branch never runs. On touch the `tap`
+    // event bubbles up to the Stage (no shape-level onTap to cancel it), so
+    // we resolve the tapped shape's id here and select it directly.
+    //
+    // Without this, after adding any element on iPad the user could not
+    // re-select it once it had been deselected, because no code path called
+    // `onSelect(id)` for a tapped object.
+    const tappedId = target.id() || target.parent?.id();
+    if (tappedId && drill.objects.some((o) => o.id === tappedId)) {
+      // TouchEvent has shiftKey but pure touch never reports it true; this
+      // mirrors the per-shape selectHandler so mouse and touch are aligned.
+      if (e.evt.shiftKey && onMultiSelect) {
+        onMultiSelect(tappedId);
+      } else {
+        onSelect(tappedId);
+      }
     }
   };
 
-  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleMouseMove = (e: CanvasPointerEvent) => {
     const pos = stageRef.current?.getPointerPosition();
     if (!pos) return;
 
@@ -1712,9 +1746,17 @@ export default function PitchCanvas({
         width={containerSize.w}
         height={containerSize.h}
         onClick={handleStageClick}
+        onTap={handleStageClick}
         onMouseDown={handleStageMouseDown}
         onMouseUp={handleStageMouseUp}
         onMouseMove={handleMouseMove}
+        // iPad / Apple Pencil — bind native touch events so press-drag-release
+        // works smoothly even on Konva versions that don't fully synthesise
+        // mousemove from touchmove on iOS Safari. The handlers are idempotent
+        // so if Konva ALSO fires the mouse equivalents we don't double-act.
+        onTouchStart={handleStageMouseDown}
+        onTouchMove={handleMouseMove}
+        onTouchEnd={handleStageMouseUp}
         onContextMenu={(e) => {
           e.evt.preventDefault();
           if (drawTool) { onFinishDrawing(); return; }

@@ -557,10 +557,10 @@ function MultiSelectPanel({
   };
 
   return (
-    <div className="p-4">
+    <div className="p-2.5 xl:p-4">
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-semibold text-gray-400">{count} objects selected</span>
-        <span className="text-xs text-gray-600">{posCount} positional</span>
+        <span className="text-xs text-gray-600 hidden xl:inline">{posCount} positional</span>
       </div>
 
       {/* Shared style controls — only when every selected object is a line-type
@@ -806,10 +806,12 @@ export default function InspectorPanel({
   // Multi-select panel takes priority when 2+ items are selected
   const isMulti = selectedIds.length >= 2;
 
+  // iPad/tablet (< xl): tighter padding so a narrow 224-px panel stays
+  // breathable. Desktop (≥ xl): full padding for the wider 288-px panel.
   if (isMulti && onAlignDistribute && onDeleteSelected) {
     return (
       <div className="flex flex-col shrink-0">
-        <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 border-b border-gray-800">
+        <div className="flex items-center justify-between px-2.5 xl:px-4 pt-3 xl:pt-4 pb-2 shrink-0 border-b border-gray-800">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Multi-select</p>
         </div>
         <MultiSelectPanel
@@ -827,8 +829,8 @@ export default function InspectorPanel({
   if (!selectedObject) {
     return (
       <div className="flex flex-col shrink-0">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-600 p-4">Inspector</p>
-        <div className="flex items-center justify-center p-4 min-h-[120px]">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-600 p-3 xl:p-4">Inspector</p>
+        <div className="flex items-center justify-center p-3 xl:p-4 min-h-[120px]">
           <p className="text-xs text-gray-700 text-center leading-relaxed">
             Click an object to edit<br />
             <span className="text-gray-800">Shift+click or drag to multi-select</span>
@@ -843,16 +845,16 @@ export default function InspectorPanel({
 
   return (
     <div className="flex flex-col shrink-0">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+      <div className="flex items-center justify-between px-2.5 xl:px-4 pt-3 xl:pt-4 pb-2 shrink-0">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 truncate">
           {TYPE_LABELS[selectedObject.type] ?? selectedObject.type}
           {isLocked && <span className="ml-2 text-amber-500 font-normal">[locked]</span>}
         </p>
-        <span className="text-xs bg-gray-800 text-gray-600 px-2 py-0.5 rounded">{selectedObject.type}</span>
+        <span className="text-xs bg-gray-800 text-gray-600 px-2 py-0.5 rounded shrink-0 hidden xl:inline">{selectedObject.type}</span>
       </div>
 
       {objSize && (
-        <div className="mx-4 mb-2 flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-800/60 rounded-lg border border-gray-700/50">
+        <div className="mx-2.5 xl:mx-4 mb-2 flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-800/60 rounded-lg border border-gray-700/50">
           <span className="text-xs text-gray-500 shrink-0">W</span>
           <span className="text-xs font-mono text-gray-300">{objSize.w}</span>
           <span className="text-xs text-gray-700 mx-0.5">×</span>
@@ -862,7 +864,7 @@ export default function InspectorPanel({
         </div>
       )}
 
-      <div className="px-4 overflow-y-auto">
+      <div className="px-2.5 xl:px-4 overflow-y-auto">
         {selectedObject.type === 'player' && <PlayerInspector obj={selectedObject} onUpdate={onUpdate} />}
         {selectedObject.type === 'cone' && <ConeInspector obj={selectedObject} onUpdate={onUpdate} />}
         {selectedObject.type === 'ball' && <BallInspector obj={selectedObject} onUpdate={onUpdate} />}
@@ -879,13 +881,13 @@ export default function InspectorPanel({
         {selectedObject.type === 'text' && <TextInspector obj={selectedObject as TextObject} onUpdate={onUpdate} />}
       </div>
 
-      <div className="px-4 pb-4 pt-2 border-t border-gray-800 flex gap-2 shrink-0">
+      <div className="px-2.5 xl:px-4 pb-3 xl:pb-4 pt-2 border-t border-gray-800 flex gap-2 shrink-0">
         <button onClick={onDuplicate}
-          className="flex-1 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-medium transition-colors">
+          className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-medium transition-colors">
           Duplicate
         </button>
         <button onClick={onDelete}
-          className="flex-1 py-1.5 bg-red-900/30 hover:bg-red-900/50 border border-red-900/50 text-red-400 rounded-lg text-xs font-medium transition-colors">
+          className="flex-1 py-2 bg-red-900/30 hover:bg-red-900/50 border border-red-900/50 text-red-400 rounded-lg text-xs font-medium transition-colors">
           Delete
         </button>
       </div>

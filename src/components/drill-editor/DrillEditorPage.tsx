@@ -1139,8 +1139,10 @@ export default function DrillEditorPage({ drillId }: Props) {
           </div>
         </div>
 
-        {/* Right panel — Inspector only */}
-        <div className="w-72 bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 overflow-y-auto">
+        {/* Right panel — Inspector only.
+            iPad / tablet: narrower so the canvas gets more space (w-56 = 224px).
+            Desktop (xl ≥ 1280px): full inspector width (w-72 = 288px). */}
+        <div className="w-56 xl:w-72 bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 overflow-y-auto">
           <InspectorPanel
             selectedObject={selectedObject}
             selectedIds={selectedIds}
