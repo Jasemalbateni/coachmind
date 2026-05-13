@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/lib/auth/AuthProvider';
+import SyncStatusIndicator from './SyncStatusIndicator';
 
 const links = [
   { href: '/drills',        label: 'Drills',        icon: '⚽' },
@@ -20,6 +22,7 @@ const links = [
  */
 export default function NavBar() {
   const pathname = usePathname();
+  const { user, cloudEnabled, signOut } = useAuth();
 
   return (
     <aside className="no-print w-16 nav:w-60 bg-brand-dark text-white flex flex-col shrink-0 h-screen-dvh overflow-y-auto safe-pt safe-pl transition-[width] duration-200">
@@ -59,6 +62,34 @@ export default function NavBar() {
           );
         })}
       </nav>
+
+      {/* Signed-in user + sync indicator + sign-out — only visible when
+          cloud mode is on AND a user is present. In local-only mode this
+          whole block is hidden so the existing offline experience is
+          unchanged. */}
+      {cloudEnabled && user && (
+        <div className="border-t border-white/10 px-2 nav:px-3 py-3">
+          {/* Expanded: avatar + email */}
+          <div className="hidden nav:flex items-center gap-2 mb-1 px-1">
+            <div className="w-7 h-7 rounded-full bg-brand-orange/20 text-brand-orange flex items-center justify-center text-xs font-bold shrink-0">
+              {(user.email ?? '?').slice(0, 1).toUpperCase()}
+            </div>
+            <p className="text-xs text-white/70 truncate" title={user.email ?? ''}>
+              {user.email}
+            </p>
+          </div>
+          <SyncStatusIndicator />
+          <button
+            onClick={signOut}
+            title="Sign out"
+            aria-label="Sign out"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors justify-center nav:justify-start"
+          >
+            <span className="text-base shrink-0">↩</span>
+            <span className="hidden nav:inline">Sign out</span>
+          </button>
+        </div>
+      )}
 
       {/* Footer — only visible in expanded mode */}
       <div className="hidden nav:block px-4 pb-4 border-t border-white/10 pt-3">

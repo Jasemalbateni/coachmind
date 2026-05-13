@@ -6,8 +6,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDrillsStore } from '@/store/drillsStore';
 import { useTeamsStore } from '@/store/teamsStore';
+import MiniPitchPreview from '@/components/MiniPitchPreview';
 
 const PitchCanvas = dynamic(() => import('@/components/drill-editor/PitchCanvas'), { ssr: false });
+
+// CoachMind brand — matches SessionPrintView / SeasonPlanPrintView
+const BRAND = {
+  orange: '#FF6A00',
+  dark: '#263238',
+  accent: '#00B8D4',
+  highlight: '#FFC857',
+};
 
 export default function DrillView({ drillId }: { drillId: string }) {
   const router = useRouter();
@@ -78,10 +87,104 @@ export default function DrillView({ drillId }: { drillId: string }) {
     ? '100vh'
     : Math.max(300, Math.min(drill.pitch.height, 480));
 
+  // Print diagram size — fits comfortably in the left ~60% of A4 landscape.
+  // Slightly narrower than the previous 700px to give the right info panel
+  // enough room for the full set of Info-panel fields.
+  const PRINT_DIAGRAM_W = 600;
+  const PRINT_DIAGRAM_H = Math.round((drill.pitch.height / drill.pitch.width) * PRINT_DIAGRAM_W);
+
+  // Compact bullet-list section used throughout the right column of the print.
+  type BulletSectionProps = {
+    label: string;
+    color: string;
+    items: string[];
+    marker?: 'dot' | 'arrow' | 'cross' | 'check' | 'diamond';
+  };
+  const PrintBulletSection = ({ label, color, items, marker = 'dot' }: BulletSectionProps) => {
+    if (!items || items.length === 0) return null;
+    const markerEl = (i: number) => {
+      if (marker === 'dot') {
+        return (
+          <span style={{
+            position: 'absolute', left: 0, top: '1.4mm',
+            width: '1.4mm', height: '1.4mm', borderRadius: '50%', background: color,
+          }} />
+        );
+      }
+      const txt = marker === 'arrow' ? '→' : marker === 'cross' ? '✕' : marker === 'check' ? '✓' : '◆';
+      return (
+        <span style={{
+          position: 'absolute', left: 0, top: 0,
+          fontSize: '8pt', lineHeight: 1.3, color, fontWeight: 700,
+        }}>{txt}</span>
+      );
+    };
+    return (
+      <section style={{ marginBottom: '2.2mm', breakInside: 'avoid' as const, pageBreakInside: 'avoid' }}>
+        <p style={{
+          fontSize: '6.8pt', fontWeight: 800, textTransform: 'uppercase',
+          letterSpacing: '0.06em', color, margin: '0 0 0.8mm 0',
+        }}>{label}</p>
+        <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+          {items.map((pt, i) => (
+            <li key={i} style={{
+              margin: '0 0 0.7mm 0', paddingLeft: '3.5mm', position: 'relative',
+              color: BRAND.dark, fontSize: '8.5pt', lineHeight: 1.3,
+            }}>
+              {markerEl(i)}
+              {pt}
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  };
+
+  const PrintProse = ({ label, color, value, mutedBody }: { label: string; color: string; value?: string; mutedBody?: boolean }) => {
+    if (!value) return null;
+    return (
+      <section style={{ marginBottom: '2.2mm', breakInside: 'avoid' as const, pageBreakInside: 'avoid' }}>
+        <p style={{
+          fontSize: '6.8pt', fontWeight: 800, textTransform: 'uppercase',
+          letterSpacing: '0.06em', color, margin: '0 0 0.8mm 0',
+        }}>{label}</p>
+        <p style={{ margin: 0, color: mutedBody ? '#334155' : BRAND.dark, fontSize: '8.5pt', lineHeight: 1.35 }}>
+          {value}
+        </p>
+      </section>
+    );
+  };
+
   return (
+    <>
+      {/*
+        Single-drill print rules — scoped to this route only.
+        The `<style>` element only exists in the DOM while DrillView is
+        mounted (which is solely on /drills/[id]/view), so the @page rule
+        does NOT leak into SessionPrintView or SeasonPlanPrintView.
+
+        Layout strategy: hide the screen-layout entirely in print, and
+        unhide a dedicated landscape print block. One drill = one page.
+      */}
+      <style>{`
+        @media print {
+          @page { size: A4 landscape; margin: 8mm; }
+          /* Take over the page — screen layout off, print layout on. */
+          .drill-view-screen { display: none !important; }
+          .drill-view-print {
+            display: grid !important;
+            page-break-before: avoid !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+        }
+      `}</style>
+
     <div
       ref={containerRef}
-      className={`flex-1 overflow-y-auto print:overflow-visible ${
+      className={`drill-view-screen flex-1 overflow-y-auto print:overflow-visible ${
         isFullscreen
           ? 'bg-gray-950 fixed inset-0 z-50 flex flex-col'
           : 'bg-gray-950 print:bg-white print:text-black'
@@ -300,6 +403,403 @@ export default function DrillView({ drillId }: { drillId: string }) {
         )}
       </div>
     </div>
+
+    {/*
+      ───────────────────────────────────────────────────────────────────
+      Single-drill print layout — A4 landscape, target = one page.
+
+      Hidden on screen (`display: none` inline), revealed by the
+      `@media print` rule above which sets `display: grid !important`.
+      Uses MiniPitchPreview (SVG) instead of the Konva canvas because
+      SVG renders sharper for print and doesn't need viewport sizing.
+
+      Layout (top → bottom, left → right):
+        ┌── Header (full width: logo + title + meta pills + duration) ──┐
+        │ Left col (60%)                │ Right col (40%)               │
+        │ • Diagram                     │ • Objective                   │
+        │ • Metadata grid (4 cards)     │ • Description                 │
+        │ • Team / Day strip            │ • Coaching Points             │
+        │ • Progression / Regression    │ • Coaching Cues               │
+        │ • Notes                       │ • Common Mistakes             │
+        │                               │ • Corrections                 │
+        │                               │ • Key Constraints             │
+        │                               │ • Equipment chips             │
+        │                               │ • Tags chips                  │
+        └── Footer (full width) ────────────────────────────────────────┘
+
+      Every section auto-hides if its field is empty. Bullets and prose
+      use 8.5pt at line-height 1.3 so a typical filled-in drill fits on
+      one landscape page; long content overflows naturally to a second
+      page rather than being clipped.
+    */}
+    <div
+      className="drill-view-print"
+      style={{
+        display: 'none',
+        gridTemplateColumns: '60% 40%',
+        gridTemplateRows: 'auto 1fr auto',
+        columnGap: '5mm',
+        rowGap: '2.5mm',
+        padding: '2mm',
+        width: '100%',
+        boxSizing: 'border-box',
+        fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+        color: BRAND.dark,
+        background: '#ffffff',
+      }}
+    >
+      {/* ── Header — full width across the top ── */}
+      <header
+        style={{
+          gridColumn: '1 / -1',
+          gridRow: '1',
+          paddingBottom: '2mm',
+          borderBottom: `0.8mm solid ${BRAND.orange}`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '3.5mm',
+        }}
+      >
+        <div
+          style={{
+            width: '10mm',
+            height: '10mm',
+            background: BRAND.orange,
+            borderRadius: '2mm',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 900,
+            fontSize: '10pt',
+            letterSpacing: '-0.5px',
+            flexShrink: 0,
+          }}
+        >
+          CM
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1
+            style={{
+              fontSize: '16pt',
+              fontWeight: 800,
+              margin: 0,
+              lineHeight: 1.1,
+              color: BRAND.dark,
+            }}
+          >
+            {drill.title}
+          </h1>
+          <p
+            style={{
+              fontSize: '8.5pt',
+              color: '#64748b',
+              margin: '0.8mm 0 0 0',
+              lineHeight: 1.3,
+            }}
+          >
+            {[
+              team?.name,
+              drill.ageGroup,
+              drill.playerCount ? `${drill.playerCount} players` : null,
+              drill.areaSize,
+              drill.trainingDay,
+            ]
+              .filter(Boolean)
+              .join('  ·  ')}
+          </p>
+        </div>
+        {drill.durationMin ? (
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <p
+              style={{
+                fontSize: '20pt',
+                fontWeight: 900,
+                color: BRAND.orange,
+                margin: 0,
+                lineHeight: 1,
+              }}
+            >
+              {drill.durationMin}
+            </p>
+            <p style={{ fontSize: '7.5pt', color: '#64748b', margin: '0.8mm 0 0 0' }}>min</p>
+          </div>
+        ) : null}
+      </header>
+
+      {/* ── Left column — diagram, metadata, prose ── */}
+      <div
+        style={{
+          gridColumn: '1',
+          gridRow: '2',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2.5mm',
+          minWidth: 0,
+        }}
+      >
+        {/* Diagram */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+          }}
+        >
+          <div
+            style={{
+              borderRadius: '2mm',
+              border: '0.3mm solid #cbd5e1',
+              boxShadow: '0 0.5mm 1.5mm rgba(0,0,0,0.06)',
+              overflow: 'hidden',
+              lineHeight: 0,
+              maxWidth: '100%',
+            }}
+          >
+            <MiniPitchPreview
+              drill={drill}
+              width={PRINT_DIAGRAM_W}
+              height={PRINT_DIAGRAM_H}
+            />
+          </div>
+        </div>
+
+        {/* Metadata cards — 4-up; only renders cells that exist */}
+        {(drill.ageGroup || drill.playerCount || drill.areaSize || drill.durationMin) && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '1.8mm',
+            }}
+          >
+            {[
+              { label: 'Age Group', value: drill.ageGroup },
+              { label: 'Players', value: drill.playerCount },
+              { label: 'Area', value: drill.areaSize },
+              { label: 'Duration', value: drill.durationMin ? `${drill.durationMin} min` : null },
+            ]
+              .filter((x) => x.value)
+              .map((x) => (
+                <div
+                  key={x.label}
+                  style={{
+                    padding: '1.5mm 2mm',
+                    background: '#f8fafc',
+                    border: '0.3mm solid #e2e8f0',
+                    borderRadius: '1.5mm',
+                    textAlign: 'center',
+                  }}
+                >
+                  <p style={{
+                    fontSize: '6.5pt', color: '#94a3b8', margin: 0,
+                    textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700,
+                  }}>{x.label}</p>
+                  <p style={{
+                    fontSize: '9.5pt', color: BRAND.dark, margin: '0.5mm 0 0 0',
+                    fontWeight: 700, lineHeight: 1.1,
+                  }}>{x.value}</p>
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* Progression / Regression — 2 columns */}
+        {(drill.progression || drill.regression) && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: drill.progression && drill.regression ? '1fr 1fr' : '1fr',
+              gap: '2mm',
+            }}
+          >
+            {drill.progression && (
+              <div
+                style={{
+                  padding: '1.8mm 2.2mm',
+                  background: '#f0fdf4',
+                  borderLeft: '0.6mm solid #22c55e',
+                  borderRadius: '1.2mm',
+                  breakInside: 'avoid' as const,
+                  pageBreakInside: 'avoid',
+                }}
+              >
+                <p style={{
+                  fontSize: '6.8pt', fontWeight: 800, textTransform: 'uppercase',
+                  letterSpacing: '0.06em', color: '#15803d', margin: 0,
+                }}>Progression ↑</p>
+                <p style={{
+                  margin: '0.8mm 0 0 0', color: BRAND.dark,
+                  fontSize: '8.5pt', lineHeight: 1.3,
+                }}>{drill.progression}</p>
+              </div>
+            )}
+            {drill.regression && (
+              <div
+                style={{
+                  padding: '1.8mm 2.2mm',
+                  background: '#fffbeb',
+                  borderLeft: '0.6mm solid #f59e0b',
+                  borderRadius: '1.2mm',
+                  breakInside: 'avoid' as const,
+                  pageBreakInside: 'avoid',
+                }}
+              >
+                <p style={{
+                  fontSize: '6.8pt', fontWeight: 800, textTransform: 'uppercase',
+                  letterSpacing: '0.06em', color: '#b45309', margin: 0,
+                }}>Regression ↓</p>
+                <p style={{
+                  margin: '0.8mm 0 0 0', color: BRAND.dark,
+                  fontSize: '8.5pt', lineHeight: 1.3,
+                }}>{drill.regression}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Notes — full width under prose */}
+        {drill.notes && (
+          <div
+            style={{
+              padding: '1.8mm 2.2mm',
+              background: `${BRAND.highlight}1f`,
+              borderLeft: `0.6mm solid ${BRAND.highlight}`,
+              borderRadius: '1.2mm',
+              breakInside: 'avoid' as const,
+              pageBreakInside: 'avoid',
+            }}
+          >
+            <p style={{
+              fontSize: '6.8pt', fontWeight: 800, textTransform: 'uppercase',
+              letterSpacing: '0.06em', color: BRAND.dark, margin: 0,
+            }}>Notes</p>
+            <p style={{
+              margin: '0.8mm 0 0 0', color: BRAND.dark,
+              fontSize: '8.5pt', lineHeight: 1.3,
+            }}>{drill.notes}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Right column — dense info panel ── */}
+      <aside
+        style={{
+          gridColumn: '2',
+          gridRow: '2',
+          fontSize: '8.5pt',
+          lineHeight: 1.3,
+          minWidth: 0,
+        }}
+      >
+        <PrintProse label="Objective" color={BRAND.accent} value={drill.objective} />
+        <PrintProse label="Description" color={BRAND.accent} value={drill.description} mutedBody />
+
+        <PrintBulletSection
+          label="Coaching Points"
+          color={BRAND.orange}
+          items={drill.coachingPoints ?? []}
+          marker="dot"
+        />
+        <PrintBulletSection
+          label="Coaching Cues"
+          color={BRAND.accent}
+          items={drill.coachingCues ?? []}
+          marker="arrow"
+        />
+        <PrintBulletSection
+          label="Common Mistakes"
+          color="#dc2626"
+          items={drill.commonMistakes ?? []}
+          marker="cross"
+        />
+        <PrintBulletSection
+          label="Corrections"
+          color="#16a34a"
+          items={drill.corrections ?? []}
+          marker="check"
+        />
+        <PrintBulletSection
+          label="Key Constraints"
+          color={BRAND.dark}
+          items={drill.keyConstraints ?? []}
+          marker="diamond"
+        />
+
+        {drill.equipment && drill.equipment.length > 0 ? (
+          <section style={{ marginBottom: '2.2mm', breakInside: 'avoid' as const, pageBreakInside: 'avoid' }}>
+            <p style={{
+              fontSize: '6.8pt', fontWeight: 800, textTransform: 'uppercase',
+              letterSpacing: '0.06em', color: BRAND.accent, margin: '0 0 0.8mm 0',
+            }}>Equipment</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.2mm' }}>
+              {drill.equipment.map((eq, i) => (
+                <span
+                  key={i}
+                  style={{
+                    padding: '0.5mm 1.8mm',
+                    border: '0.3mm solid #cbd5e1',
+                    borderRadius: '1.2mm',
+                    fontSize: '8pt',
+                    color: '#475569',
+                    background: '#f8fafc',
+                  }}
+                >
+                  {eq}
+                </span>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {drill.tags && drill.tags.length > 0 ? (
+          <section style={{ breakInside: 'avoid' as const, pageBreakInside: 'avoid' }}>
+            <p style={{
+              fontSize: '6.8pt', fontWeight: 800, textTransform: 'uppercase',
+              letterSpacing: '0.06em', color: BRAND.dark, margin: '0 0 0.8mm 0',
+            }}>Tags</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.2mm' }}>
+              {drill.tags.map((tag) => (
+                <span
+                  key={tag}
+                  style={{
+                    padding: '0.4mm 1.6mm',
+                    background: `${BRAND.highlight}33`,
+                    color: '#92400e',
+                    borderRadius: '1.2mm',
+                    fontSize: '7.8pt',
+                    fontWeight: 600,
+                  }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </aside>
+
+      {/* ── Footer — full width ── */}
+      <footer
+        style={{
+          gridColumn: '1 / -1',
+          gridRow: '3',
+          marginTop: '1.5mm',
+          paddingTop: '1.5mm',
+          borderTop: '0.3mm solid #e2e8f0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '7pt',
+          color: '#94a3b8',
+        }}
+      >
+        <span>CoachMind</span>
+        <span style={{ fontWeight: 600, color: '#64748b' }}>{drill.title}</span>
+        <span>{new Date().toLocaleDateString()}</span>
+      </footer>
+    </div>
+  </>
   );
 }
 

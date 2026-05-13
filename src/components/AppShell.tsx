@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import NavBar from './NavBar';
+import { AuthProvider } from '@/lib/auth/AuthProvider';
 
 const PUBLIC_PATHS = new Set(['/', '/login', '/signup']);
 
@@ -20,10 +21,22 @@ function isDrillEditorPath(pathname: string): boolean {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  if (PUBLIC_PATHS.has(pathname)) {
-    return <>{children}</>;
-  }
+  // AuthProvider wraps everything so `useAuth()` is available on every page
+  // (including the public ones — sign-up + login forms call it). The provider
+  // itself short-circuits when Supabase env vars are missing, so local-only
+  // mode keeps working unchanged.
+  return (
+    <AuthProvider>
+      {PUBLIC_PATHS.has(pathname) ? (
+        <>{children}</>
+      ) : (
+        <ChromeLayout pathname={pathname}>{children}</ChromeLayout>
+      )}
+    </AuthProvider>
+  );
+}
 
+function ChromeLayout({ pathname, children }: { pathname: string; children: React.ReactNode }) {
   const inEditor = isDrillEditorPath(pathname);
 
   return (

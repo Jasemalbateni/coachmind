@@ -3,6 +3,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { SeasonPlan, SeasonPlanEntry } from '@/types';
+import { makeNamespacedStorage } from '@/lib/cloud/cloudStorage';
+import { getCloudUserId } from '@/lib/cloud/cloudSession';
+import { enqueueSeasonPlanUpsert, enqueueSeasonPlanDelete } from '@/lib/cloud/seasonPlanSync';
 
 interface SeasonPlansState {
   plans: Record<string, SeasonPlan>;
@@ -14,34 +17,47 @@ interface SeasonPlansState {
   deleteEntry: (planId: string, entryId: string) => void;
 }
 
-const storageImpl = {
-  getItem: (name: string) => { if (typeof window === 'undefined') return null; try { return localStorage.getItem(name); } catch { return null; } },
-  setItem: (name: string, value: string) => { if (typeof window === 'undefined') return; try { localStorage.setItem(name, value); } catch { /**/ } },
-  removeItem: (name: string) => { if (typeof window === 'undefined') return; try { localStorage.removeItem(name); } catch { /**/ } },
-};
+/**
+ * Cloud-write helpers. No-op when not signed in so the local-only flow
+ * is unchanged. Mutations to a plan's `entries[]` count as a plan-level
+ * change — the array lives inside `data` jsonb so a whole-plan upsert
+ * is the cheapest way to persist it.
+ */
+function syncUpsert(planId: string): void {
+  if (getCloudUserId()) enqueueSeasonPlanUpsert(planId);
+}
+function syncDelete(planId: string): void {
+  if (getCloudUserId()) enqueueSeasonPlanDelete(planId);
+}
 
 export const useSeasonPlansStore = create<SeasonPlansState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       plans: {},
 
-      addPlan: (plan) =>
-        set((s) => ({ plans: { ...s.plans, [plan.id]: plan } })),
+      addPlan: (plan) => {
+        set((s) => ({ plans: { ...s.plans, [plan.id]: plan } }));
+        syncUpsert(plan.id);
+      },
 
-      updatePlan: (id, updates) =>
+      updatePlan: (id, updates) => {
         set((s) => {
           const p = s.plans[id];
           if (!p) return s;
           return { plans: { ...s.plans, [id]: { ...p, ...updates, updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        if (get().plans[id]) syncUpsert(id);
+      },
 
-      deletePlan: (id) =>
+      deletePlan: (id) => {
         set((s) => {
           const { [id]: _, ...rest } = s.plans;
           return { plans: rest };
-        }),
+        });
+        syncDelete(id);
+      },
 
-      upsertEntry: (planId, entry) =>
+      upsertEntry: (planId, entry) => {
         set((s) => {
           const p = s.plans[planId];
           if (!p) return s;
@@ -50,15 +66,22 @@ export const useSeasonPlansStore = create<SeasonPlansState>()(
             ? p.entries.map((e) => e.id === entry.id ? entry : e)
             : [...p.entries, entry];
           return { plans: { ...s.plans, [planId]: { ...p, entries, updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        if (get().plans[planId]) syncUpsert(planId);
+      },
 
-      deleteEntry: (planId, entryId) =>
+      deleteEntry: (planId, entryId) => {
         set((s) => {
           const p = s.plans[planId];
           if (!p) return s;
           return { plans: { ...s.plans, [planId]: { ...p, entries: p.entries.filter((e) => e.id !== entryId), updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        if (get().plans[planId]) syncUpsert(planId);
+      },
     }),
-    { name: 'coach-season-plans-v1', storage: createJSONStorage(() => storageImpl) }
+    {
+      name: 'coach-season-plans-v1',
+      storage: createJSONStorage(() => makeNamespacedStorage('coach-season-plans-v1')),
+    }
   )
 );

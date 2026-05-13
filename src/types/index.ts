@@ -459,4 +459,13 @@ export interface CalendarEvent {
   status?: CalendarEventStatus;
   /** Links this event to a SeasonPlanEntry so updates stay in sync */
   seasonPlanEntryId?: string;
+  /**
+   * ISO timestamp of the last mutation. Optional on the type because
+   * pre-cloud events may have been persisted without it, but every cloud
+   * write / mutation through calendarStore sets it. Used by cloud sync
+   * for last-write-wins reconciliation on hydrate.
+   */
+  updatedAt?: string;
+  /** ISO timestamp of creation. Populated by the DB on the first upsert. */
+  createdAt?: string;
 }

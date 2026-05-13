@@ -1,19 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 
+// useSearchParams() requires a Suspense boundary during static prerender.
+// We wrap the form in <Suspense> at the page boundary so the rest of the
+// page (the marketing left panel) can still render eagerly.
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Surface auth-callback errors (?error=…) on first paint.
+  useEffect(() => {
+    const e = searchParams.get('error');
+    if (e) setError(decodeURIComponent(e));
+  }, [searchParams]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    if (!isSupabaseConfigured()) {
+      setError('Cloud sync is not configured on this build. The app runs in local-only mode.');
+      return;
+    }
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
     setLoading(true);
-    setTimeout(() => router.push('/drills'), 800);
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+
+    // Honour ?next=… so the middleware can bounce users back to where they
+    // came from after sign-in.
+    const next = searchParams.get('next') || '/drills';
+    router.push(next);
+    router.refresh();
   };
 
   return (
@@ -89,6 +131,12 @@ export default function LoginPage() {
             <h1 className="text-2xl font-black text-white mb-2">Welcome back</h1>
             <p className="text-white/40 text-sm">Sign in to your CoachMind account</p>
           </div>
+
+          {error && (
+            <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

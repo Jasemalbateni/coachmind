@@ -3,6 +3,14 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { DrillFolder, FolderSubcategory } from '@/types';
+import { makeNamespacedStorage } from '@/lib/cloud/cloudStorage';
+import { getCloudUserId } from '@/lib/cloud/cloudSession';
+import {
+  enqueueFolderUpsert,
+  enqueueFolderDelete,
+  enqueueSubcategoryUpsert,
+  enqueueSubcategoryDelete,
+} from '@/lib/cloud/folderSync';
 
 interface FoldersState {
   folders: Record<string, DrillFolder>;
@@ -15,11 +23,28 @@ interface FoldersState {
   deleteSubcategory: (id: string) => void;
 }
 
-const storageImpl = {
-  getItem: (name: string) => { if (typeof window === 'undefined') return null; try { return localStorage.getItem(name); } catch { return null; } },
-  setItem: (name: string, value: string) => { if (typeof window === 'undefined') return; try { localStorage.setItem(name, value); } catch { /**/ } },
-  removeItem: (name: string) => { if (typeof window === 'undefined') return; try { localStorage.removeItem(name); } catch { /**/ } },
-};
+/**
+ * Cloud-write helpers. No-op when not signed in so the local-only flow
+ * (and Phase A→D) is unchanged.
+ *
+ * Folder deletion: server-side ON DELETE CASCADE removes any
+ * subcategories pointing at the deleted folder. We mirror that locally
+ * (deleteFolder cascades in Zustand) so the two views stay in sync.
+ * We do NOT enqueue per-subcategory deletes from here — the DB cascade
+ * is the source of truth and re-doing the work would just add no-ops.
+ */
+function syncFolderUpsert(id: string): void {
+  if (getCloudUserId()) enqueueFolderUpsert(id);
+}
+function syncFolderDelete(id: string): void {
+  if (getCloudUserId()) enqueueFolderDelete(id);
+}
+function syncSubUpsert(id: string): void {
+  if (getCloudUserId()) enqueueSubcategoryUpsert(id);
+}
+function syncSubDelete(id: string): void {
+  if (getCloudUserId()) enqueueSubcategoryDelete(id);
+}
 
 export const useFoldersStore = create<FoldersState>()(
   persist(
@@ -27,42 +52,58 @@ export const useFoldersStore = create<FoldersState>()(
       folders: {},
       subcategories: {},
 
-      addFolder: (folder) =>
-        set((s) => ({ folders: { ...s.folders, [folder.id]: folder } })),
+      addFolder: (folder) => {
+        set((s) => ({ folders: { ...s.folders, [folder.id]: folder } }));
+        syncFolderUpsert(folder.id);
+      },
 
-      updateFolder: (id, name) =>
+      updateFolder: (id, name) => {
         set((s) => {
           const f = s.folders[id];
           if (!f) return s;
           return { folders: { ...s.folders, [id]: { ...f, name, updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        syncFolderUpsert(id);
+      },
 
-      deleteFolder: (id) =>
+      deleteFolder: (id) => {
         set((s) => {
           const { [id]: _, ...rest } = s.folders;
-          // Also remove all subcategories belonging to this folder
+          // Local cascade — match the DB's ON DELETE CASCADE on
+          // folder_subcategories.folder_id.
           const filteredSubs = Object.fromEntries(
             Object.entries(s.subcategories).filter(([, sub]) => sub.folderId !== id)
           );
           return { folders: rest, subcategories: filteredSubs };
-        }),
+        });
+        syncFolderDelete(id);
+      },
 
-      addSubcategory: (sub) =>
-        set((s) => ({ subcategories: { ...s.subcategories, [sub.id]: sub } })),
+      addSubcategory: (sub) => {
+        set((s) => ({ subcategories: { ...s.subcategories, [sub.id]: sub } }));
+        syncSubUpsert(sub.id);
+      },
 
-      updateSubcategory: (id, name) =>
+      updateSubcategory: (id, name) => {
         set((s) => {
           const sub = s.subcategories[id];
           if (!sub) return s;
           return { subcategories: { ...s.subcategories, [id]: { ...sub, name, updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        syncSubUpsert(id);
+      },
 
-      deleteSubcategory: (id) =>
+      deleteSubcategory: (id) => {
         set((s) => {
           const { [id]: _, ...rest } = s.subcategories;
           return { subcategories: rest };
-        }),
+        });
+        syncSubDelete(id);
+      },
     }),
-    { name: 'coach-folders-v1', storage: createJSONStorage(() => storageImpl) }
+    {
+      name: 'coach-folders-v1',
+      storage: createJSONStorage(() => makeNamespacedStorage('coach-folders-v1')),
+    }
   )
 );

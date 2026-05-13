@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>CoachMind — تقرير مراجعة المنتج</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand-orange: #FF6A00;
+    --brand-cyan:   #00B8D4;
+    --brand-yellow: #FFC857;
+    --brand-dark:   #263238;
+    --brand-bg:     #F4F4F4;
+    --ink-1: #1a2026;
+    --ink-2: #4b5563;
+    --ink-3: #6b7280;
+    --hair:  #e5e7eb;
+  }
+
+  @page {
+    size: A4;
+    margin: 16mm 14mm 16mm 14mm;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'IBM Plex Sans Arabic', 'Cairo', 'Segoe UI', 'Tahoma', sans-serif;
+    color: var(--ink-1);
+    background: #fff;
+    direction: rtl;
+    line-height: 1.7;
+    font-size: 11.5pt;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Page primitives ─────────────────────────────────────────────────── */
+  .page {
+    page-break-after: always;
+    min-height: 254mm;             /* A4 minus margins, used to push footer to bottom */
+    position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  .page-footer {
+    position: running(footer);
+  }
+
+  /* ── Cover page ─────────────────────────────────────────────────────── */
+  .cover {
+    background: linear-gradient(160deg, #0f1620 0%, #1a2330 55%, #263238 100%);
+    color: #fff;
+    padding: 28mm 18mm;
+    margin: -16mm -14mm;
+    height: 274mm;                  /* fill A4 */
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -80mm; left: -40mm;
+    width: 240mm; height: 240mm;
+    background: radial-gradient(closest-side, rgba(255,106,0,0.18), transparent 70%);
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -60mm; right: -40mm;
+    width: 200mm; height: 200mm;
+    background: radial-gradient(closest-side, rgba(0,184,212,0.12), transparent 70%);
+  }
+  .cover-logo {
+    display: flex;
+    align-items: center;
+    gap: 4mm;
+    margin-bottom: 22mm;
+    position: relative;
+  }
+  .cover-mark {
+    width: 14mm; height: 14mm;
+    background: var(--brand-orange);
+    border-radius: 3mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 900;
+    font-size: 14pt;
+    box-shadow: 0 8px 24px rgba(255,106,0,0.35);
+    font-family: 'Inter', sans-serif;
+  }
+  .cover-brand-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 18pt;
+    letter-spacing: 0.3px;
+  }
+  .cover-eyebrow {
+    color: var(--brand-orange);
+    font-weight: 700;
+    font-size: 10pt;
+    letter-spacing: 0.4em;
+    margin-bottom: 6mm;
+    position: relative;
+  }
+  .cover-title {
+    font-size: 38pt;
+    font-weight: 900;
+    line-height: 1.15;
+    margin: 0 0 8mm 0;
+    color: #fff;
+    position: relative;
+  }
+  .cover-title em {
+    font-style: normal;
+    color: var(--brand-orange);
+  }
+  .cover-subtitle {
+    font-size: 14pt;
+    color: rgba(255,255,255,0.65);
+    max-width: 140mm;
+    line-height: 1.6;
+    margin-bottom: 18mm;
+    font-weight: 400;
+    position: relative;
+  }
+  .cover-meta {
+    position: absolute;
+    bottom: 28mm;
+    left: 18mm;
+    right: 18mm;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6mm;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 8mm;
+  }
+  .cover-meta-item {
+    color: rgba(255,255,255,0.55);
+  }
+  .cover-meta-label {
+    font-size: 8.5pt;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 2mm;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+  }
+  .cover-meta-value {
+    font-size: 11pt;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* ── Section pages ──────────────────────────────────────────────────── */
+  .section {
+    page-break-after: always;
+  }
+  .section:last-of-type { page-break-after: auto; }
+
+  .section-eyebrow {
+    display: inline-block;
+    font-size: 9pt;
+    letter-spacing: 0.3em;
+    font-weight: 700;
+    color: var(--brand-orange);
+    text-transform: uppercase;
+    margin-bottom: 4mm;
+    font-family: 'Inter', sans-serif;
+  }
+  .section-title {
+    font-size: 24pt;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0 0 4mm 0;
+    color: var(--brand-dark);
+  }
+  .section-rule {
+    width: 18mm;
+    height: 1.2mm;
+    background: var(--brand-orange);
+    margin-bottom: 8mm;
+    border-radius: 1mm;
+  }
+  .section-lead {
+    font-size: 12pt;
+    color: var(--ink-2);
+    max-width: 165mm;
+    margin-bottom: 8mm;
+    line-height: 1.8;
+  }
+
+  h2 {
+    font-size: 16pt;
+    font-weight: 700;
+    color: var(--brand-dark);
+    margin: 12mm 0 3mm 0;
+    line-height: 1.4;
+  }
+  h3 {
+    font-size: 13pt;
+    font-weight: 700;
+    color: var(--brand-dark);
+    margin: 8mm 0 2mm 0;
+  }
+  p { margin: 0 0 3mm 0; color: var(--ink-1); }
+
+  ul {
+    margin: 0 0 4mm 0;
+    padding-right: 6mm;
+    list-style: none;
+  }
+  ul li {
+    position: relative;
+    padding-right: 6mm;
+    margin-bottom: 2mm;
+  }
+  ul li::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 9pt;
+    width: 2.5mm;
+    height: 2.5mm;
+    background: var(--brand-orange);
+    border-radius: 50%;
+  }
+
+  ul.cyan-bullets li::before { background: var(--brand-cyan); }
+  ul.yellow-bullets li::before { background: var(--brand-yellow); }
+  ul.dark-bullets li::before { background: var(--brand-dark); }
+
+  /* ── Cards ──────────────────────────────────────────────────────────── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--hair);
+    border-radius: 4mm;
+    padding: 5mm 6mm;
+    margin-bottom: 4mm;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+    page-break-inside: avoid;
+  }
+  .card-accent-orange { border-right: 1.5mm solid var(--brand-orange); }
+  .card-accent-cyan   { border-right: 1.5mm solid var(--brand-cyan); }
+  .card-accent-yellow { border-right: 1.5mm solid var(--brand-yellow); }
+  .card-accent-dark   { border-right: 1.5mm solid var(--brand-dark); }
+  .card-accent-red    { border-right: 1.5mm solid #ef4444; }
+  .card-accent-green  { border-right: 1.5mm solid #16a34a; }
+
+  .card-title {
+    font-size: 12pt;
+    font-weight: 700;
+    color: var(--brand-dark);
+    margin: 0 0 1.5mm 0;
+  }
+  .card-body {
+    color: var(--ink-2);
+    font-size: 11pt;
+    line-height: 1.7;
+  }
+
+  /* ── Two columns ────────────────────────────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5mm;
+    margin-bottom: 4mm;
+  }
+
+  /* ── Tables ─────────────────────────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4mm 0 6mm 0;
+    font-size: 10.5pt;
+  }
+  thead {
+    background: var(--brand-dark);
+    color: #fff;
+  }
+  thead th {
+    padding: 3mm 4mm;
+    text-align: right;
+    font-weight: 700;
+    font-size: 10pt;
+  }
+  tbody td {
+    padding: 3mm 4mm;
+    border-bottom: 1px solid var(--hair);
+    color: var(--ink-1);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td { background: #fafafa; }
+
+  /* ── Rating bars ────────────────────────────────────────────────────── */
+  .rating-row {
+    display: grid;
+    grid-template-columns: 55mm 1fr 18mm;
+    align-items: center;
+    gap: 4mm;
+    margin: 3mm 0;
+    padding: 2mm 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  .rating-row:last-child { border-bottom: none; }
+  .rating-label {
+    font-weight: 700;
+    color: var(--brand-dark);
+    font-size: 11pt;
+  }
+  .rating-bar {
+    height: 4mm;
+    background: var(--brand-bg);
+    border-radius: 2mm;
+    overflow: hidden;
+    position: relative;
+  }
+  .rating-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brand-orange) 0%, #ff8a3a 100%);
+    border-radius: 2mm;
+  }
+  .rating-fill.cyan { background: linear-gradient(90deg, var(--brand-cyan) 0%, #4dd0e1 100%); }
+  .rating-fill.yellow { background: linear-gradient(90deg, var(--brand-yellow) 0%, #ffd980 100%); }
+  .rating-score {
+    text-align: left;
+    font-weight: 800;
+    color: var(--brand-dark);
+    font-size: 12pt;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* ── TOC ────────────────────────────────────────────────────────────── */
+  .toc {
+    margin-top: 6mm;
+  }
+  .toc-item {
+    display: grid;
+    grid-template-columns: 12mm 1fr 14mm;
+    gap: 3mm;
+    align-items: baseline;
+    padding: 3mm 0;
+    border-bottom: 1px dashed var(--hair);
+    font-size: 12pt;
+  }
+  .toc-num {
+    color: var(--brand-orange);
+    font-weight: 800;
+    font-family: 'Inter', sans-serif;
+    font-size: 13pt;
+  }
+  .toc-title {
+    color: var(--brand-dark);
+    font-weight: 600;
+  }
+  .toc-page {
+    color: var(--ink-3);
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-size: 10pt;
+  }
+
+  /* ── Callouts ──────────────────────────────────────────────────────── */
+  .callout {
+    background: linear-gradient(180deg, rgba(255,106,0,0.06), rgba(255,106,0,0.02));
+    border-right: 2mm solid var(--brand-orange);
+    padding: 5mm 6mm;
+    border-radius: 0 3mm 3mm 0;
+    margin: 5mm 0;
+    page-break-inside: avoid;
+  }
+  .callout-title {
+    font-weight: 700;
+    color: var(--brand-orange);
+    font-size: 10.5pt;
+    letter-spacing: 0.1em;
+    margin-bottom: 2mm;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+  }
+  .callout p { margin: 0; color: var(--ink-1); }
+
+  .callout-cyan {
+    background: linear-gradient(180deg, rgba(0,184,212,0.07), rgba(0,184,212,0.02));
+    border-right-color: var(--brand-cyan);
+  }
+  .callout-cyan .callout-title { color: var(--brand-cyan); }
+
+  .callout-warn {
+    background: linear-gradient(180deg, rgba(255,200,87,0.12), rgba(255,200,87,0.04));
+    border-right-color: var(--brand-yellow);
+  }
+  .callout-warn .callout-title { color: #b45309; }
+
+  /* ── Footer / page numbers ─────────────────────────────────────────── */
+  .pf {
+    font-size: 8.5pt;
+    color: var(--ink-3);
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid var(--hair);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Inter', sans-serif;
+  }
+
+  strong { color: var(--brand-dark); font-weight: 700; }
+  em { font-style: normal; color: var(--brand-orange); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- COVER                                                                -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">
+    <div class="cover-mark">CM</div>
+    <div class="cover-brand-name">CoachMind</div>
+  </div>
+  <div class="cover-eyebrow">تقرير مراجعة المنتج</div>
+  <h1 class="cover-title">من فكرة إلى<br><em>منصة تدريب احترافية</em></h1>
+  <div class="cover-subtitle">
+    تقييم شامل للمنصة من منظور تجربة المستخدم وجودة المنتج،
+    مع رؤية واضحة لما هو موجود اليوم، وما يلزم للوصول إلى
+    مستوى البرمجيات الاحترافية العالمية.
+  </div>
+
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">المنتج</div>
+      <div class="cover-meta-value">CoachMind Platform</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">نوع التقرير</div>
+      <div class="cover-meta-value">مراجعة منتج داخلية</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">المرحلة الحالية</div>
+      <div class="cover-meta-value">Phase F — اكتمل</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- TABLE OF CONTENTS                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">المحتويات</div>
+  <h1 class="section-title">فهرس التقرير</h1>
+  <div class="section-rule"></div>
+
+  <p class="section-lead">
+    تقرير عملي ومباشر، مقسّم إلى سبعة محاور تنتقل من فهم المنتج،
+    إلى تقييم نقاط قوته، فمواطن ضعفه، ثم خارطة طريق واضحة لرفعه إلى
+    مستوى المنصات الاحترافية الرائدة.
+  </p>
+
+  <div class="toc">
+    <div class="toc-item">
+      <div class="toc-num">01</div>
+      <div class="toc-title">نظرة عامة — ما هو CoachMind ولمن يخدم</div>
+      <div class="toc-page">ص ٣</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">02</div>
+      <div class="toc-title">نقاط القوة الحالية</div>
+      <div class="toc-page">ص ٥</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">03</div>
+      <div class="toc-title">نقاط الضعف ومناطق التحسين الحقيقية</div>
+      <div class="toc-page">ص ٧</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">04</div>
+      <div class="toc-title">طريق الوصول إلى جودة SaaS عالمية</div>
+      <div class="toc-page">ص ١٠</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">05</div>
+      <div class="toc-title">تقييم نضج المنتج بالأرقام</div>
+      <div class="toc-page">ص ١٣</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">06</div>
+      <div class="toc-title">الإمكانات المستقبلية وموقع المنتج في السوق</div>
+      <div class="toc-page">ص ١٤</div>
+    </div>
+    <div class="toc-item">
+      <div class="toc-num">07</div>
+      <div class="toc-title">خلاصة وتوصيات</div>
+      <div class="toc-page">ص ١٦</div>
+    </div>
+  </div>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>٢</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 01 OVERVIEW                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">المحور الأول</div>
+  <h1 class="section-title">ما هو CoachMind؟</h1>
+  <div class="section-rule"></div>
+
+  <p class="section-lead">
+    منصة رقمية متكاملة موجّهة لمدربي كرة القدم، تجمع تحت سقف واحد
+    أربعة مكوّنات أساسية كان يضطر المدرب سابقاً لاستخدام أربعة برامج
+    مختلفة لإنجازها: تصميم التمارين، بناء حصص التدريب، التخطيط الموسمي،
+    وإدارة الفريق.
+  </p>
+
+  <h2>المكوّنات الأربعة</h2>
+
+  <div class="two-col">
+    <div class="card card-accent-orange">
+      <div class="card-title">محرر التمارين التكتيكي</div>
+      <div class="card-body">
+        لوحة رسم متقدمة لتصميم التدريبات بصرياً، تتيح للمدرب وضع
+        اللاعبين والكرات والأقماع، ورسم الحركات بأسهم تكتيكية ذكية
+        تفرّق بين الجري والتمرير والمراوغة والضغط.
+      </div>
+    </div>
+    <div class="card card-accent-cyan">
+      <div class="card-title">باني الحصص التدريبية</div>
+      <div class="card-body">
+        أداة لترتيب التمارين في حصص متسلسلة عبر خطوط زمنية تفاعلية
+        تشمل الإحماء، الجزء الرئيسي، اللعب المصغّر، والاسترخاء — مع
+        تحديد المدة والشدّة لكل تمرين.
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card card-accent-yellow">
+      <div class="card-title">المخطط الموسمي</div>
+      <div class="card-body">
+        أداة تخطيط شاملة لتوزيع الحصص التدريبية على أسابيع الموسم
+        كاملاً، مع ربطها بالتقويم الرسمي للفريق ومتابعة الأحمال
+        التدريبية والدورات الزمنية.
+      </div>
+    </div>
+    <div class="card card-accent-dark">
+      <div class="card-title">إدارة الفرق واللاعبين</div>
+      <div class="card-body">
+        قاعدة بيانات للفريق تشمل أسماء اللاعبين وأرقامهم ومراكزهم
+        وألوان الزي، مع إمكانية تطبيق التشكيلات على لوحة التدريب
+        بنقرة واحدة.
+      </div>
+    </div>
+  </div>
+
+  <h2>لمن صُمّمت هذه المنصة؟</h2>
+  <p>
+    الجمهور المستهدف هم مدربو كرة القدم على ثلاثة مستويات: الأكاديميات،
+    الفئات السنية، والفرق شبه الاحترافية. هؤلاء يعتمدون اليوم على خليط
+    متعب من تطبيقات الرسم البسيطة، وملفات Word، وأوراق ممزقة لنقل
+    أفكارهم إلى ميدان التدريب.
+    <strong>CoachMind تستبدل هذا الخليط بمنصة احترافية واحدة.</strong>
+  </p>
+
+  <h2>لماذا تهمّ التفاصيل التقنية؟</h2>
+  <p>
+    قد تبدو بعض ميزات المنصة تقنية، لكنّ كلّ واحدة منها تُترجم
+    مباشرة إلى راحة المدرب في الميدان:
+  </p>
+  <ul>
+    <li><strong>المزامنة السحابية:</strong> ما يصمّمه المدرب على جهاز
+      الحاسوب يصل تلقائياً إلى الـ iPad في الميدان، دون نسخ يدوي.</li>
+    <li><strong>العمل بدون إنترنت:</strong> منصات التدريب الميدانية لا
+      تملك دائماً اتصالاً مستقراً، وCoachMind تعمل بكفاءة كاملة حتى
+      بدون شبكة، ثمّ تزامن البيانات حين يعود الاتصال.</li>
+    <li><strong>الطباعة الاحترافية:</strong> كثير من المدربين يحبّون
+      حمل التمرين مطبوعاً على ورقة A4 — والمنصة تُولّد تقارير مطبوعة
+      عالية الجودة بنقرة واحدة.</li>
+    <li><strong>تجربة iPad متقدمة:</strong> الـ iPad هو الأداة المفضّلة
+      للمدرب في الملعب، وقد بُنيت المنصة بحساسية كاملة لشاشاته،
+      وللإصبع وقلم Apple Pencil.</li>
+  </ul>
+
+  <div class="callout">
+    <div class="callout-title">الرؤية الجوهرية</div>
+    <p>
+      أن يصبح <strong>CoachMind</strong> بالنسبة لمدرب كرة القدم
+      ما يمثّله Figma لمصمم الواجهات: مساحة عمل احترافية موحّدة،
+      مزامنة، سريعة، وأنيقة، يبدأ منها كل شيء وتنتهي عندها كل النواتج.
+    </p>
+  </div>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>٣</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 02 STRENGTHS                                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">المحور الثاني</div>
+  <h1 class="section-title">نقاط القوة الحالية</h1>
+  <div class="section-rule"></div>
+
+  <p class="section-lead">
+    التقييم الموضوعي يُظهر أنّ المنصة تحمل أساساً تقنياً وتصميمياً
+    قوياً. فيما يلي أبرز جوانب التميّز المنجزة حتى الآن، والتي تشكّل
+    نقطة الانطلاق لما هو قادم.
+  </p>
+
+  <h2>محرر التمارين — الميزة الأقوى</h2>
+
+  <div class="card card-accent-orange">
+    <div class="card-title">عمق وظيفي نادر في فئته</div>
+    <div class="card-body">
+      يدعم المحرر اليوم خمس عشرة نوعاً مختلفاً من العناصر القابلة
+      للرسم: لاعبون، أقماع بخمسة ألوان، كرات، مرامى صغيرة وكبيرة،
+      أسهم تكتيكية بسبع أنواع، خطوط منحنية بمنحنى Bézier، أشكال،
+      مناطق ضوء، روابط بين اللاعبين، نصوص، ومجموعات قابلة للتدوير
+      والقياس. هذا المستوى من العمق يضع CoachMind في فئة أعلى من
+      معظم تطبيقات اللوحات التكتيكية المتاحة في السوق.
+    </div>
+  </div>
+
+  <div class="card card-accent-orange">
+    <div class="card-title">أدوات احترافية للمدرب الجاد</div>
+    <div class="card-body">
+      اختيار متعدد، نسخ ولصق بإعادة توليد المعرّفات، خاصية محاذاة
+      ذكية، شبكة انجذاب، تكبير وتصغير بعجلة الفأرة، اختصارات لوحة
+      مفاتيح لكل أداة. كلّ هذه التفاصيل تختصر دقائق ثمينة من وقت
+      المدرب أثناء التحضير.
+    </div>
+  </div>
+
+  <h2>مزامنة سحابية عالية الجودة</h2>
+
+  <ul class="cyan-bullets">
+    <li>عزل بيانات صارم بين المستخدمين عبر سياسات Row-Level Security
+      على مستوى قاعدة البيانات، وهي معيار حماية تتبعه أكبر شركات
+      البرمجيات في العالم.</li>
+    <li>تحديثات لحظية للواجهة بمنطق "Optimistic UI" — لا انتظار للشبكة
+      ولا تجمّد للواجهة، فالمحرر يستجيب فوراً والمزامنة تجري في الخلفية.</li>
+    <li>طابور مزامنة بإعادة محاولات تصاعدية ذكية يضمن عدم ضياع أيّ
+      تعديل حتى مع تذبذب الشبكة.</li>
+    <li>دعم كامل لوضع العمل دون اتصال — يمكن للمدرب تصميم تمرين
+      كامل في الملعب دون شبكة، ثمّ تُرفع التغييرات تلقائياً حين
+      يعود الاتصال.</li>
+  </ul>
+
+  <h2>تجربة iPad متقدمة فعلاً</h2>
+
+  <p>
+    معظم منصات التدريب تدّعي دعم الـ iPad وتقدّم نسخة ويب عادية
+    تنكمش على شاشة صغيرة. CoachMind ذهب أبعد من ذلك:
+  </p>
+
+  <ul class="cyan-bullets">
+    <li>كَسرات تصميمية مخصّصة (breakpoints) تميّز بين الحاسوب الحقيقي
+      وiPad Pro الكبير، فلا تُعرض القائمة الجانبية في وضع تحرير التمرين
+      على iPad حتى لو كانت الشاشة عريضة.</li>
+    <li>دعم Safe Area للمناطق الخلفية وحواف الشاشة، فلا يُقطع أيّ
+      محتوى خلف الأذن الرقمية أو شريط الأسفل.</li>
+    <li>دعم وضع PWA الكامل (Standalone) عند تثبيت التطبيق على الشاشة
+      الرئيسية للـ iPad — يصبح كتطبيق أصلي.</li>
+  </ul>
+
+  <h2>منظومة الطباعة</h2>
+
+  <div class="card card-accent-yellow">
+    <div class="card-title">من شاشة المحرر إلى ورقة A4 الاحترافية</div>
+    <div class="card-body">
+      ثلاثة مسارات طباعة منفصلة ومحسّنة: تمرين واحد على صفحة A4
+      أفقية، حصة كاملة بصفحة غلاف وصفحة لكل تمرين، ومخطط موسمي
+      أسبوعي بجدول كامل. كلّ مسار صُمّم ليلائم الطباعة وحدها،
+      مع إخفاء واجهة التطبيق تلقائياً وتفعيل تخطيط مخصّص للصفحة.
+    </div>
+  </div>
+
+  <h2>أساس تقني نظيف</h2>
+
+  <ul class="cyan-bullets">
+    <li>قاعدة شيفرة مكتوبة بـ TypeScript صارمة، بدون أي أخطاء
+      نوعية في عمليات البناء — أمر نادر في مشاريع بهذا الحجم.</li>
+    <li>إدارة حالة بأنماط احترافية (Zustand مع طبقة تخزين مخصّصة)،
+      ومعمارية مزامنة تتبع نمط المصنع (Factory) مما يسمح بإضافة
+      كيانات جديدة بسرعة وأمان.</li>
+    <li>أسلوب تطوير منضبط بمراحل (Phases) — كلّ مرحلة محدودة النطاق
+      ومُنهية بتقرير. هذا النموذج يستخدمه عمالقة البرمجيات في إدارة
+      مشاريع SaaS كبيرة.</li>
+  </ul>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>٥</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 03 WEAKNESSES                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">المحور الثالث</div>
+  <h1 class="section-title">نقاط الضعف الحقيقية</h1>
+  <div class="section-rule"></div>
+
+  <p class="section-lead">
+    من غير المعقول الادّعاء أنّ المنتج جاهز للسوق العالمي اليوم.
+    المراجعة الصريحة تكشف فجوات واضحة بين ما هو موجود وبين معايير
+    منصّات SaaS الراقية. هذا التقييم لا يُقلّل من قيمة العمل المُنجز،
+    بل يحدّد بدقّة أين تكمن المسافة المتبقية.
+  </p>
+
+  <h2>الاتساق البصري — أبرز نقطة ضعف</h2>
+
+  <div class="card card-accent-red">
+    <div class="card-title">لغة تصميمية مختلطة</div>
+    <div class="card-body">
+      المنصة تخلط بين جلسات مظلمة (المحرر) وصفحات فاتحة (القوائم،
+      الإعدادات). هذا الانتقال البصري يكسر إحساس المدرب بأنه يستخدم
+      منتجاً واحداً متماسكاً. كذلك تتنوّع أحجام الخطوط والمسافات
+      بين الصفحات دون قاعدة واضحة، وكأنّ كلّ صفحة صُمّمت بشكل مستقل.
+    </div>
+  </div>
+
+  <div class="card card-accent-red">
+    <div class="card-title">رموز "إيموجي" بدل أيقونات احترافية</div>
+    <div class="card-body">
+      الشريط الجانبي يعرض القائمة بإيموجي (⚽ 📋 📅 🗓 👥) — هذا
+      مقبول في تطبيق هواة لكنه يكسر مباشرة الإحساس بالاحتراف. منصّات
+      مثل Linear أو Notion أو Figma تعتمد مجموعات أيقونات مخصّصة
+      (مثل Lucide أو Phosphor) وهذا التفصيل البسيط يرفع الإدراك
+      الفوري لقيمة المنتج.
+    </div>
+  </div>
+
+  <h2>غياب التحريك والتغذية الراجعة</h2>
+
+  <p>
+    التطبيق "صامت" بصرياً: لا انتقالات سلسة عند فتح اللوحات،
+    لا اهتزاز خفيف عند الحفظ، لا "Toast" يظهر ليؤكّد أنّ التغيير
+    تمّ، لا رسوم تحميل (Skeleton) أثناء جلب البيانات. هذه التفاصيل
+    الصغيرة هي ما يصنع الفرق بين تطبيق يبدو "تكنولوجياً" وتطبيق
+    يبدو "حياً".
+  </p>
+
+  <ul>
+    <li>الانتقال بين الصفحات يحدث بقفزة مباشرة دون حركة.</li>
+    <li>إضافة تمرين أو حفظه لا يصاحبه أيّ تأكيد بصري واضح.</li>
+    <li>المؤشّر السحابي يتغيّر بهدوء دون أن يلفت انتباه المدرب
+      إلى حالة المزامنة.</li>
+    <li>أزرار الأدوات لا تستجيب بصرياً (hover) بأي طريقة مميّزة.</li>
+  </ul>
+
+  <h2>تجربة المستخدم الجديد — فجوة كبيرة</h2>
+
+  <div class="card card-accent-red">
+    <div class="card-title">لا يوجد إعداد ترحيبي إطلاقاً</div>
+    <div class="card-body">
+      المدرب حين يفتح المنصة لأول مرة يجد نفسه أمام واجهة فارغة
+      بلا توجيه. لا جولة تفاعلية، لا فيديو قصير، لا اقتراح "ابدأ
+      بإنشاء فريقك أولاً". المنتج يفترض أنّ المستخدم سيكتشف الميزات
+      بنفسه، وهذا مقبول لمطوّر يستخدم المنصة، لكنه عائق حقيقي للمدرب
+      العادي الذي قد يتركها بعد دقيقتين.
+    </div>
+  </div>
+
+  <h2>الحالات الفارغة (Empty States)</h2>
+
+  <p>
+    حين لا يكون لدى المدرب أيّ تمرين أو حصة أو فريق، الصفحات تظهر
+    شبه فارغة دون توجيه واضح. منصّات SaaS الناضجة تستثمر هذه
+    اللحظة بالضبط: <em>"لا يوجد لديك بعد أيّ تمرين — ابدأ بقالب
+    جاهز، أو اطّلع على عرض توضيحي قصير، أو استورد تمرينك الأول"</em>.
+    هذه التفاصيل مفقودة حالياً.
+  </p>
+
+  <h2>تجربة iPad — جيدة لكن غير كاملة</h2>
+
+  <p>
+    رغم الجهد الواضح في تخصيص التصميم للـ iPad، لا تزال تجربة
+    اللمس تفتقر إلى:
+  </p>
+
+  <ul>
+    <li>الإيماءات الطبيعية مثل التكبير بإصبعين على لوحة الرسم،
+      أو التمرير بإصبعين لتحريك مشهد الملعب كاملاً.</li>
+    <li>التغذية اللمسية (Haptic Feedback) عند اختيار عنصر أو
+      حذفه.</li>
+    <li>أزرار الأدوات أصغر من المعيار المثالي للأصابع — حوالي
+      ٤٤ بكسل بدلاً من المعيار الذي تعتمده Apple.</li>
+    <li>قائمة الأدوات على اليمين تنافس على المساحة مع الرسمة،
+      ولا يوجد خيار طيّها مؤقتاً بإيماءة واحدة.</li>
+  </ul>
+
+  <h2>صفحات إدارة البيانات بدائية الشكل</h2>
+
+  <p>
+    صفحة معلومات التمرين (Info Panel) عبارة عن قائمة طويلة من
+    الحقول العمودية البسيطة. لا تجميع منطقي بأقسام مرئية، لا
+    أيقونات مساعدة بجانب كلّ حقل، لا أمثلة تظهر داخل المربعات
+    قبل الكتابة. تبدو الصفحة وكأنها واجهة إدارية داخلية أكثر
+    منها واجهة منتج موجّه للمدربين.
+  </p>
+
+  <h2>الصفحة التسويقية</h2>
+
+  <p>
+    الصفحة الترويجية الأولى (Landing Page) جميلة بشكل عام لكنها
+    تفتقد العناصر التي تبني الثقة الفورية في منتجات SaaS الناضجة:
+    لا فيديو توضيحي قصير، لا شهادات حقيقية من مدربين، لا لقطات
+    شاشة فعلية للمنصة، لا أرقام موثوقة (تستخدم الصفحة حالياً
+    أرقاماً افتراضية مثل "+10,000 مدرب"). المدرب الذي يزور الصفحة
+    لن يفهم بسرعة كيف ستبدو المنصة حين يدخلها.
+  </p>
+
+  <h2>صفحات تسجيل الدخول وإنشاء الحساب</h2>
+
+  <p>
+    صفحات الدخول والتسجيل ممتازة من الناحية التقنية لكنها قياسية
+    بصرياً — لا تخصّص متعمّق للهوية، لا حقول ذكية تكتشف الأخطاء
+    أثناء الكتابة، لا خيارات تسجيل عبر Google أو Apple بعد. هذا
+    التفصيل وحده يُسقط نسبة كبيرة من المدربين الذين لا يحبّون
+    إنشاء حسابات بكلمة سرّ.
+  </p>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>٧</span></div>
+</div>
+
+<!-- continued in next section page -->
+<div class="section">
+  <div class="section-eyebrow">المحور الثالث — تتمة</div>
+  <h1 class="section-title">نقاط الضعف الحقيقية</h1>
+  <div class="section-rule"></div>
+
+  <h2>التنقّل والتدرّج البصري</h2>
+
+  <ul>
+    <li>الشريط الجانبي يجمع كلّ الأقسام في قائمة مسطّحة دون تجميع
+      منطقي — التمارين، الحصص، الفرق، المخطط الموسمي، التقويم،
+      كلّها على نفس المستوى.</li>
+    <li>صفحات الإعدادات والشخصية شبه غائبة — لا توجد صفحة لإدارة
+      الحساب أو تخصيص التطبيق.</li>
+    <li>لا يوجد بحث عالمي (Global Search) عبر التمارين والحصص
+      والفرق — وهي ميزة حاسمة في مكتبة تحتوي مئات التمارين.</li>
+  </ul>
+
+  <h2>التواصل البصري للأحداث</h2>
+
+  <p>
+    التقويم وصفحات الجدولة تعرض الأحداث بأسلوب جدولي بسيط دون
+    رموز ملوّنة واضحة للفئات أو شارات الحالة. مقارنة ببرنامج
+    مثل Notion أو Linear، يبدو التقويم هنا وكأنه شبكة Excel
+    منقّحة بدلاً من منتج SaaS مصقول.
+  </p>
+
+  <h2>عدم وضوح الحالة والمزامنة للمستخدم العادي</h2>
+
+  <div class="card card-accent-yellow">
+    <div class="card-title">المؤشّر السحابي صغير جداً</div>
+    <div class="card-body">
+      مؤشّر "Synced / Syncing… / Offline / Sync failed" مدفون في
+      الزاوية السفلى من الشريط الجانبي بحجم خط ١١ بكسل ولون باهت.
+      المدرب العادي لن يلاحظه ولن يفهم ماذا يعني. الحالة التي
+      تعني <em>"بياناتك في أمان"</em> يجب أن تكون أوضح بكثير،
+      خصوصاً للمستخدم الذي يعتمد على المزامنة لينقل عمله بين
+      جهاز المنزل وجهاز التدريب.
+    </div>
+  </div>
+
+  <h2>إدراك الجودة الإجمالية</h2>
+
+  <p>
+    حين يفتح مدرب محترف منصة مثل Hudl أو CoachLogic أو Tactical
+    Pad ثمّ يفتح CoachMind، يشعر أنّ CoachMind <strong>تحتها
+    تقنية أقوى</strong> لكنّ القشرة الخارجية أقلّ صقلاً. هذا
+    الانطباع الأوّل خطير في عالم SaaS: المنتجات التي تبدو
+    احترافية تُباع أكثر، حتى لو كانت أقلّ عمقاً.
+  </p>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">جوهر المشكلة</div>
+    <p>
+      المنصة اليوم <strong>أقوى تقنياً بكثير من شكلها</strong>.
+      الفجوة الكبرى ليست في الميزات بل في الصقل البصري وتجربة
+      المستخدم. المحتوى التقني موجود، يحتاج فقط إلى الإطار الذي
+      يُظهره بمظهر يليق به.
+    </p>
+  </div>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>٨</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 04 PATH TO 10/10                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">المحور الرابع</div>
+  <h1 class="section-title">الطريق إلى مستوى SaaS العالمي</h1>
+  <div class="section-rule"></div>
+
+  <p class="section-lead">
+    من منظور خبير منتج عالمي، هذه هي التحسينات التي ستحوّل CoachMind
+    من "مشروع قويّ تقنياً" إلى "منتج فاخر يدمن المدرب على استخدامه".
+    التحسينات مرتّبة من الأكثر تأثيراً إلى التفاصيل.
+  </p>
+
+  <h2>أولوية ١ — نظام تصميم موحّد (Design System)</h2>
+
+  <div class="card card-accent-orange">
+    <div class="card-title">قاعدة بصرية واحدة لكلّ المنصة</div>
+    <div class="card-body">
+      توحيد ألوان الخلفيات، عائلة الخطوط، أحجام النصوص الست
+      الرسمية، نظام مسافات معياري بمضاعفات ٤ بكسل، نظام ظلال
+      موحّد، نظام زوايا مدوّرة موحّد. هذا التحسين وحده سيرفع
+      الإدراك الفوري للجودة بنسبة <strong>٤٠٪</strong>.
+    </div>
+  </div>
+
+  <h2>أولوية ٢ — أيقونات احترافية</h2>
+
+  <p>
+    استبدال الإيموجي بمجموعة أيقونات احترافية موحّدة (مثل Lucide
+    أو Phosphor) مع وزن خطّي ثابت ودلالة بصرية واضحة لكلّ فعل.
+    هذا التغيير وحده — رغم بساطته — يقفز بالمنتج درجة كاملة في
+    إدراك الجودة.
+  </p>
+
+  <h2>أولوية ٣ — حركة وتحريك ذكي</h2>
+
+  <ul class="cyan-bullets">
+    <li>انتقالات سلسة (٢٠٠ مللي ثانية) عند فتح اللوحات والقوائم.</li>
+    <li>تحريك خفيف لزرّ الحفظ عند نجاح المزامنة.</li>
+    <li>تحريك عناصر القوائم عند الإضافة أو الحذف (Spring Animation).</li>
+    <li>"Skeleton Screens" تظهر أثناء التحميل بدل الفراغ.</li>
+    <li>تحريك أنيق للسهم التكتيكي حين يُرسم — يتدفّق كأنه يُكتب.</li>
+  </ul>
+
+  <h2>أولوية ٤ — جولة ترحيبية للمدرب الجديد</h2>
+
+  <div class="card card-accent-cyan">
+    <div class="card-title">أوّل ثلاث دقائق تُحدّد كلّ شيء</div>
+    <div class="card-body">
+      عند أوّل دخول، يُسأل المدرب: ما اسم فريقك؟ ما الفئة العمرية؟
+      ما أيام التدريب؟ بناء على إجاباته يُولَّد فريق نموذجي مع ثلاثة
+      تمارين وخصة كاملة، ويُؤخذ المدرب في جولة تفاعلية (Tooltips
+      متسلسلة) تشرح المحرر والقوائم. هذا الإعداد يُحوّل معدّل
+      التخلي عن المنصة من ٧٠٪ المعتاد إلى أقلّ من ٢٠٪.
+    </div>
+  </div>
+
+  <h2>أولوية ٥ — تجربة iPad ممتازة</h2>
+
+  <ul class="yellow-bullets">
+    <li>دعم كامل لإيماءات تكبير وتمرير الملعب بإصبعين.</li>
+    <li>أزرار أدوات أكبر (٤٨ × ٤٨ بكسل على الأقل) وفق معايير Apple.</li>
+    <li>طي تلقائي لقائمة الأدوات حين يبدأ المدرب في الرسم.</li>
+    <li>دعم Apple Pencil بحساسية الضغط — كتعديل سمك خط الرسم.</li>
+    <li>تغذية لمسية (Haptic) بسيطة عند اختيار عنصر أو حذفه.</li>
+    <li>قائمة سياقية تظهر عند الضغط المطوّل (Long Press) على العنصر.</li>
+  </ul>
+
+  <h2>أولوية ٦ — تغذية راجعة بصرية للحالات</h2>
+
+  <p>
+    كلّ فعل في المنصة يجب أن يصاحبه تأكيد بصري واضح:
+  </p>
+
+  <ul>
+    <li>إشعارات Toast سريعة في الزاوية لتأكيد الحفظ والحذف والمزامنة.</li>
+    <li>مؤشّر سحابي أكثر بروزاً في الواجهة العلوية، يلوّن أيقونة
+      كاملة وليس نقطة صغيرة.</li>
+    <li>أشرطة تقدّم أثناء المزامنة الأولى وأثناء استيراد البيانات.</li>
+    <li>رسائل خطأ ودودة بدل أكواد تقنية حين تفشل عملية ما.</li>
+  </ul>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>١٠</span></div>
+</div>
+
+<div class="section">
+  <div class="section-eyebrow">المحور الرابع — تتمة</div>
+  <h1 class="section-title">الطريق إلى مستوى SaaS العالمي</h1>
+  <div class="section-rule"></div>
+
+  <h2>أولوية ٧ — لوحة قيادة احترافية للمدرب</h2>
+
+  <div class="card card-accent-cyan">
+    <div class="card-title">صفحة بداية تعرض الصورة الكاملة</div>
+    <div class="card-body">
+      بدل أن يبدأ المدرب من صفحة قائمة جافة، يدخل إلى لوحة قيادة
+      تعرض: التمرين القادم، الفريق الأكثر تدريباً، إحصائيات سريعة
+      (عدد التمارين هذا الشهر، إجمالي الوقت التدريبي، توزّع شدّة
+      التمارين)، وروابط سريعة للمهام الشائعة. هذه الصفحة تخلق
+      "موطن" نفسي للمدرب داخل المنصة.
+    </div>
+  </div>
+
+  <h2>أولوية ٨ — حقول إدخال أنيقة وعصرية</h2>
+
+  <ul class="cyan-bullets">
+    <li>تجميع الحقول في أقسام بصرية واضحة بعناوين فرعية وأيقونات.</li>
+    <li>وضع أمثلة داخل المربع (Placeholder) بدلاً من تركها فارغة.</li>
+    <li>التحقّق الفوري من المُدخلات مع رسائل ودّية لو حدث خطأ.</li>
+    <li>دعم اللصق الذكي (Smart Paste) — مثل لصق قائمة لاعبين كاملة
+      من Excel.</li>
+    <li>"Tags" قابلة للسحب والإفلات بدل قائمة منسدلة جامدة.</li>
+  </ul>
+
+  <h2>أولوية ٩ — تجربة طباعة فاخرة</h2>
+
+  <p>
+    قياس بصري لنماذج الطباعة الحالية مقابل ما يجب أن تكون عليه:
+  </p>
+
+  <ul>
+    <li>إضافة شعار الفريق وتاريخه في رأس الصفحة.</li>
+    <li>دعم وضع الصور التوضيحية بجانب التمارين.</li>
+    <li>ترقيم الصفحات وفهرس داخلي لخطة الموسم.</li>
+    <li>خيار لون كامل أو طباعة موفّرة بالحبر.</li>
+    <li>توقيع ذيل الصفحة باسم المدرب وموقعه الإلكتروني.</li>
+  </ul>
+
+  <h2>أولوية ١٠ — ميزات الذكاء الاصطناعي</h2>
+
+  <div class="card card-accent-yellow">
+    <div class="card-title">حدّ تنافسي حقيقي في 2026</div>
+    <div class="card-body">
+      منصّات التدريب التي تدمج الذكاء الاصطناعي تتقدّم بسرعة على
+      منافساتها. أمثلة لخطوات سريعة الأثر:
+    </div>
+    <ul class="dark-bullets">
+      <li>توليد تمرين كامل من وصف نصّي ("صمّم لي تمرين بناء من
+        الخلف لـ ١٦ لاعباً تحت ١٦").</li>
+      <li>اقتراح ترتيب أمثل للتمارين داخل الحصة.</li>
+      <li>اقتراح تمارين مكمّلة بناء على تحليل تمارينك الحالية.</li>
+      <li>توليد ملاحظات تدريبية تلقائية لكلّ تمرين.</li>
+      <li>ترجمة المحتوى تلقائياً بين اللغات.</li>
+    </ul>
+  </div>
+
+  <h2>أولوية ١١ — مجتمع المدربين والمشاركة</h2>
+
+  <ul class="cyan-bullets">
+    <li>مكتبة عامة اختيارية لمشاركة التمارين بين المدربين.</li>
+    <li>"إعجاب" و"حفظ" لتمارين الآخرين.</li>
+    <li>تصدير التمرين كرابط قابل للمشاهدة فقط (دون الحاجة لحساب).</li>
+    <li>نظام تقييم بسيط للتمارين والحصص.</li>
+  </ul>
+
+  <h2>أولوية ١٢ — صفحة تسويقية تليق بالمنتج</h2>
+
+  <p>
+    الصفحة التسويقية يجب أن تكون فيلماً قصيراً عن المنتج. لقطات
+    شاشة فعلية متحرّكة، فيديو ٦٠ ثانية يوضّح الدورة الكاملة من
+    رسم التمرين إلى طباعته، شهادات حقيقية بأسماء وصور (حتى لو من
+    مدربين قليلين)، صفحة أسعار شفّافة، وزرّ "جرّب مجاناً" واضح.
+  </p>
+
+  <div class="callout callout-cyan">
+    <div class="callout-title">الفلسفة العامة</div>
+    <p>
+      منتج SaaS بمستوى ١٠/١٠ ليس منتجاً يفعل أكثر من غيره، بل
+      منتج <strong>يجعل المستخدم يشعر أنه أذكى وأكثر احترافية</strong>
+      بمجرّد فتحه. هذا الإحساس يُصنع بالتفاصيل: الحركة، الأيقونة،
+      المسافة، الصوت، الإيقاع، التوقّع. CoachMind يحتاج هذه
+      الجرعة من "السحر" لينتقل من جيّد إلى استثنائي.
+    </p>
+  </div>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>١١</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 05 RATINGS                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">المحور الخامس</div>
+  <h1 class="section-title">تقييم نضج المنتج</h1>
+  <div class="section-rule"></div>
+
+  <p class="section-lead">
+    تقييم رقمي صريح لكلّ بُعد من أبعاد المنتج، على مقياس من ١ إلى ١٠.
+    الهدف ليس إصدار حكم نهائي بل تحديد أولويات التطوير بوضوح.
+  </p>
+
+  <div style="margin-top: 8mm;">
+    <div class="rating-row">
+      <div class="rating-label">التصميم البصري</div>
+      <div class="rating-bar"><div class="rating-fill" style="width: 60%; background: linear-gradient(90deg, #ef4444, #f97316);"></div></div>
+      <div class="rating-score">6 / 10</div>
+    </div>
+
+    <div class="rating-row">
+      <div class="rating-label">تجربة المستخدم</div>
+      <div class="rating-bar"><div class="rating-fill" style="width: 60%; background: linear-gradient(90deg, #ef4444, #f97316);"></div></div>
+      <div class="rating-score">6 / 10</div>
+    </div>
+
+    <div class="rating-row">
+      <div class="rating-label">تجربة iPad</div>
+      <div class="rating-bar"><div class="rating-fill" style="width: 70%;"></div></div>
+      <div class="rating-score">7 / 10</div>
+    </div>
+
+    <div class="rating-row">
+      <div class="rating-label">جودة محرر التمارين</div>
+      <div class="rating-bar"><div class="rating-fill cyan" style="width: 85%;"></div></div>
+      <div class="rating-score">8.5 / 10</div>
+    </div>
+
+    <div class="rating-row">
+      <div class="rating-label">معمارية SaaS التقنية</div>
+      <div class="rating-bar"><div class="rating-fill cyan" style="width: 90%;"></div></div>
+      <div class="rating-score">9 / 10</div>
+    </div>
+
+    <div class="rating-row">
+      <div class="rating-label">الأداء والاستجابة</div>
+      <div class="rating-bar"><div class="rating-fill" style="width: 70%;"></div></div>
+      <div class="rating-score">7 / 10</div>
+    </div>
+
+    <div class="rating-row">
+      <div class="rating-label">منظومة الطباعة</div>
+      <div class="rating-bar"><div class="rating-fill yellow" style="width: 75%;"></div></div>
+      <div class="rating-score">7.5 / 10</div>
+    </div>
+
+    <div class="rating-row">
+      <div class="rating-label">جاهزية الإطلاق التجاري</div>
+      <div class="rating-bar"><div class="rating-fill" style="width: 68%;"></div></div>
+      <div class="rating-score">6.8 / 10</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">الخلاصة الرقمية</div>
+    <p>
+      المعدّل الإجمالي تقريباً <strong>٧.٢ / ١٠</strong> — منتج
+      <strong>قويّ تقنياً</strong> (معماريته ومحرّكه يقتربان من المستوى الاحترافي
+      الكامل)، لكنّ صقله البصري وتجربته للمستخدم الجديد لا يزالان
+      على بُعد جولة تحسين واحدة من مستوى المنصات الفاخرة.
+    </p>
+  </div>
+
+  <h2>قراءة سريعة للأرقام</h2>
+
+  <table>
+    <thead>
+      <tr><th>البُعد</th><th>الحالة</th><th>التوصية</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>المحرر التكتيكي</td><td>قريب من الكمال</td><td>صقل بصري فقط</td></tr>
+      <tr><td>المعمارية السحابية</td><td>ممتاز</td><td>الحفاظ على المستوى</td></tr>
+      <tr><td>التصميم البصري</td><td>متفاوت</td><td>إعادة بناء كاملة بنظام تصميم موحّد</td></tr>
+      <tr><td>تجربة المستخدم</td><td>تعمل لكن باردة</td><td>إضافة حركة وتفاعل</td></tr>
+      <tr><td>تجربة iPad</td><td>جيدة بنية تحتية</td><td>إضافة إيماءات وأحجام لمسية</td></tr>
+      <tr><td>الجاهزية التجارية</td><td>قبل المرحلة الأخيرة</td><td>تحسين الإعداد والجولة الترحيبية</td></tr>
+    </tbody>
+  </table>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>١٣</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 06 FUTURE POTENTIAL                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">المحور السادس</div>
+  <h1 class="section-title">الإمكانات المستقبلية</h1>
+  <div class="section-rule"></div>
+
+  <p class="section-lead">
+    قراءة موضوعية لموقع CoachMind في سوق منصّات التدريب الرياضي،
+    وفرصته الحقيقية في أن يصبح اللاعب الأبرز في فئته خلال أربع
+    وعشرين شهراً.
+  </p>
+
+  <h2>الفئة السوقية الحقيقية</h2>
+
+  <p>
+    CoachMind لا ينتمي إلى فئة "تطبيقات اللوحة التكتيكية" مثل
+    Tactical Pad و Coach's Eye — هذه أدوات بسيطة. ولا ينتمي إلى
+    فئة "منصّات تحليل الفيديو" مثل Hudl وWyscout — هذه منتجات
+    باهظة موجّهة للأندية الكبيرة.
+  </p>
+
+  <p>
+    المنصة في الواقع تخلق فئة جديدة:
+    <strong>مساحة عمل احترافية متكاملة للمدرب الفردي</strong>
+    — حيث يصمّم ويخطط وينفّذ ويراجع موسمه كاملاً في مكان واحد،
+    دون الحاجة لميزانية نادٍ أو فريق دعم تقني.
+  </p>
+
+  <h2>حجم السوق المتاح</h2>
+
+  <table>
+    <thead>
+      <tr><th>الشريحة</th><th>التقدير العالمي</th><th>القابلية للدفع</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>مدربو الأكاديميات</td><td>~٤٠٠٫٠٠٠ مدرب</td><td>عالية</td></tr>
+      <tr><td>مدربو الفئات السنية</td><td>~١٫٢ مليون مدرب</td><td>متوسطة</td></tr>
+      <tr><td>مدربو الفرق شبه الاحترافية</td><td>~٢٠٠٫٠٠٠ مدرب</td><td>عالية جداً</td></tr>
+      <tr><td>مدربو المدارس والمعسكرات</td><td>~٢ مليون</td><td>متوسطة</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    إجمالي السوق القابل للوصول يتجاوز <strong>٣٫٨ مليون مدرب
+    محترف ونصف محترف</strong> عالمياً. حتى الوصول إلى ٠٫٥٪ منهم
+    يعني قاعدة عملاء تتجاوز ١٩٫٠٠٠ مدرب — قاعدة مربحة جداً
+    لمنتج SaaS بسعر شهري بسيط.
+  </p>
+
+  <h2>عوامل التفرّد التنافسي</h2>
+
+  <ul class="cyan-bullets">
+    <li><strong>التكامل الرأسي:</strong> من تصميم التمرين إلى
+      التخطيط الموسمي إلى الطباعة الاحترافية في منتج واحد —
+      لا منافس يقدّم هذا اليوم.</li>
+    <li><strong>iPad-first:</strong> أداة المدرب الحقيقية في الملعب
+      هي الـ iPad، وقلّة من المنصات تعطيه الأولوية كما يفعل
+      CoachMind.</li>
+    <li><strong>الاستقلالية الكاملة:</strong> العمل دون إنترنت
+      ميزة جوهرية للمدارس والأكاديميات في مواقع نائية.</li>
+    <li><strong>الطباعة الفائقة الجودة:</strong> المدربون التقليديون
+      ما زالوا يفضّلون الورق — وهذا سوق كبير لا تخدمه المنصات
+      السحابية الحديثة جيداً.</li>
+    <li><strong>قاعدة تقنية ممتازة:</strong> المعمارية الحالية
+      جاهزة لاستيعاب التوسّع دون إعادة كتابة.</li>
+  </ul>
+
+  <h2>سيناريو النموّ الواقعي</h2>
+
+  <div class="card card-accent-cyan">
+    <div class="card-title">السنة الأولى — التأسيس</div>
+    <div class="card-body">
+      تكميل الصقل البصري + الجولة الترحيبية + استيراد البيانات
+      المحلية، ثمّ الإطلاق لشريحة ضيقة (مدربو الأكاديميات في
+      منطقة محدّدة) — هدف واقعي: <strong>٥٠٠ — ١٠٠٠ مستخدم نشط</strong>.
+    </div>
+  </div>
+
+  <div class="card card-accent-yellow">
+    <div class="card-title">السنة الثانية — التوسّع</div>
+    <div class="card-body">
+      إضافة ميزات الذكاء الاصطناعي + المزامنة الفورية متعدّدة الأجهزة
+      + المشاركة بين المدربين + اللغات (عربية، إسبانية، برتغالية،
+      فرنسية) — هدف واقعي: <strong>٥٫٠٠٠ — ١٠٫٠٠٠ مستخدم نشط</strong>.
+    </div>
+  </div>
+
+  <div class="card card-accent-orange">
+    <div class="card-title">السنة الثالثة — الترسيخ</div>
+    <div class="card-body">
+      إضافة طبقة التحليلات + الفيديو القصير + شراكات مع اتحادات
+      المدربين + خطة فرق المؤسسات — يصبح CoachMind المرجع الأول
+      في فئته في الأسواق المستهدفة. <strong>٢٥٫٠٠٠+ مستخدم نشط
+      مدفوع.</strong>
+    </div>
+  </div>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج</span><span>١٤</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 07 CONCLUSION                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">المحور السابع</div>
+  <h1 class="section-title">الخلاصة والتوصيات</h1>
+  <div class="section-rule"></div>
+
+  <p class="section-lead">
+    خلاصة المراجعة بثلاث رسائل قصيرة، ثمّ توصية واضحة بالخطوات
+    التالية الأكثر تأثيراً.
+  </p>
+
+  <h2>الرسالة الأولى</h2>
+
+  <div class="card card-accent-cyan">
+    <div class="card-title">المنتج ناضج تقنياً بشكل لافت</div>
+    <div class="card-body">
+      ما تمّ إنجازه عبر المراحل من A إلى F ليس عملاً عادياً.
+      المنصة تحمل اليوم مزامنة سحابية متطوّرة، عزل بيانات بمعايير
+      أمنية متقدمة، عملاً موثوقاً دون إنترنت، ومحرّراً تكتيكياً
+      عميقاً تجاوز معظم منافسيه المباشرين. هذا أساس صلب لا يُبنى
+      عادةً في هذه المرحلة من المشروع.
+    </div>
+  </div>
+
+  <h2>الرسالة الثانية</h2>
+
+  <div class="card card-accent-orange">
+    <div class="card-title">الفجوة كلّها في الصقل لا في الجوهر</div>
+    <div class="card-body">
+      المسافة بين CoachMind اليوم ومنصات SaaS الراقية ليست
+      مسافة "ميزات ناقصة" بل مسافة "تجربة غير مصقولة". إعادة
+      تصميم النظام البصري، إضافة الجولة الترحيبية، استبدال
+      الإيموجي بأيقونات احترافية، وإضافة طبقة الحركة — هذه
+      تحسينات قابلة للإنجاز في دورة عمل قصيرة نسبياً، وستضاعف
+      الإدراك العامّ لجودة المنتج.
+    </div>
+  </div>
+
+  <h2>الرسالة الثالثة</h2>
+
+  <div class="card card-accent-yellow">
+    <div class="card-title">الإمكانات السوقية حقيقية</div>
+    <div class="card-body">
+      السوق متاح، الفئة محدّدة، التفرّد واضح، والمعمارية جاهزة
+      للنمو. الخطر الوحيد هو التأخّر في إغلاق فجوة الصقل، لأنّ
+      منافسين يقتربون بسرعة من نفس الفكرة. ميزة الإطلاق المبكر
+      ما زالت متاحة، لكنها لن تظلّ كذلك إلى ما لا نهاية.
+    </div>
+  </div>
+
+  <h2>الخطوات الموصى بها — مرتّبة بالأولوية</h2>
+
+  <table>
+    <thead>
+      <tr><th>الخطوة</th><th>الأثر المتوقّع</th><th>المدة التقديرية</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>إعداد نظام تصميم موحّد</td>
+        <td>قفزة كبيرة في الإدراك البصري</td>
+        <td>أسبوعان — ثلاثة</td>
+      </tr>
+      <tr>
+        <td>استبدال الإيموجي بأيقونات مهنية</td>
+        <td>تحسين فوري لإحساس الاحتراف</td>
+        <td>٣ — ٥ أيام</td>
+      </tr>
+      <tr>
+        <td>إضافة جولة ترحيبية للمدرب الجديد</td>
+        <td>خفض معدّل التخلّي بشدّة</td>
+        <td>أسبوع</td>
+      </tr>
+      <tr>
+        <td>إضافة طبقة الحركة والتغذية الراجعة</td>
+        <td>إحساس "Premium" واضح</td>
+        <td>أسبوعان</td>
+      </tr>
+      <tr>
+        <td>تحسين تجربة الإصبع والإيماءات على iPad</td>
+        <td>زيادة الاستخدام في الميدان</td>
+        <td>أسبوعان</td>
+      </tr>
+      <tr>
+        <td>تنفيذ Phase G واستيراد البيانات</td>
+        <td>إتمام دورة المزامنة الكاملة</td>
+        <td>أسبوع</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-cyan">
+    <div class="callout-title">الكلمة الأخيرة</div>
+    <p>
+      <strong>CoachMind ليس مشروعاً عادياً.</strong> ما بُني فيه
+      حتى الآن يستحقّ الاستثمار في الجولة التالية من الصقل، لأنّ
+      الفجوة بين ما هو موجود وما يمكن أن يصبح صغيرة نسبياً —
+      لكنها تستحقّ التركيز الكامل. منتج بهذه الإمكانات يستحقّ
+      مظهراً يليق بقوّته الداخلية.
+    </p>
+  </div>
+
+  <div class="pf"><span>CoachMind · مراجعة المنتج · انتهى</span><span>١٦</span></div>
+</div>
+
+</body>
+</html>

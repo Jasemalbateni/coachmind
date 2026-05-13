@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Supabase CLI configuration.
+#
+# project_id is the ref of the remote Supabase project; `supabase link` will
+# pair this repo with that project so `supabase db push` knows where to apply
+# the migrations under ./migrations.
+#
+# The remaining sections are defaults for local development (`supabase start`).
+# Only auth.site_url and auth.additional_redirect_urls are project-specific;
+# everything else mirrors `supabase init` defaults.
+# ─────────────────────────────────────────────────────────────────────────────
+
+project_id = "kyxyymtqfhkmxlwdexft"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+# CoachMind dev runs on :3000; production should add your Vercel URL here.
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+# In dev, skip email confirmation so signup → signed-in is a single step.
+# Toggle to true in production (or configure SMTP) before going live.
+enable_confirmations = false
+
+[edge_runtime]
+enabled = true

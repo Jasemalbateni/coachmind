@@ -3,6 +3,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Drill } from '@/types';
+import { makeNamespacedStorage } from '@/lib/cloud/cloudStorage';
+import { getCloudUserId } from '@/lib/cloud/cloudSession';
+import { enqueueDrillTemplateUpsert, enqueueDrillTemplateDelete } from '@/lib/cloud/drillTemplateSync';
 
 export interface DrillTemplateItem {
   id: string;
@@ -17,11 +20,12 @@ interface DrillTemplatesState {
   deleteTemplate: (id: string) => void;
 }
 
-const storageImpl = {
-  getItem: (name: string) => { if (typeof window === 'undefined') return null; try { return localStorage.getItem(name); } catch { return null; } },
-  setItem: (name: string, value: string) => { if (typeof window === 'undefined') return; try { localStorage.setItem(name, value); } catch { /**/ } },
-  removeItem: (name: string) => { if (typeof window === 'undefined') return; try { localStorage.removeItem(name); } catch { /**/ } },
-};
+function syncUpsert(id: string): void {
+  if (getCloudUserId()) enqueueDrillTemplateUpsert(id);
+}
+function syncDelete(id: string): void {
+  if (getCloudUserId()) enqueueDrillTemplateDelete(id);
+}
 
 export const useDrillTemplatesStore = create<DrillTemplatesState>()(
   persist(
@@ -36,15 +40,21 @@ export const useDrillTemplatesStore = create<DrillTemplatesState>()(
           drill,
         };
         set((s) => ({ templates: { ...s.templates, [item.id]: item } }));
+        syncUpsert(item.id);
         return item;
       },
 
-      deleteTemplate: (id) =>
+      deleteTemplate: (id) => {
         set((s) => {
           const { [id]: _, ...rest } = s.templates;
           return { templates: rest };
-        }),
+        });
+        syncDelete(id);
+      },
     }),
-    { name: 'coach-drill-templates-v1', storage: createJSONStorage(() => storageImpl) }
+    {
+      name: 'coach-drill-templates-v1',
+      storage: createJSONStorage(() => makeNamespacedStorage('coach-drill-templates-v1')),
+    }
   )
 );

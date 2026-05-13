@@ -3,6 +3,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CalendarEvent } from '@/types';
+import { makeNamespacedStorage } from '@/lib/cloud/cloudStorage';
+import { getCloudUserId } from '@/lib/cloud/cloudSession';
+import { enqueueCalendarUpsert, enqueueCalendarDelete } from '@/lib/cloud/calendarSync';
 
 interface CalendarState {
   events: Record<string, CalendarEvent>;
@@ -17,64 +20,88 @@ interface CalendarState {
   clearSeasonPlanEntry: (entryId: string) => void;
 }
 
-const storageImpl = {
-  getItem: (name: string) => { if (typeof window === 'undefined') return null; try { return localStorage.getItem(name); } catch { return null; } },
-  setItem: (name: string, value: string) => { if (typeof window === 'undefined') return; try { localStorage.setItem(name, value); } catch { /**/ } },
-  removeItem: (name: string) => { if (typeof window === 'undefined') return; try { localStorage.removeItem(name); } catch { /**/ } },
-};
+/** Stamp every mutation with a fresh updatedAt so cloud sync can pick the
+ *  newer side on hydrate. */
+function stamp<T extends CalendarEvent>(event: T): T {
+  return { ...event, updatedAt: new Date().toISOString() };
+}
+
+function syncUpsert(id: string): void {
+  if (getCloudUserId()) enqueueCalendarUpsert(id);
+}
+function syncDelete(id: string): void {
+  if (getCloudUserId()) enqueueCalendarDelete(id);
+}
 
 export const useCalendarStore = create<CalendarState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       events: {},
 
-      addEvent: (event) =>
-        set((s) => ({ events: { ...s.events, [event.id]: event } })),
+      addEvent: (event) => {
+        const stamped = stamp(event);
+        set((s) => ({ events: { ...s.events, [stamped.id]: stamped } }));
+        syncUpsert(stamped.id);
+      },
 
-      updateEvent: (id, updates) =>
+      updateEvent: (id, updates) => {
         set((s) => {
           const e = s.events[id];
           if (!e) return s;
-          return { events: { ...s.events, [id]: { ...e, ...updates } } };
-        }),
+          return { events: { ...s.events, [id]: stamp({ ...e, ...updates }) } };
+        });
+        if (get().events[id]) syncUpsert(id);
+      },
 
-      deleteEvent: (id) =>
+      deleteEvent: (id) => {
         set((s) => {
           const { [id]: _, ...rest } = s.events;
           return { events: rest };
-        }),
+        });
+        syncDelete(id);
+      },
 
-      bulkAddEvents: (events) =>
+      bulkAddEvents: (events) => {
+        const now = new Date().toISOString();
         set((s) => {
           const map: Record<string, CalendarEvent> = { ...s.events };
-          events.forEach((e) => { map[e.id] = e; });
+          events.forEach((e) => { map[e.id] = { ...e, updatedAt: e.updatedAt ?? now }; });
           return { events: map };
-        }),
+        });
+        // Enqueue each event for cloud sync individually so a single bad
+        // event doesn't block the rest.
+        if (getCloudUserId()) events.forEach((e) => syncUpsert(e.id));
+      },
 
-      syncSeasonPlanEntry: (entryId, date, title, teamId, sessionId) =>
-        set((s) => {
-          const existing = Object.values(s.events).find((e) => e.seasonPlanEntryId === entryId);
-          const ev: CalendarEvent = {
-            id: existing?.id ?? crypto.randomUUID(),
-            title,
-            date,
-            type: 'training',
-            teamId: teamId || undefined,
-            sessionId: sessionId || undefined,
-            seasonPlanEntryId: entryId,
-            status: existing?.status ?? 'planned',
-          };
-          return { events: { ...s.events, [ev.id]: ev } };
-        }),
+      syncSeasonPlanEntry: (entryId, date, title, teamId, sessionId) => {
+        const existing = Object.values(get().events).find((e) => e.seasonPlanEntryId === entryId);
+        const ev: CalendarEvent = stamp({
+          id: existing?.id ?? crypto.randomUUID(),
+          title,
+          date,
+          type: 'training',
+          teamId: teamId || undefined,
+          sessionId: sessionId || undefined,
+          seasonPlanEntryId: entryId,
+          status: existing?.status ?? 'planned',
+        });
+        set((s) => ({ events: { ...s.events, [ev.id]: ev } }));
+        syncUpsert(ev.id);
+      },
 
-      clearSeasonPlanEntry: (entryId) =>
+      clearSeasonPlanEntry: (entryId) => {
+        const existing = Object.values(get().events).find((e) => e.seasonPlanEntryId === entryId);
+        if (!existing) return;
         set((s) => {
-          const existing = Object.values(s.events).find((e) => e.seasonPlanEntryId === entryId);
-          if (!existing) return s;
           const { [existing.id]: _, ...rest } = s.events;
           return { events: rest };
-        }),
+        });
+        syncDelete(existing.id);
+      },
     }),
-    { name: 'coach-calendar-v1', storage: createJSONStorage(() => storageImpl) }
+    {
+      name: 'coach-calendar-v1',
+      storage: createJSONStorage(() => makeNamespacedStorage('coach-calendar-v1')),
+    }
   )
 );

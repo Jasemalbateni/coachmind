@@ -4,6 +4,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Session, SessionBlock } from '@/types';
 import { buildSeedSessions } from '@/lib/seed';
+import { makeNamespacedStorage } from '@/lib/cloud/cloudStorage';
+import { getCloudUserId } from '@/lib/cloud/cloudSession';
+import { enqueueSessionUpsert, enqueueSessionDelete } from '@/lib/cloud/sessionSync';
 
 interface SessionsState {
   sessions: Record<string, Session>;
@@ -20,11 +23,17 @@ interface SessionsState {
   reorderBlocks: (sessionId: string, blocks: SessionBlock[]) => void;
 }
 
-const storageImpl = {
-  getItem: (name: string) => { if (typeof window === 'undefined') return null; try { return localStorage.getItem(name); } catch { return null; } },
-  setItem: (name: string, value: string) => { if (typeof window === 'undefined') return; try { localStorage.setItem(name, value); } catch { /**/ } },
-  removeItem: (name: string) => { if (typeof window === 'undefined') return; try { localStorage.removeItem(name); } catch { /**/ } },
-};
+/**
+ * Funnel every cloud write through these helpers so a single mutation
+ * upserts exactly once. Both are no-ops when not signed in, so the local-
+ * only behaviour of the store is unchanged.
+ */
+function syncUpsert(id: string): void {
+  if (getCloudUserId()) enqueueSessionUpsert(id);
+}
+function syncDelete(id: string): void {
+  if (getCloudUserId()) enqueueSessionDelete(id);
+}
 
 export const useSessionsStore = create<SessionsState>()(
   persist(
@@ -32,27 +41,38 @@ export const useSessionsStore = create<SessionsState>()(
       sessions: {},
       _seeded: false,
 
+      /**
+       * Demo seed for the local-only experience. Suppressed when signed-in
+       * so fresh cloud accounts start clean.
+       */
       seedIfEmpty: (drillIds) => {
+        if (getCloudUserId()) return;
         const { sessions, _seeded } = get();
         if (_seeded || Object.keys(sessions).length > 0) return;
         set({ sessions: buildSeedSessions(drillIds), _seeded: true });
       },
 
-      addSession: (session) =>
-        set((s) => ({ sessions: { ...s.sessions, [session.id]: session } })),
+      addSession: (session) => {
+        set((s) => ({ sessions: { ...s.sessions, [session.id]: session } }));
+        syncUpsert(session.id);
+      },
 
-      updateSession: (id, updates) =>
+      updateSession: (id, updates) => {
         set((s) => {
           const existing = s.sessions[id];
           if (!existing) return s;
           return { sessions: { ...s.sessions, [id]: { ...existing, ...updates, updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        if (get().sessions[id]) syncUpsert(id);
+      },
 
-      deleteSession: (id) =>
+      deleteSession: (id) => {
         set((s) => {
           const { [id]: _, ...rest } = s.sessions;
           return { sessions: rest };
-        }),
+        });
+        syncDelete(id);
+      },
 
       duplicateSession: (id) => {
         const { sessions, addSession } = get();
@@ -66,18 +86,20 @@ export const useSessionsStore = create<SessionsState>()(
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        addSession(copy);
+        addSession(copy); // already enqueues
         return copy;
       },
 
-      addBlock: (sessionId, block) =>
+      addBlock: (sessionId, block) => {
         set((s) => {
           const session = s.sessions[sessionId];
           if (!session) return s;
           return { sessions: { ...s.sessions, [sessionId]: { ...session, blocks: [...session.blocks, block], updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        if (get().sessions[sessionId]) syncUpsert(sessionId);
+      },
 
-      updateBlock: (sessionId, blockId, updates) =>
+      updateBlock: (sessionId, blockId, updates) => {
         set((s) => {
           const session = s.sessions[sessionId];
           if (!session) return s;
@@ -91,22 +113,31 @@ export const useSessionsStore = create<SessionsState>()(
               },
             },
           };
-        }),
+        });
+        if (get().sessions[sessionId]) syncUpsert(sessionId);
+      },
 
-      deleteBlock: (sessionId, blockId) =>
+      deleteBlock: (sessionId, blockId) => {
         set((s) => {
           const session = s.sessions[sessionId];
           if (!session) return s;
           return { sessions: { ...s.sessions, [sessionId]: { ...session, blocks: session.blocks.filter((b) => b.id !== blockId), updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        if (get().sessions[sessionId]) syncUpsert(sessionId);
+      },
 
-      reorderBlocks: (sessionId, blocks) =>
+      reorderBlocks: (sessionId, blocks) => {
         set((s) => {
           const session = s.sessions[sessionId];
           if (!session) return s;
           return { sessions: { ...s.sessions, [sessionId]: { ...session, blocks, updatedAt: new Date().toISOString() } } };
-        }),
+        });
+        if (get().sessions[sessionId]) syncUpsert(sessionId);
+      },
     }),
-    { name: 'coach-sessions-v2', storage: createJSONStorage(() => storageImpl) }
+    {
+      name: 'coach-sessions-v2',
+      storage: createJSONStorage(() => makeNamespacedStorage('coach-sessions-v2')),
+    }
   )
 );

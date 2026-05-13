@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -11,17 +12,56 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
       setError('Passwords do not match.');
       return;
     }
     setError('');
+    setInfo('');
+
+    if (!isSupabaseConfigured()) {
+      setError('Cloud sync is not configured on this build. The app runs in local-only mode.');
+      return;
+    }
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
     setLoading(true);
-    setTimeout(() => router.push('/drills'), 900);
+    const { data, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // `display_name` is read by the on-signup trigger to populate
+        // public.profiles.display_name (see 20260513120100_profiles_trigger.sql).
+        data: { display_name: name },
+        // Email-confirmation redirect target. Skipped in dev when
+        // auth.email.enable_confirmations = false in supabase/config.toml.
+        emailRedirectTo:
+          typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
+      },
+    });
+    setLoading(false);
+
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+
+    // If email confirmation is required (prod), Supabase returns user but no
+    // session — show a "check your inbox" message. Otherwise we're signed in
+    // immediately and can route into the app.
+    if (data.session) {
+      router.push('/drills');
+      router.refresh();
+    } else {
+      setInfo('Check your inbox for a confirmation link to finish signing up.');
+    }
   };
 
   return (
@@ -97,6 +137,12 @@ export default function SignUpPage() {
             <h1 className="text-2xl font-black text-white mb-2">Create your account</h1>
             <p className="text-white/40 text-sm">Free to start — no credit card required</p>
           </div>
+
+          {info && (
+            <div className="mb-4 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
+              {info}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
