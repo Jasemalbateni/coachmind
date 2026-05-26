@@ -61,7 +61,21 @@ export async function updateSession(
   });
 
   // Calls /auth/v1/user and refreshes the JWT cookie as a side-effect.
-  const { data } = await supabase.auth.getUser();
+  // Guarded with a 3s timeout so a slow/sleeping Supabase instance can't hang
+  // the middleware until Vercel's MIDDLEWARE_INVOCATION_TIMEOUT fires.
+  let data: { user: unknown | null } = { user: null };
+  try {
+    const result = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('supabase-getUser-timeout')), 3000)
+      ),
+    ]);
+    data = result.data;
+  } catch {
+    // Supabase slow/unreachable — treat as anonymous and let the page render.
+    // Protected routes will still bounce to /login below because data.user is null.
+  }
 
   // Route protection — only when the caller opted in.
   const prefixes = options.protectedPrefixes ?? [];

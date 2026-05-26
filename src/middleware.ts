@@ -34,14 +34,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static  (build assets)
-     * - _next/image   (image optimisation)
-     * - favicon.ico, robots.txt, sitemap.xml
-     * - icon / apple-icon / manifest
-     * - any path that looks like a file (has an extension)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|icon|apple-icon|manifest|.*\\..*).*)',
+    '/drills/:path*',
+    '/sessions/:path*',
+    '/season-plans/:path*',
+    '/teams/:path*',
+    '/calendar/:path*',
   ],
 };
