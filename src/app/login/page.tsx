@@ -4,7 +4,25 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
-import { mapAuthError, authDebug, redactEmail } from '@/lib/auth/authErrors';
+import { mapAuthError, authDebug, redactEmail, type AuthErrorKind } from '@/lib/auth/authErrors';
+
+interface DiagnosticReport {
+  configured: boolean;
+  urlValid: boolean;
+  supabaseHost: string;
+  projectRef: string;
+  anonKeyPresent: boolean;
+  anonKeyLength: number;
+  reachability: {
+    reachable: boolean;
+    status?: number;
+    latencyMs?: number;
+    errorName?: string;
+    errorMessage?: string;
+    cause?: string;
+  } | null;
+  hint: string;
+}
 
 // useSearchParams() requires a Suspense boundary during static prerender.
 // We wrap the form in <Suspense> at the page boundary so the rest of the
@@ -24,6 +42,9 @@ function LoginPageInner() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [errorKind, setErrorKind] = useState<AuthErrorKind | null>(null);
+  const [diagnostic, setDiagnostic] = useState<DiagnosticReport | null>(null);
+  const [diagnosticLoading, setDiagnosticLoading] = useState(false);
 
   // Surface auth-callback errors (?error=…) on first paint.
   useEffect(() => {
@@ -44,14 +65,41 @@ function LoginPageInner() {
     });
   }, []);
 
+  const runDiagnostic = async () => {
+    setDiagnosticLoading(true);
+    try {
+      const res = await fetch('/api/auth-diagnostic', { cache: 'no-store' });
+      const data: DiagnosticReport = await res.json();
+      setDiagnostic(data);
+      authDebug('diagnostic:result', { ...data });
+    } catch (err) {
+      authDebug('diagnostic:fetch-error', { message: (err as Error).message });
+      setDiagnostic({
+        configured: false,
+        urlValid: false,
+        supabaseHost: '',
+        projectRef: '',
+        anonKeyPresent: false,
+        anonKeyLength: 0,
+        reachability: null,
+        hint: 'Could not reach /api/auth-diagnostic. The Next.js server may be down — try refreshing the page.',
+      });
+    } finally {
+      setDiagnosticLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setErrorKind(null);
+    setDiagnostic(null);
 
     // 1. Client-side validation — fail fast before we touch the network.
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !password) {
       setError('Please enter your email and password');
+      setErrorKind('missing_fields');
       return;
     }
 
@@ -59,6 +107,7 @@ function LoginPageInner() {
     if (!isSupabaseConfigured()) {
       authDebug('signin:not-configured');
       setError('Cloud sync is not configured on this build. The app runs in local-only mode.');
+      setErrorKind('not_configured');
       return;
     }
 
@@ -96,6 +145,12 @@ function LoginPageInner() {
         rawMessage: (authError as { message?: string }).message,
       });
       setError(mapped.message);
+      setErrorKind(mapped.kind);
+      // Auto-run the diagnostic for network errors so the user gets actionable
+      // info (paused project? CORS? wrong env?) without having to click.
+      if (mapped.kind === 'network') {
+        void runDiagnostic();
+      }
       return;
     }
 
@@ -184,7 +239,52 @@ function LoginPageInner() {
 
           {error && (
             <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
-              {error}
+              <p>{error}</p>
+
+              {errorKind === 'network' && (
+                <div className="mt-3 pt-3 border-t border-red-500/20">
+                  {!diagnostic && (
+                    <button
+                      type="button"
+                      onClick={runDiagnostic}
+                      disabled={diagnosticLoading}
+                      className="text-xs font-semibold text-red-200/90 hover:text-red-100 underline underline-offset-2 disabled:opacity-50">
+                      {diagnosticLoading ? 'Running diagnostic…' : 'Run connection diagnostic'}
+                    </button>
+                  )}
+
+                  {diagnostic && (
+                    <div className="space-y-2 text-xs text-red-200/90">
+                      <p className="font-semibold uppercase tracking-wider text-red-200/70">
+                        Diagnostic
+                      </p>
+                      <ul className="space-y-1 leading-relaxed font-mono">
+                        <li>configured: <span className="text-white">{String(diagnostic.configured)}</span></li>
+                        <li>host: <span className="text-white">{diagnostic.supabaseHost || '<unset>'}</span></li>
+                        <li>project ref: <span className="text-white">{diagnostic.projectRef || '<unset>'}</span></li>
+                        <li>anon key length: <span className="text-white">{diagnostic.anonKeyLength}</span></li>
+                        {diagnostic.reachability && (
+                          <>
+                            <li>reachable: <span className="text-white">{String(diagnostic.reachability.reachable)}</span></li>
+                            {typeof diagnostic.reachability.status === 'number' && (
+                              <li>status: <span className="text-white">{diagnostic.reachability.status}</span></li>
+                            )}
+                            {diagnostic.reachability.errorName && (
+                              <li>error: <span className="text-white">{diagnostic.reachability.errorName}</span></li>
+                            )}
+                            {diagnostic.reachability.cause && (
+                              <li>cause: <span className="text-white">{diagnostic.reachability.cause}</span></li>
+                            )}
+                          </>
+                        )}
+                      </ul>
+                      <p className="pt-2 text-red-100/95 font-sans">
+                        {diagnostic.hint}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

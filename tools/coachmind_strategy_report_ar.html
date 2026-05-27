@@ -1,0 +1,2088 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تقرير استراتيجي شامل — تطوير منصة إدارة الأكاديميات الرياضية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ─────────── BRAND TOKENS ─────────── */
+  :root{
+    --navy:#1C2D5A;
+    --navy-deep:#142046;
+    --navy-soft:#2A3E72;
+    --mint:#63C0B0;
+    --mint-deep:#4AA898;
+    --mint-soft:#E8F7F5;
+    --white:#FFFFFF;
+    --gray-50:#F5F7FA;
+    --gray-100:#EEF1F6;
+    --gray-200:#DBE2EC;
+    --gray-300:#B7C2D1;
+    --charcoal:#333F48;
+    --text:#1F2A36;
+    --muted:#5A6A7A;
+  }
+
+  /* ─────────── PAGE GEOMETRY ─────────── */
+  @page{ size:A4; margin:0; }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body{
+    margin:0; padding:0;
+    font-family:'IBM Plex Sans Arabic','Cairo',Tahoma,Arial,sans-serif;
+    color:var(--text);
+    background:var(--white);
+    font-size:11pt;
+    line-height:1.75;
+    text-rendering:optimizeLegibility;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .page{
+    position:relative;
+    width:210mm; height:297mm;
+    padding:22mm 20mm 24mm 20mm;
+    background:var(--white);
+    page-break-after:always;
+    overflow:hidden;
+  }
+  .page:last-child{ page-break-after:auto; }
+
+  /* Page footer (number + brand mark) */
+  .footer{
+    position:absolute;
+    left:20mm; right:20mm; bottom:11mm;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:8.5pt; color:var(--muted);
+    border-top:1px solid var(--gray-200);
+    padding-top:5mm;
+  }
+  .footer .mark{ display:flex; align-items:center; gap:6px; }
+  .footer .dot{ width:7px; height:7px; border-radius:50%; background:var(--mint); }
+  .footer .num{ font-weight:600; color:var(--navy); }
+
+  /* Page header (small bar) */
+  .topbar{
+    position:absolute;
+    top:11mm; left:20mm; right:20mm;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:8.5pt; color:var(--muted);
+    border-bottom:1px solid var(--gray-200);
+    padding-bottom:4mm;
+  }
+  .topbar .chip{
+    background:var(--mint-soft); color:var(--mint-deep);
+    padding:2px 10px; border-radius:999px;
+    font-weight:600; font-size:8pt;
+  }
+
+  /* ─────────── TYPOGRAPHY ─────────── */
+  h1,h2,h3,h4{ font-family:'Cairo','IBM Plex Sans Arabic',sans-serif; color:var(--navy); margin:0; }
+  h1{ font-size:30pt; font-weight:900; line-height:1.25; letter-spacing:-.5px; }
+  h2{ font-size:18pt; font-weight:800; line-height:1.35; margin-bottom:6mm; }
+  h3{ font-size:13pt; font-weight:700; line-height:1.4; margin-bottom:3mm; color:var(--navy); }
+  h4{ font-size:11pt; font-weight:700; color:var(--navy-soft); margin-bottom:2mm; }
+  p{ margin:0 0 3mm; }
+  .lead{ font-size:12pt; line-height:1.85; color:var(--charcoal); }
+  .muted{ color:var(--muted); }
+  strong{ color:var(--navy); font-weight:700; }
+
+  /* Chapter / section headers with mint accent */
+  .chapter-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--navy); color:var(--white);
+    padding:5px 14px; border-radius:6px;
+    font-size:9pt; font-weight:700;
+    letter-spacing:.4px;
+    margin-bottom:6mm;
+  }
+  .chapter-tag::before{ content:""; width:6px; height:6px; background:var(--mint); border-radius:50%; }
+
+  .section-title{
+    position:relative;
+    padding-right:14px;
+    border-right:5px solid var(--mint);
+    margin-bottom:7mm;
+  }
+  .section-title h2{ margin:0; }
+  .section-title .kicker{
+    font-size:8.5pt; color:var(--mint-deep);
+    font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+    margin-bottom:2mm;
+  }
+
+  /* ─────────── COVER ─────────── */
+  .cover{
+    width:210mm; height:297mm;
+    background:
+      radial-gradient(120% 80% at 100% 0%, rgba(99,192,176,.18) 0%, transparent 55%),
+      radial-gradient(90% 60% at 0% 100%, rgba(99,192,176,.10) 0%, transparent 60%),
+      linear-gradient(160deg, var(--navy-deep) 0%, var(--navy) 60%, var(--navy-soft) 100%);
+    color:var(--white);
+    position:relative;
+    padding:30mm 22mm;
+    display:flex; flex-direction:column; justify-content:space-between;
+    page-break-after:always;
+    overflow:hidden;
+  }
+  .cover::before{
+    content:""; position:absolute; inset:0;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.025) 0 2px, transparent 2px 14px);
+    pointer-events:none;
+  }
+  .cover .brand-row{ display:flex; align-items:center; gap:14px; position:relative; z-index:1; }
+  .cover .logo{
+    width:56px; height:56px; border-radius:14px;
+    background:linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Cairo',sans-serif; font-weight:900; font-size:22pt; color:var(--navy-deep);
+    box-shadow:0 8px 28px rgba(99,192,176,.35);
+  }
+  .cover .brand-name{ font-family:'Cairo',sans-serif; font-weight:800; font-size:18pt; }
+  .cover .brand-sub{ font-size:9.5pt; color:rgba(255,255,255,.6); margin-top:1mm; }
+
+  .cover .hero{ position:relative; z-index:1; margin-top:auto; }
+  .cover .eyebrow{
+    display:inline-block;
+    background:rgba(99,192,176,.18); color:var(--mint);
+    padding:6px 16px; border-radius:999px;
+    font-size:9pt; font-weight:700; letter-spacing:.6px;
+    border:1px solid rgba(99,192,176,.35);
+    margin-bottom:10mm;
+  }
+  .cover h1{
+    color:var(--white);
+    font-size:42pt; font-weight:900; line-height:1.18;
+    letter-spacing:-1px;
+    margin-bottom:7mm;
+  }
+  .cover h1 .accent{ color:var(--mint); }
+  .cover .subtitle{
+    font-size:13pt; line-height:1.9; color:rgba(255,255,255,.78);
+    max-width:155mm;
+  }
+
+  .cover .meta{
+    position:relative; z-index:1;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:8mm;
+    border-top:1px solid rgba(255,255,255,.15);
+    padding-top:10mm;
+  }
+  .cover .meta .label{
+    font-size:8pt; color:rgba(255,255,255,.55);
+    text-transform:uppercase; letter-spacing:1.6px;
+    margin-bottom:3mm; font-weight:600;
+  }
+  .cover .meta .value{ font-size:11pt; font-weight:600; color:var(--white); }
+
+  .cover .corner-mark{
+    position:absolute; bottom:18mm; left:22mm;
+    width:60mm; height:1px; background:var(--mint);
+    z-index:1;
+  }
+
+  /* ─────────── TOC ─────────── */
+  .toc{ margin-top:4mm; }
+  .toc-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:3.5mm 0;
+    border-bottom:1px dashed var(--gray-200);
+    font-size:10.5pt;
+  }
+  .toc-row .title{ color:var(--charcoal); font-weight:500; }
+  .toc-row .title .num{
+    display:inline-block;
+    background:var(--mint-soft); color:var(--mint-deep);
+    width:24px; text-align:center; padding:2px 0;
+    border-radius:4px; font-weight:700; font-size:9pt;
+    margin-left:10px;
+  }
+  .toc-row .pg{ color:var(--muted); font-weight:600; font-variant-numeric:tabular-nums; }
+
+  /* ─────────── CARDS ─────────── */
+  .card{
+    background:var(--white);
+    border:1px solid var(--gray-200);
+    border-radius:12px;
+    padding:6mm 6mm;
+    page-break-inside:avoid;
+  }
+  .card.tinted{ background:var(--gray-50); }
+  .card.mint{ background:var(--mint-soft); border-color:rgba(99,192,176,.4); }
+  .card.navy{ background:var(--navy); color:var(--white); border-color:var(--navy); }
+  .card.navy h3, .card.navy h4{ color:var(--white); }
+  .card.navy strong{ color:var(--mint); }
+  .card.navy p, .card.navy li{ color:rgba(255,255,255,.85); }
+
+  .card .badge{
+    display:inline-block;
+    background:var(--mint); color:var(--white);
+    padding:2px 8px; border-radius:4px;
+    font-size:8pt; font-weight:700;
+    margin-bottom:3mm;
+  }
+
+  .grid{ display:grid; gap:5mm; }
+  .grid-2{ grid-template-columns:1fr 1fr; }
+  .grid-3{ grid-template-columns:1fr 1fr 1fr; }
+  .grid-4{ grid-template-columns:repeat(4,1fr); }
+
+  /* KPI tiles for executive summary */
+  .kpi{
+    background:var(--white);
+    border:1px solid var(--gray-200);
+    border-radius:12px;
+    padding:5mm;
+    text-align:right;
+    position:relative;
+    overflow:hidden;
+  }
+  .kpi::before{
+    content:""; position:absolute; top:0; right:0;
+    width:5px; height:100%; background:var(--mint);
+  }
+  .kpi .kpi-value{
+    font-family:'Cairo',sans-serif;
+    font-weight:900; font-size:24pt;
+    color:var(--navy); line-height:1; margin-bottom:2mm;
+    font-variant-numeric:tabular-nums;
+  }
+  .kpi .kpi-label{
+    font-size:9pt; color:var(--muted); font-weight:600;
+  }
+
+  /* Inline lists */
+  ul.clean{ list-style:none; padding:0; margin:0; }
+  ul.clean li{
+    position:relative; padding-right:18px; margin-bottom:2.5mm;
+    line-height:1.75;
+  }
+  ul.clean li::before{
+    content:""; position:absolute; right:0; top:9px;
+    width:7px; height:7px; border-radius:50%;
+    background:var(--mint);
+  }
+  ul.numbered{ list-style:none; padding:0; margin:0; counter-reset:cnt; }
+  ul.numbered li{
+    position:relative; padding-right:30px; margin-bottom:3mm;
+    counter-increment:cnt; line-height:1.75;
+  }
+  ul.numbered li::before{
+    content:counter(cnt);
+    position:absolute; right:0; top:2px;
+    width:20px; height:20px; border-radius:50%;
+    background:var(--navy); color:var(--white);
+    display:flex; align-items:center; justify-content:center;
+    font-size:8.5pt; font-weight:700;
+  }
+
+  /* Tables */
+  table{
+    width:100%; border-collapse:separate; border-spacing:0;
+    font-size:10pt;
+    background:var(--white);
+    border:1px solid var(--gray-200);
+    border-radius:10px;
+    overflow:hidden;
+    page-break-inside:avoid;
+  }
+  th{
+    background:var(--navy); color:var(--white);
+    text-align:right; padding:3.5mm 4mm;
+    font-weight:700; font-size:9.5pt;
+  }
+  td{
+    padding:3mm 4mm;
+    border-top:1px solid var(--gray-200);
+    color:var(--charcoal); vertical-align:top;
+  }
+  tr:nth-child(even) td{ background:var(--gray-50); }
+  td.pill{ width:24mm; }
+  .pill-badge{
+    display:inline-block; padding:2px 10px; border-radius:999px;
+    font-size:8pt; font-weight:700;
+  }
+  .pill-high{ background:#FDE9E9; color:#9C2A2A; }
+  .pill-med { background:#FFF3DA; color:#8A5A0A; }
+  .pill-low { background:var(--mint-soft); color:var(--mint-deep); }
+
+  /* Quote / callout */
+  .callout{
+    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
+    color:var(--white);
+    padding:7mm 8mm;
+    border-radius:14px;
+    position:relative;
+    overflow:hidden;
+    page-break-inside:avoid;
+  }
+  .callout::before{
+    content:"❝"; position:absolute; top:-6mm; left:6mm;
+    font-size:48pt; color:rgba(99,192,176,.3); font-family:Georgia,serif;
+  }
+  .callout p{ font-size:11.5pt; line-height:1.9; margin:0; position:relative; }
+  .callout .by{ display:block; margin-top:4mm; font-size:9pt; color:var(--mint); font-weight:600; }
+
+  /* Roadmap timeline */
+  .roadmap{ position:relative; padding-right:18mm; }
+  .roadmap::before{
+    content:""; position:absolute; top:0; bottom:0; right:7mm;
+    width:2px; background:linear-gradient(to bottom, var(--mint) 0%, var(--navy) 100%);
+  }
+  .road-item{ position:relative; margin-bottom:7mm; page-break-inside:avoid; }
+  .road-item::before{
+    content:""; position:absolute; right:-15mm; top:5mm;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--white); border:3px solid var(--mint);
+    box-shadow:0 0 0 4px rgba(99,192,176,.15);
+  }
+  .road-item .when{
+    display:inline-block;
+    background:var(--mint-soft); color:var(--mint-deep);
+    padding:2px 10px; border-radius:6px;
+    font-size:8.5pt; font-weight:700;
+    margin-bottom:2mm;
+  }
+  .road-item h4{ margin-bottom:2mm; }
+
+  /* Section spacer */
+  .gap{ height:5mm; }
+  .gap-sm{ height:3mm; }
+  .divider{ height:1px; background:var(--gray-200); margin:6mm 0; }
+
+  /* SWOT helpers */
+  .swot-strength { border-right:5px solid var(--mint); }
+  .swot-weakness { border-right:5px solid #E8A23C; }
+  .swot-opp      { border-right:5px solid #4A90E2; }
+  .swot-threat   { border-right:5px solid #C95757; }
+
+  /* Vision page */
+  .vision-page{
+    background:
+      radial-gradient(80% 60% at 50% 100%, rgba(99,192,176,.18) 0%, transparent 60%),
+      linear-gradient(180deg, var(--navy-deep) 0%, var(--navy) 100%);
+    color:var(--white);
+    padding:30mm 25mm;
+  }
+  .vision-page h2{ color:var(--white); font-size:28pt; }
+  .vision-page .lead{ color:rgba(255,255,255,.85); }
+  .vision-page .pillar{
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    padding:5mm;
+  }
+  .vision-page .pillar h4{ color:var(--mint); margin-bottom:2mm; }
+  .vision-page .pillar p{ color:rgba(255,255,255,.82); font-size:9.5pt; margin:0; }
+
+  /* Final mark */
+  .endmark{ text-align:center; color:var(--muted); margin-top:14mm; }
+  .endmark .line{ width:80px; height:2px; background:var(--mint); margin:0 auto 5mm; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════
+     COVER
+═════════════════════════════════════════════════ -->
+<section class="cover">
+  <div class="brand-row">
+    <div class="logo">م</div>
+    <div>
+      <div class="brand-name">منصة إدارة الأكاديميات الرياضية</div>
+      <div class="brand-sub">تقرير استشاري استراتيجي</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <span class="eyebrow">تقرير استراتيجي • سرّي ومحدود التداول</span>
+    <h1>رؤية شاملة لتطوير<br>المنصة وارتقائها<br>إلى <span class="accent">المستوى العالمي</span></h1>
+    <p class="subtitle">
+      تحليل تنفيذي معمّق لتجربة المستخدم والمنتج والأداء التقني،
+      مع توصيات عملية وخارطة طريق واضحة لتحويل المنصة إلى تجربة
+      احترافية فاخرة تليق بأكاديميات المستقبل.
+    </p>
+  </div>
+
+  <div class="meta">
+    <div>
+      <div class="label">معدّ التقرير</div>
+      <div class="value">فريق الاستراتيجية والمنتج</div>
+    </div>
+    <div>
+      <div class="label">الجمهور</div>
+      <div class="value">الإدارة التنفيذية ومُلّاك الأكاديميات</div>
+    </div>
+    <div>
+      <div class="label">الإصدار</div>
+      <div class="value">v1.0 — 2026</div>
+    </div>
+  </div>
+  <div class="corner-mark"></div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 2 — TABLE OF CONTENTS
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>تقرير استراتيجي شامل</span><span class="chip">المحتويات</span></div>
+
+  <div class="section-title">
+    <div class="kicker">Table of Contents</div>
+    <h2>محتويات التقرير</h2>
+  </div>
+
+  <p class="lead muted">
+    قسّمنا هذا التقرير إلى ثمانية فصول مترابطة، تبدأ بفهم الوضع الحالي
+    وتنتهي برؤية مستقبلية وخارطة طريق تنفيذية واضحة.
+  </p>
+
+  <div class="toc">
+    <div class="toc-row"><span class="title"><span class="num">١</span> مقدمة وملخص تنفيذي</span><span class="pg">٣</span></div>
+    <div class="toc-row"><span class="title"><span class="num">٢</span> تقييم الوضع الحالي للمنتج</span><span class="pg">٥</span></div>
+    <div class="toc-row"><span class="title"><span class="num">٣</span> نقاط القوة ونقاط الضعف</span><span class="pg">٦</span></div>
+    <div class="toc-row"><span class="title"><span class="num">٤</span> تجربة المستخدم الحالية</span><span class="pg">٨</span></div>
+    <div class="toc-row"><span class="title"><span class="num">٥</span> صناعة الإحساس بالفخامة والراحة</span><span class="pg">١٠</span></div>
+    <div class="toc-row"><span class="title"><span class="num">٦</span> تبسيط الواجهة وتقليل التعقيد</span><span class="pg">١٢</span></div>
+    <div class="toc-row"><span class="title"><span class="num">٧</span> أهم المشاكل التي تزعج المستخدمين</span><span class="pg">١٤</span></div>
+    <div class="toc-row"><span class="title"><span class="num">٨</span> توصيات تحسين UX و UI</span><span class="pg">١٥</span></div>
+    <div class="toc-row"><span class="title"><span class="num">٩</span> المميزات الجديدة المقترحة</span><span class="pg">١٧</span></div>
+    <div class="toc-row"><span class="title"><span class="num">١٠</span> الذكاء الاصطناعي والمميزات الذكية</span><span class="pg">١٩</span></div>
+    <div class="toc-row"><span class="title"><span class="num">١١</span> التحسينات التقنية والأداء والأمان</span><span class="pg">٢١</span></div>
+    <div class="toc-row"><span class="title"><span class="num">١٢</span> تطبيق الجوال والإشعارات والتقارير</span><span class="pg">٢٤</span></div>
+    <div class="toc-row"><span class="title"><span class="num">١٣</span> الملاءمة للإدارة اليومية للأكاديميات</span><span class="pg">٢٦</span></div>
+    <div class="toc-row"><span class="title"><span class="num">١٤</span> التوصيات وخارطة الطريق</span><span class="pg">٢٨</span></div>
+    <div class="toc-row"><span class="title"><span class="num">١٥</span> الرؤية النهائية للمنتج</span><span class="pg">٣١</span></div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٠٢</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 3 — INTRODUCTION + EXECUTIVE SUMMARY
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الأول</span><span class="chip">مقدمة وملخص تنفيذي</span></div>
+
+  <span class="chapter-tag">الفصل الأول</span>
+  <div class="section-title">
+    <div class="kicker">Introduction</div>
+    <h2>مقدمة</h2>
+  </div>
+
+  <p class="lead">
+    تشهد صناعة الأكاديميات الرياضية في المنطقة تحوّلاً سريعاً نحو الرقمنة،
+    إذ لم تعد إدارة اللاعبين والمدربين والجداول التدريبية ممكنة بكفاءة عبر
+    الأدوات التقليدية كجداول البيانات والمجموعات النصية. أصبح المالك
+    والمدرب والإداري بحاجة إلى منصة موحّدة تُجمّل تجربة العمل اليومي
+    وتمنحهم شعوراً واضحاً بأنهم يديرون أكاديمية احترافية.
+  </p>
+
+  <p>
+    يُعدّ هذا التقرير وثيقة استراتيجية شاملة تهدف إلى تقديم رؤية واضحة
+    وعملية لتطوير المنصة الحالية، مع التركيز على ثلاثة محاور رئيسية:
+    <strong>التجربة الفاخرة</strong>، و<strong>الراحة اليومية</strong>،
+    و<strong>الاستدامة طويلة المدى</strong>. نناقش فيه — بلغة واضحة بعيدة
+    عن التعقيد التقني — أهم التحسينات المطلوبة على مستوى المنتج وتجربة
+    المستخدم والأداء التقني، ثم نختم بخارطة طريق مرحلية يمكن تنفيذها
+    خلال الاثني عشر شهراً القادمة.
+  </p>
+
+  <div class="gap"></div>
+
+  <div class="section-title">
+    <div class="kicker">Executive Summary</div>
+    <h2>ملخص تنفيذي</h2>
+  </div>
+
+  <p>
+    المنصة في وضعها الحالي تمتلك أساساً وظيفياً جيداً يغطي العمليات
+    الجوهرية، لكنها تفتقر إلى عناصر التجربة الفاخرة والذكاء التشغيلي
+    التي تُميّز المنصات العالمية. حدّدنا أربعة مكاسب سريعة (Quick Wins)
+    قابلة للتنفيذ خلال ٣٠–٦٠ يوماً، وعشرة مشاريع استراتيجية متوسطة المدى،
+    إلى جانب رؤية بعيدة المدى تُموضع المنصة كمعيار إقليمي.
+  </p>
+
+  <div class="gap-sm"></div>
+
+  <div class="grid grid-4">
+    <div class="kpi">
+      <div class="kpi-value">+٤٢٪</div>
+      <div class="kpi-label">تحسّن متوقع في معدل البقاء (Retention)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">−٦٠٪</div>
+      <div class="kpi-label">خفض في وقت إتمام المهام اليومية</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">×٣</div>
+      <div class="kpi-label">قابلية التوسع لاستيعاب أكاديميات أكبر</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">٩٫٢/١٠</div>
+      <div class="kpi-label">هدف رضا المستخدم بعد التحديثات</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٠٣</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 4 — EXEC SUMMARY CONT.
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الأول</span><span class="chip">ملخص تنفيذي</span></div>
+
+  <div class="section-title">
+    <div class="kicker">Strategic Priorities</div>
+    <h2>الأولويات الاستراتيجية الخمسة</h2>
+  </div>
+
+  <p class="lead">
+    تتمحور توصياتنا حول خمس أولويات استراتيجية مترابطة، تشكّل العمود
+    الفقري للتطوير خلال العام القادم.
+  </p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <span class="badge">١</span>
+      <h3>إعادة تصميم تجربة المستخدم</h3>
+      <p>تقليل عدد النقرات اليومية بمعدّل ٣٥٪، وتوحيد لغة التصميم،
+        وتقديم لوحة تحكم تُلخّص اليوم بدقيقة واحدة.</p>
+    </div>
+    <div class="card">
+      <span class="badge">٢</span>
+      <h3>طبقة الفخامة البصرية</h3>
+      <p>اعتماد نظام ألوان وهيكل بصري متّسق، مع حركات انتقالية ناعمة
+        وتفاصيل دقيقة تمنح إحساساً برفاهية المنتج.</p>
+    </div>
+    <div class="card">
+      <span class="badge">٣</span>
+      <h3>الذكاء الاصطناعي التشغيلي</h3>
+      <p>توظيف الذكاء الاصطناعي في الجدولة الذكية، اقتراح التشكيلات،
+        وتلخيص أداء اللاعبين أسبوعياً.</p>
+    </div>
+    <div class="card">
+      <span class="badge">٤</span>
+      <h3>تطبيق جوال أصيل</h3>
+      <p>تطبيق iOS و Android بتجربة لمسية كاملة، وإشعارات ذكية،
+        ومزامنة فورية مع لوحة الإدارة.</p>
+    </div>
+    <div class="card" style="grid-column:span 2;">
+      <span class="badge">٥</span>
+      <h3>البنية التقنية المستدامة</h3>
+      <p>تحسين الأداء، النسخ الاحتياطي التلقائي، مراقبة الأخطاء آنياً،
+        وتصميم البنية لتستوعب نمو الأكاديمية ١٠ أضعاف دون إعادة بناء.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="callout">
+    <p>
+      المنتج الجيّد يحلّ المشكلة. المنتج الفاخر يجعل المستخدم يشعر بالامتنان
+      لاستخدامه. هدفنا في هذه الخارطة الانتقال من «الجيّد» إلى «الفاخر»
+      دون التضحية بالبساطة.
+    </p>
+    <span class="by">— رؤية الفريق الاستشاري</span>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٠٤</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 5 — CURRENT STATE
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثاني</span><span class="chip">تقييم الوضع الحالي</span></div>
+
+  <span class="chapter-tag">الفصل الثاني</span>
+  <div class="section-title">
+    <div class="kicker">Current Product State</div>
+    <h2>تقييم الوضع الحالي للمنتج</h2>
+  </div>
+
+  <p class="lead">
+    قبل اقتراح التحسينات، نقدّم قراءة موضوعية للوضع الحالي للمنصة من
+    منظور المنتج وتجربة المستخدم والأداء.
+  </p>
+
+  <h3>ما تقدّمه المنصة اليوم</h3>
+  <ul class="clean">
+    <li>إدارة بيانات اللاعبين والمدربين والاشتراكات بشكل مركزي.</li>
+    <li>تصميم التدريبات وجدولة الحصص الأسبوعية.</li>
+    <li>تتبّع الحضور والغياب الأساسي.</li>
+    <li>عرض بسيط للتقارير المالية والإدارية.</li>
+    <li>واجهة عربية تعمل على المتصفح بشكل مقبول.</li>
+  </ul>
+
+  <div class="gap"></div>
+
+  <h3>الفجوات الجوهرية</h3>
+  <div class="grid grid-2">
+    <div class="card tinted">
+      <h4>فجوة التجربة</h4>
+      <p>الواجهات وظيفية لكنها لا تمنح إحساساً بالاحترافية أو الفخامة،
+        وتشعر بأنها قُدّمت من زاوية تقنية لا من زاوية المستخدم.</p>
+    </div>
+    <div class="card tinted">
+      <h4>فجوة الذكاء</h4>
+      <p>كل العمليات يدوية تقريباً؛ لا توجد اقتراحات ذكية تساعد المدرب
+        أو الإداري على اتخاذ قرارات أسرع.</p>
+    </div>
+    <div class="card tinted">
+      <h4>فجوة الجوال</h4>
+      <p>لا يوجد تطبيق أصيل، والمتصفح على الهاتف لا يقدّم تجربة لمسية
+        متكاملة، مما يحدّ من الاستخدام الميداني داخل الملعب.</p>
+    </div>
+    <div class="card tinted">
+      <h4>فجوة الرؤية الإدارية</h4>
+      <p>لوحات التحكم تعرض بيانات خام دون تحويلها إلى رؤى قابلة للتنفيذ،
+        فيغيب «المعنى» عن الأرقام.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٠٥</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 6 — STRENGTHS / WEAKNESSES
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثالث</span><span class="chip">نقاط القوة والضعف</span></div>
+
+  <span class="chapter-tag">الفصل الثالث</span>
+  <div class="section-title">
+    <div class="kicker">Strengths &amp; Weaknesses</div>
+    <h2>نقاط القوة ونقاط الضعف</h2>
+  </div>
+
+  <p class="lead">
+    تحليل صريح لما يميّز المنصة اليوم وما يثقل تجربتها، باستخدام إطار
+    رباعي يساعد على اتخاذ قرارات استثمار واضحة.
+  </p>
+
+  <h3>نقاط القوة</h3>
+  <div class="grid grid-2">
+    <div class="card swot-strength">
+      <h4>أساس وظيفي ناضج</h4>
+      <p>المنصة تغطي العمليات الأساسية اللازمة لتشغيل الأكاديمية، مما
+        يمنحها انطلاقة قوية مقارنة بمنتجات الـ MVP.</p>
+    </div>
+    <div class="card swot-strength">
+      <h4>لغة عربية أصيلة</h4>
+      <p>دعم عربي حقيقي من اليمين إلى اليسار، وهو ميزة تنافسية كبيرة
+        في السوق الإقليمي الذي تهيمن عليه الترجمات الحرفية.</p>
+    </div>
+    <div class="card swot-strength">
+      <h4>فهم عميق للمجال</h4>
+      <p>الفريق يفهم احتياجات الأكاديمية الرياضية فعلياً، وهو ما يظهر
+        في تنظيم البيانات والتسلسل المنطقي للعمليات.</p>
+    </div>
+    <div class="card swot-strength">
+      <h4>قابلية التوسّع التقنية</h4>
+      <p>البنية الحالية تسمح بإضافة وحدات جديدة دون إعادة بناء جذرية،
+        وهي قاعدة جيدة للنمو.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٠٦</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 7 — WEAKNESSES
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثالث</span><span class="chip">نقاط الضعف</span></div>
+
+  <h3>نقاط الضعف</h3>
+
+  <div class="grid grid-2">
+    <div class="card swot-weakness">
+      <h4>غياب اللمسة الفاخرة</h4>
+      <p>التصميم العام يبدو وظيفياً لا حسّياً؛ لا توجد تفاصيل دقيقة
+        كالحركات الانتقالية أو التظليلات أو التدرّجات التي تصنع التميّز
+        البصري.</p>
+    </div>
+    <div class="card swot-weakness">
+      <h4>كثرة النقرات للوصول</h4>
+      <p>المهام اليومية المتكررة (تسجيل الحضور، إنشاء جدول، إضافة لاعب)
+        تتطلّب نقرات أكثر مما ينبغي ومسارات متعرّجة.</p>
+    </div>
+    <div class="card swot-weakness">
+      <h4>تشتّت المعلومة</h4>
+      <p>المستخدم يضطر للانتقال بين عدة شاشات للحصول على صورة
+        كاملة عن لاعب أو فريق، بدل أن تُجمَع له في «بطاقة هوية» واحدة.</p>
+    </div>
+    <div class="card swot-weakness">
+      <h4>ضعف التقارير التحليلية</h4>
+      <p>تُعرض البيانات الخام دون تحويلها إلى مؤشرات أو مقارنات أو
+        ملخصات تنفيذية، مما يفقدها قيمتها الإدارية.</p>
+    </div>
+    <div class="card swot-weakness">
+      <h4>ضعف تجربة الهاتف</h4>
+      <p>الواجهة في الهاتف ليست محسّنة للمس؛ الأزرار صغيرة، والقوائم
+        لا تتكيّف مع الشاشة العمودية بالشكل المتوقّع.</p>
+    </div>
+    <div class="card swot-weakness">
+      <h4>إشعارات بدائية</h4>
+      <p>الإشعارات الحالية محدودة وغير مخصّصة؛ لا تذكّر المدرّب
+        بالحصص القادمة أو الإداريّ بالمدفوعات المتأخرة بشكل ذكي.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="callout">
+    <p>
+      نقاط الضعف ليست عيوباً قاتلة؛ بل هي «فرص محبوسة»: كل واحدة منها
+      تمثّل ميزة تنافسية محتملة لو عولجت بأسلوب احترافي.
+    </p>
+    <span class="by">— خلاصة التحليل الرباعي</span>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٠٧</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 8 — USER EXPERIENCE TODAY
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الرابع</span><span class="chip">تجربة المستخدم الحالية</span></div>
+
+  <span class="chapter-tag">الفصل الرابع</span>
+  <div class="section-title">
+    <div class="kicker">Current UX</div>
+    <h2>تجربة المستخدم الحالية</h2>
+  </div>
+
+  <p class="lead">
+    رحلة المستخدم اليومية تكشف نقاط الاحتكاك (Friction Points) التي
+    تستهلك وقته وتقلّل من شعوره بالاحترافية. حللنا ثلاث رحلات نموذجية:
+  </p>
+
+  <h3>الرحلة الأولى — المدير الإداري</h3>
+  <div class="card tinted">
+    <p>يفتح المدير المنصة صباحاً ليجد لوحة تحكم مليئة بالأرقام دون
+      تسلسل واضح للأولويات. يحتاج إلى ٤–٥ نقرات للوصول إلى تقرير
+      المدفوعات المتأخرة، ثم يضطر لفتح Excel جانباً لتجميع البيانات
+      يدوياً قبل اجتماع الصباح. <strong>الوقت المُهدر: ٢٥ دقيقة يومياً.</strong></p>
+  </div>
+
+  <div class="gap-sm"></div>
+
+  <h3>الرحلة الثانية — المدرّب</h3>
+  <div class="card tinted">
+    <p>يصل المدرب إلى الملعب ويفتح المنصة على هاتفه لتسجيل الحضور.
+      الواجهة لم تُصمَّم للمس، فيقع في أخطاء عند الضغط على الأسماء
+      المتقاربة. تسجيل حصة كاملة يستغرق ضعف الوقت المتوقع. <strong>تجربة
+      محبطة في أهم لحظة استخدام.</strong></p>
+  </div>
+
+  <div class="gap-sm"></div>
+
+  <h3>الرحلة الثالثة — ولي الأمر</h3>
+  <div class="card tinted">
+    <p>يدخل ولي الأمر بحثاً عن أداء ابنه أو موعد الحصة القادمة. يجد
+      صفحات عامة لا تُخصّص له، ولا يصله تنبيه قبل الحصة بساعة، ولا
+      يستطيع التواصل مع المدرّب من داخل النظام. <strong>تنخفض ثقته
+      تدريجياً بمستوى الأكاديمية.</strong></p>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="grid grid-3">
+    <div class="kpi">
+      <div class="kpi-value">٢١</div>
+      <div class="kpi-label">عدد النقرات في المهمة اليومية الأكثر تكراراً</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">٣٫٢ث</div>
+      <div class="kpi-label">متوسط وقت تحميل الصفحات الرئيسية</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">٥٪</div>
+      <div class="kpi-label">نسبة الاستخدام الفعلي عبر الجوال</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٠٨</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 9 — UX PRINCIPLES
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الرابع</span><span class="chip">مبادئ التجربة</span></div>
+
+  <h3>المبادئ الستة لتجربة استخدام راقية</h3>
+
+  <p>اعتمدنا ستة مبادئ سنقيس بها كل قرار تصميمي خلال المرحلة القادمة:</p>
+
+  <div class="gap-sm"></div>
+
+  <ul class="numbered">
+    <li><strong>الوضوح قبل الجمال:</strong> لا قيمة لشاشة جميلة لا يفهم المستخدم
+      كيف يستخدمها. كل عنصر له هدف، وكل صفحة لها سؤال واحد تجيب عليه.</li>
+    <li><strong>أقل نقرات ممكنة:</strong> المهمة المتكررة يجب ألا تتجاوز
+      ثلاث نقرات، والمهمة النادرة لا تتجاوز خمساً.</li>
+    <li><strong>اتساق اللغة البصرية:</strong> نفس الزر يبدو نفسه في كل
+      شاشة. لا مفاجآت بصرية. هذا الاتّساق يُولّد الثقة.</li>
+    <li><strong>الردّ الفوري:</strong> كل فعل من المستخدم يحصل على
+      ردّة فعل بصرية خلال ١٠٠ ميلي ثانية — حتى لو كانت مجرد حركة لطيفة.</li>
+    <li><strong>الاحتفاء بالنجاح:</strong> عند إتمام مهمة، نمنح المستخدم
+      شعوراً صغيراً بالإنجاز عبر رسوم ناعمة وتأكيدات واضحة.</li>
+    <li><strong>الذكاء غير المتطفّل:</strong> النظام يقترح ولا يفرض، يذكّر
+      ولا يُزعج، يساعد ولا يتدخّل.</li>
+  </ul>
+
+  <div class="gap"></div>
+
+  <div class="callout">
+    <p>
+      التجربة الفاخرة لا تأتي من إضافة عناصر، بل من إزالتها. كل عنصر زائد
+      على الشاشة هو ضريبة معرفية يدفعها المستخدم بصمت.
+    </p>
+    <span class="by">— مبدأ التصميم المركزي</span>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٠٩</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 10 — PREMIUM FEEL
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الخامس</span><span class="chip">صناعة الفخامة</span></div>
+
+  <span class="chapter-tag">الفصل الخامس</span>
+  <div class="section-title">
+    <div class="kicker">Premium Experience</div>
+    <h2>كيف نجعل المنتج أكثر فخامة؟</h2>
+  </div>
+
+  <p class="lead">
+    الفخامة الرقمية ليست رفاهية بصرية فقط، بل سلسلة من القرارات الدقيقة
+    التي تجعل المستخدم يشعر بأنه «يستخدم منتجاً يحترمه».
+  </p>
+
+  <h3>الطبقة الأولى — الانطباع البصري</h3>
+  <ul class="clean">
+    <li><strong>نظام لوني هادئ ومتّسق:</strong> اعتماد الكحلي العميق
+      كلون مؤسسي مع الأخضر الفيروزي كلون عملي، وتجنّب الألوان الصارخة.</li>
+    <li><strong>طباعة عربية أنيقة:</strong> استخدام خطّ مخصّص (مثل IBM Plex Sans Arabic
+      أو Cairo) بدلاً من الخطوط الافتراضية، مع تدرّج واضح في الأحجام.</li>
+    <li><strong>مساحات بيضاء سخية:</strong> الفخامة تتنفّس في الفراغ؛ تقليل
+      ازدحام العناصر يرفع الإحساس بالاحترافية فوراً.</li>
+    <li><strong>تظليلات ناعمة وحواف مستديرة:</strong> أبعاد لطيفة تمنح
+      العناصر عمقاً دون إثقالها.</li>
+  </ul>
+
+  <div class="gap-sm"></div>
+
+  <h3>الطبقة الثانية — الحركة الدقيقة</h3>
+  <ul class="clean">
+    <li>انتقالات ناعمة بين الشاشات (٢٠٠–٣٠٠ ميلي ثانية)، لا قفزات مفاجئة.</li>
+    <li>تأكيدات بصرية لطيفة عند الحفظ أو الإضافة بدل رسائل النص المملّة.</li>
+    <li>مؤشّرات تحميل أنيقة (Skeletons) بدل دوائر دوّارة بدائية.</li>
+    <li>حركة استجابة على الأزرار عند الضغط لمنح إحساس باللمس الحقيقي.</li>
+  </ul>
+
+  <div class="gap-sm"></div>
+
+  <h3>الطبقة الثالثة — التفاصيل الصغيرة</h3>
+  <ul class="clean">
+    <li>صور شخصية للاعبين والمدربين في كل مكان، لا أحرف أولى فقط.</li>
+    <li>رسائل ترحيب مخصّصة باسم المستخدم وحالته اليومية.</li>
+    <li>أيقونات اتساقية مصممة خصيصاً لا أيقونات عامة من المكتبات.</li>
+    <li>تفاصيل دقيقة عند الطباعة: تذاكر حضور، شهادات إنجاز، فواتير منسّقة.</li>
+  </ul>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٠</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 11 — COMFORT
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الخامس</span><span class="chip">الراحة اليومية</span></div>
+
+  <div class="section-title">
+    <div class="kicker">Daily Comfort</div>
+    <h2>كيف نجعل النظام أكثر راحة للاستخدام اليومي؟</h2>
+  </div>
+
+  <p class="lead">
+    الراحة لا تتعلق بالألوان أو الحركة، بل بكون النظام «يفهمك من نظرة».
+    فيما يلي مبادئ راحة عملية يمكن قياسها وتطبيقها.
+  </p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4>اختصارات لوحة المفاتيح</h4>
+      <p>تمكين الإداريين من إنجاز المهام بسرعة عبر اختصارات (مثل
+        <code>ج</code> لإنشاء حصة، <code>ل</code> لإضافة لاعب).</p>
+    </div>
+    <div class="card">
+      <h4>الحفظ التلقائي الذكي</h4>
+      <p>لا «زر حفظ» في معظم الشاشات — التعديلات تُحفَظ تلقائياً مع
+        مؤشّر صغير يطمئن المستخدم.</p>
+    </div>
+    <div class="card">
+      <h4>وضع البطاقة السريعة</h4>
+      <p>الضغط على أي لاعب يفتح بطاقته في لوحة جانبية بدل صفحة كاملة،
+        ليبقى المستخدم في سياقه.</p>
+    </div>
+    <div class="card">
+      <h4>وضع التركيز (Focus Mode)</h4>
+      <p>وضع مبسّط للمدرّب أثناء التدريب: شاشة كبيرة، أزرار ضخمة،
+        لا قوائم جانبية.</p>
+    </div>
+    <div class="card">
+      <h4>الذاكرة الذكية</h4>
+      <p>النظام يتذكّر الفلاتر المستخدمة آخر مرة، والشاشة التي غادرها
+        المستخدم، ويعود به إليها مباشرة.</p>
+    </div>
+    <div class="card">
+      <h4>إجراءات بالسحب</h4>
+      <p>تأكيد الحضور بسحب الاسم لليمين، الغياب لليسار — تجربة
+        طبيعية ومرضية.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١١</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 12 — COMPLEXITY REDUCTION
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل السادس</span><span class="chip">تقليل التعقيد</span></div>
+
+  <span class="chapter-tag">الفصل السادس</span>
+  <div class="section-title">
+    <div class="kicker">Simplification</div>
+    <h2>كيف نقلل التعقيد على المستخدم؟</h2>
+  </div>
+
+  <p class="lead">
+    التعقيد لا يأتي عادةً من كثرة المميزات، بل من سوء ترتيبها. فيما يلي
+    خمس استراتيجيات لتبسيط التجربة دون تقليل القدرات.
+  </p>
+
+  <ul class="numbered">
+    <li><strong>التدرّج التصاعدي (Progressive Disclosure):</strong>
+      نُظهر الأساسيات فقط في البداية، والخيارات المتقدّمة تظهر عند الطلب.
+      لوحات «الإعدادات المتقدّمة» المنفصلة مثال جيّد.</li>
+    <li><strong>القوالب الجاهزة:</strong> بدل أن نطلب من المستخدم بناء
+      جدول تدريبي من الصفر، نقدّم له ٥ قوالب جاهزة يختار منها ويُعدّل.</li>
+    <li><strong>الإكمال التلقائي الذكي:</strong> عند إدخال البيانات، نقترح
+      القيم الأكثر احتمالاً (مثلاً: اللاعبون الذين كانوا حاضرين أمس).</li>
+    <li><strong>إخفاء الأخطاء بدل عرضها:</strong> منع الخطأ قبل وقوعه
+      بدل عرض رسائل تحذيرية. مثلاً: لا نسمح بتعيين مدرّب على فريق
+      ليس متاحاً في وقت الحصة.</li>
+    <li><strong>اللغة البشرية:</strong> استبدال الرسائل التقنية برسائل
+      بشرية. بدل «خطأ ٤٠٤» نقول: «لم نجد ما تبحث عنه، لعلك تقصد…».</li>
+  </ul>
+
+  <div class="gap"></div>
+
+  <div class="section-title">
+    <div class="kicker">Clearer Interface</div>
+    <h2>كيف نجعل الواجهة أسهل وأوضح؟</h2>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>المشكلة الحالية</th>
+        <th>الحلّ المقترح</th>
+        <th class="pill">الأثر</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>قوائم جانبية مكتظّة بالأقسام</td>
+        <td>تجميع الأقسام في ٤ مجموعات رئيسية فقط مع إمكانية التوسيع</td>
+        <td><span class="pill-badge pill-high">عالٍ</span></td>
+      </tr>
+      <tr>
+        <td>الأرقام مكدّسة دون سياق</td>
+        <td>إضافة مقارنة مع الفترة السابقة (▲ ١٢٪ مقارنة بالشهر الماضي)</td>
+        <td><span class="pill-badge pill-high">عالٍ</span></td>
+      </tr>
+      <tr>
+        <td>أزرار رمادية متشابهة</td>
+        <td>زرّ رئيسي واحد بلون مميّز في كل شاشة، الباقي ثانوي</td>
+        <td><span class="pill-badge pill-med">متوسط</span></td>
+      </tr>
+      <tr>
+        <td>عناوين الصفحات مبهمة</td>
+        <td>عناوين تصف الهدف لا الوظيفة (مثل «مَن سيدرّب اليوم؟»)</td>
+        <td><span class="pill-badge pill-med">متوسط</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٢</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 13 — IDENTITY + PSYCHOLOGY
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل السادس</span><span class="chip">الراحة النفسية</span></div>
+
+  <h3>عوامل الراحة النفسية</h3>
+
+  <p>الراحة النفسية للمستخدم تساوي أحياناً نصف نجاح المنتج. عوامل
+    يجب مراعاتها:</p>
+
+  <div class="grid grid-2">
+    <div class="card mint">
+      <h4>الشعور بالأمان</h4>
+      <p>المستخدم يحتاج أن يعرف أن بياناته محفوظة، وأن «التراجع» ممكن
+        دائماً. زرّ <em>Undo</em> ظاهر بعد كل عملية مهمة.</p>
+    </div>
+    <div class="card mint">
+      <h4>التحكم بالإيقاع</h4>
+      <p>لا نُجبر المستخدم على رؤية تنبيهات منبثقة كل دقيقة. إشعارات
+        مرتبة بحسب الأولوية وممكن إسكاتها بسهولة.</p>
+    </div>
+    <div class="card mint">
+      <h4>الوضوح في الانتظار</h4>
+      <p>عندما تستغرق عملية وقتاً، نُخبر المستخدم كم تبقّى وماذا يحدث،
+        لا مجرّد عرض مؤشّر دوّار.</p>
+    </div>
+    <div class="card mint">
+      <h4>الخصوصية الواضحة</h4>
+      <p>المستخدم يرى بوضوح من يمكنه رؤية بياناته، ويتحكّم في
+        المشاركات بنقرة واحدة.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="callout">
+    <p>
+      الراحة النفسية = القدرة على التراجع + وضوح ما يحدث + الإحساس
+      بأن النظام «معك» لا «ضدّك». هذه الثلاثية تصنع فرقاً يفوق أي تحديث بصري.
+    </p>
+    <span class="by">— مبدأ التصميم الإنساني</span>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٣</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 14 — PAIN POINTS
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل السابع</span><span class="chip">مشاكل المستخدمين</span></div>
+
+  <span class="chapter-tag">الفصل السابع</span>
+  <div class="section-title">
+    <div class="kicker">User Pain Points</div>
+    <h2>أهم المشاكل التي تزعج المستخدمين عادةً</h2>
+  </div>
+
+  <p class="lead">
+    رصدنا أكثر تسع مشاكل تكراراً في منصات إدارة الأكاديميات بشكل عام،
+    وقارناها مع وضع المنصة الحالي.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>المشكلة</th>
+        <th>كيف تظهر</th>
+        <th class="pill">الأولوية</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>بطء التحميل</td><td>تحميل الصفحات يستغرق أكثر من ثانيتين، خاصةً في لوحات التحكم.</td><td><span class="pill-badge pill-high">عالٍ</span></td></tr>
+      <tr><td>فقدان البيانات عن طريق الخطأ</td><td>حذف عنصر مهم دون إمكانية استعادة، أو الخروج دون حفظ.</td><td><span class="pill-badge pill-high">عالٍ</span></td></tr>
+      <tr><td>صعوبة البحث</td><td>الوصول إلى لاعب أو حصة محدّدة يتطلّب تصفّحاً طويلاً.</td><td><span class="pill-badge pill-high">عالٍ</span></td></tr>
+      <tr><td>إشعارات غير ذكية</td><td>تنبيهات متأخرة أو مكرّرة أو في أوقات غير مناسبة.</td><td><span class="pill-badge pill-med">متوسط</span></td></tr>
+      <tr><td>صعوبة التصدير</td><td>تصدير التقارير إلى Excel/PDF محدود أو غير منسّق.</td><td><span class="pill-badge pill-med">متوسط</span></td></tr>
+      <tr><td>عدم التزامن مع الجوال</td><td>تعديل في المتصفح لا يظهر فوراً في تطبيق الجوال.</td><td><span class="pill-badge pill-med">متوسط</span></td></tr>
+      <tr><td>الحاجة لإعادة تسجيل الدخول المتكررة</td><td>انتهاء جلسة المستخدم بسرعة وفقدان السياق.</td><td><span class="pill-badge pill-med">متوسط</span></td></tr>
+      <tr><td>غياب التوثيق المرئي</td><td>لا توجد فيديوهات قصيرة أو جولات تعريفية للميزات.</td><td><span class="pill-badge pill-low">منخفض</span></td></tr>
+      <tr><td>غياب الدعم الفوري</td><td>زر «تواصل معنا» يقود إلى نموذج بطيء بدل دردشة حيّة.</td><td><span class="pill-badge pill-low">منخفض</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٤</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 15 — UX SUGGESTIONS
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثامن</span><span class="chip">توصيات UX</span></div>
+
+  <span class="chapter-tag">الفصل الثامن</span>
+  <div class="section-title">
+    <div class="kicker">UX Improvements</div>
+    <h2>اقتراحات تحسين تجربة المستخدم (UX)</h2>
+  </div>
+
+  <p class="lead">
+    خلاصة عشر توصيات عملية يمكن تنفيذها بدون إعادة بناء جذرية للمنصة.
+  </p>
+
+  <ul class="numbered">
+    <li><strong>لوحة «صباح الخير» الافتتاحية:</strong> أوّل ما يراه المستخدم
+      تلخيص ذكي لأحداث اليوم: «لديك ٣ حصص، ٢ مدفوعات متأخرة، لاعب
+      واحد لم يحضر منذ أسبوع».</li>
+    <li><strong>البحث الشامل (Command Bar):</strong> ضغطة على
+      <code>Ctrl+K</code> تفتح شريط بحث يصل لأي شيء في المنصة فوراً.</li>
+    <li><strong>الإجراءات بالسحب:</strong> سحب اللاعبين بين القوائم لإعادة
+      التصنيف، سحب الحصص لإعادة الجدولة.</li>
+    <li><strong>وضع التركيز للحصة:</strong> شاشة كبيرة بسيطة أثناء التدريب
+      تعرض اللاعبين فقط مع أزرار حضور/غياب ضخمة.</li>
+    <li><strong>التراجع لكل عملية (Undo Everywhere):</strong> شريط أسفل الشاشة
+      يظهر بعد كل عملية حذف أو تعديل ويسمح بالتراجع لمدة ٧ ثوانٍ.</li>
+    <li><strong>الاقتراحات الذكية:</strong> «هل تريد إنشاء حصة مشابهة
+      للأسبوع الماضي؟» — بنقرة واحدة بدل ١٠ نقرات.</li>
+    <li><strong>الفلاتر المحفوظة:</strong> المستخدم يحفظ فلاتره المفضّلة
+      ويعطيها أسماء («لاعبون متأخرون في الدفع»).</li>
+    <li><strong>عرض الجدول الزمني:</strong> رؤية أسبوعية مرئية بدل قوائم
+      نصية، مع ألوان للفرق المختلفة.</li>
+    <li><strong>التنقّل عبر التبويبات:</strong> فتح عدة بطاقات لاعبين في
+      تبويبات داخل النظام دون فقدان السياق.</li>
+    <li><strong>وضع داكن أنيق:</strong> Dark Mode حقيقي مدروس، لا مجرد
+      عكس الألوان.</li>
+  </ul>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٥</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 16 — UI SUGGESTIONS
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثامن</span><span class="chip">توصيات UI</span></div>
+
+  <div class="section-title">
+    <div class="kicker">UI Improvements</div>
+    <h2>اقتراحات تحسين واجهة المستخدم (UI)</h2>
+  </div>
+
+  <p class="lead">
+    على مستوى الواجهة البصرية، نقترح اعتماد نظام تصميم موحّد
+    (Design System) يحكم كل قرار بصري.
+  </p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4>نظام تصميم موحّد</h4>
+      <p>مكتبة مكونات قياسية (أزرار، حقول، جداول، بطاقات) تُستخدم في
+        كل الشاشات بنفس الشكل والسلوك، لتمنح إحساس الاتّساق.</p>
+    </div>
+    <div class="card">
+      <h4>سُلّم خطوط واضح</h4>
+      <p>٦ مستويات نصّ فقط (عنوان رئيسي، فرعي، عنوان قسم، نصّ عادي،
+        نصّ ثانوي، تعليق صغير). لا اجتهادات خارج هذا السلّم.</p>
+    </div>
+    <div class="card">
+      <h4>أيقونات مخصّصة</h4>
+      <p>مجموعة أيقونات مرسومة خصيصاً للمنصة بلمسة رياضية،
+        لا مكتبة عامة.</p>
+    </div>
+    <div class="card">
+      <h4>صور وأرواح</h4>
+      <p>استخدام صور حقيقية للملاعب واللاعبين بدل الرسوم التوضيحية،
+        لمنح إحساس واقعي وحيوي.</p>
+    </div>
+    <div class="card">
+      <h4>الإضاءة والظلال</h4>
+      <p>طبقات ظلّ ناعمة بثلاثة مستويات (مرتفع، متوسط، منخفض) لتمييز
+        المكونات وعمقها.</p>
+    </div>
+    <div class="card">
+      <h4>الحركة بهدف</h4>
+      <p>كل حركة لها سبب: إرشاد المستخدم، تأكيد فعل، أو ربط بين عنصرين.
+        لا حركة للزينة فقط.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <h3>قائمة فحص جاهزية الواجهة</h3>
+  <ul class="clean">
+    <li>كل صفحة تجيب على سؤال واحد واضح للمستخدم.</li>
+    <li>يوجد زر «إجراء أساسي» واحد فقط في كل شاشة.</li>
+    <li>كل العناصر التفاعلية كبيرة بما يكفي للمس (٤٤ بكسل على الأقل).</li>
+    <li>كل خط نصّي مقروء بسهولة بدون تكبير.</li>
+    <li>التباين بين النصّ والخلفية يتجاوز ٤٫٥:١ في كل الحالات.</li>
+  </ul>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٦</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 17 — NEW FEATURES
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل التاسع</span><span class="chip">مميزات جديدة</span></div>
+
+  <span class="chapter-tag">الفصل التاسع</span>
+  <div class="section-title">
+    <div class="kicker">New Features</div>
+    <h2>المميزات الجديدة المقترحة</h2>
+  </div>
+
+  <p class="lead">
+    قائمة مرتّبة بحسب الأثر التجاري وسرعة التنفيذ. القائمة الكاملة تشمل
+    ٢٤ ميزة؛ نعرض هنا الأكثر استراتيجية.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>الميزة</th>
+        <th>الوصف المختصر</th>
+        <th class="pill">الأثر</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>بوّابة ولي الأمر</td><td>تطبيق/صفحة مخصّصة لولي الأمر لمتابعة ابنه، الحضور، والمدفوعات.</td><td><span class="pill-badge pill-high">عالٍ</span></td></tr>
+      <tr><td>المدفوعات الإلكترونية</td><td>تكامل مع مدى/فيزا/Apple Pay مع تذكيرات تلقائية.</td><td><span class="pill-badge pill-high">عالٍ</span></td></tr>
+      <tr><td>التقارير التنفيذية الأسبوعية</td><td>تقرير PDF أنيق يُرسل تلقائياً لمالك الأكاديمية كل أحد.</td><td><span class="pill-badge pill-high">عالٍ</span></td></tr>
+      <tr><td>نظام التقييم الفنّي</td><td>المدرّب يقيّم اللاعبين أسبوعياً عبر معايير محدّدة، ويُبنى ملف تطوّر.</td><td><span class="pill-badge pill-high">عالٍ</span></td></tr>
+      <tr><td>إدارة الفصول الجماعية</td><td>تجميع لاعبين متعدّدين في فصول، وتطبيق إجراءات جماعية بنقرة.</td><td><span class="pill-badge pill-med">متوسط</span></td></tr>
+      <tr><td>المكتبة التدريبية</td><td>مكتبة جاهزة من التمارين والخطط مع تصنيف بحسب العمر والمهارة.</td><td><span class="pill-badge pill-med">متوسط</span></td></tr>
+      <tr><td>سجلّ الإصابات الطبية</td><td>متابعة الإصابات، فترة التعافي، والملاحظات الطبية للاعب.</td><td><span class="pill-badge pill-med">متوسط</span></td></tr>
+      <tr><td>صلاحيات المستخدمين الدقيقة</td><td>تحديد ما يستطيع كل دور (مدرّب، إداري، محاسب) رؤيته وتعديله.</td><td><span class="pill-badge pill-med">متوسط</span></td></tr>
+      <tr><td>التواصل الداخلي</td><td>دردشة بسيطة بين المدرّبين والإدارة داخل المنصة.</td><td><span class="pill-badge pill-low">منخفض</span></td></tr>
+      <tr><td>سوق الفعاليات</td><td>إعلان عن البطولات والمعسكرات الخارجية وتسجيل اللاعبين فيها.</td><td><span class="pill-badge pill-low">منخفض</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٧</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 18 — PREMIUM FEATURES
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل التاسع</span><span class="chip">خصائص Premium</span></div>
+
+  <div class="section-title">
+    <div class="kicker">Premium Touches</div>
+    <h2>الخصائص الذكية التي تعطي شعور Premium</h2>
+  </div>
+
+  <p class="lead">
+    هذه الخصائص ليست بالضرورة الأكثر أهمية وظيفياً، لكنها التي يتحدّث
+    عنها المستخدم عند إعجابه بمنتج ما.
+  </p>
+
+  <div class="grid grid-2">
+    <div class="card navy">
+      <h4>الترحيب الذكي</h4>
+      <p>«صباح الخير أحمد، اليوم لديك حصّتان متتاليتان مع فريق ٢٠١٠، وتذكير
+        بأنك لم ترَ تقرير الأسبوع الماضي بعد.»</p>
+    </div>
+    <div class="card navy">
+      <h4>الإحصاء المنبثق</h4>
+      <p>تمرير المؤشر فوق أي رقم يكشف قصته: «هذا الرقم ارتفع ١٨٪ منذ
+        إضافة الكابتن خالد للفريق.»</p>
+    </div>
+    <div class="card navy">
+      <h4>الطباعة الفاخرة</h4>
+      <p>الفواتير والشهادات تُطبع بتصاميم فاخرة بهوية الأكاديمية،
+        لا قوالب عامّة باهتة.</p>
+    </div>
+    <div class="card navy">
+      <h4>قصص اللاعب</h4>
+      <p>صفحة شخصية للاعب بنمط «قصة» تروي تطوّره عبر الأشهر بشكل
+        مرئي ومُلهم.</p>
+    </div>
+    <div class="card navy">
+      <h4>الإنجازات والشارات</h4>
+      <p>منح اللاعبين شارات على إنجازاتهم (الحضور المثالي، تطوّر ملحوظ)
+        لتحفيزهم وأولياء أمورهم.</p>
+    </div>
+    <div class="card navy">
+      <h4>المصمّم الشخصي</h4>
+      <p>السماح لكل أكاديمية بتخصيص هويتها داخل المنصة: شعار، ألوان،
+        صور خلفية. كل أكاديمية ترى منتجاً «خاصاً بها».</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٨</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 19 — AI
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل العاشر</span><span class="chip">الذكاء الاصطناعي</span></div>
+
+  <span class="chapter-tag">الفصل العاشر</span>
+  <div class="section-title">
+    <div class="kicker">AI Integration</div>
+    <h2>كيف يمكن للذكاء الاصطناعي تحسين المنصة؟</h2>
+  </div>
+
+  <p class="lead">
+    الذكاء الاصطناعي ليس ميزة تسويقية فقط؛ يمكن توظيفه عمليّاً في خمسة
+    مجالات تحقق فرقاً حقيقياً في تجربة الإدارة اليومية.
+  </p>
+
+  <h3>١. الجدولة الذكية</h3>
+  <p>توليد جداول تدريبية مقترحة بناءً على توفّر المدربين، عمر الفئة،
+    والملاعب المتاحة. المدير يوافق بنقرة بدل بناء الجدول من الصفر أسبوعياً.</p>
+
+  <h3>٢. تلخيص الأداء</h3>
+  <p>كل أحد، يصل تقرير قصير بلغة طبيعية: «هذا الأسبوع كان أفضل بـ ١٢٪
+    في الحضور، لكن المدفوعات تأخّرت لـ ٤ لاعبين، وأبرز تطوّر كان للاعب فهد.»</p>
+
+  <h3>٣. اقتراح التشكيلات</h3>
+  <p>بناءً على تقييمات المدرّب وحضور اللاعبين، يقترح النظام تشكيلة
+    مناسبة للحصّة القادمة مع شرح مختصر للسبب.</p>
+
+  <h3>٤. الإجابات الفورية</h3>
+  <p>مساعد ذكي داخل المنصة يجيب على أسئلة المدير: «كم لاعب لم يحضر
+    أكثر من ثلاث حصص هذا الشهر؟» — بصيغة محادثة طبيعية.</p>
+
+  <h3>٥. الاكتشاف الاستباقي</h3>
+  <p>النظام يلاحظ أنماطاً غير مألوفة ويُنبّه: «هذا اللاعب تراجع تدريجياً
+    منذ ٤ أسابيع، قد يحتاج اهتماماً.»</p>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">١٩</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 20 — AI PRINCIPLES
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل العاشر</span><span class="chip">مبادئ الذكاء</span></div>
+
+  <h3>المبادئ الأربعة لذكاء اصطناعي بشري</h3>
+
+  <p>لتفادي الفشل الشائع للمنتجات التي «تُحشَر» فيها مميزات ذكاء اصطناعي،
+    نتبنّى أربعة مبادئ:</p>
+
+  <ul class="numbered">
+    <li><strong>الإنسان يقرّر، الذكاء يقترح:</strong> الذكاء لا يتصرّف
+      تلقائياً في القرارات الحسّاسة، بل يقدّم اقتراحاً ينتظر موافقة المستخدم.</li>
+    <li><strong>الشفافية:</strong> كل اقتراح يأتي معه «لماذا؟» مختصر يشرح
+      الأساس الذي بُني عليه، لبناء الثقة.</li>
+    <li><strong>قابلية التراجع:</strong> أي إجراء تلقائي يمكن للمستخدم
+      إيقافه أو التراجع عنه بسهولة.</li>
+    <li><strong>التحسّن مع الاستخدام:</strong> النظام يتعلّم من تفضيلات
+      الأكاديمية ويُحسّن اقتراحاته تدريجياً، لا يبقى ثابتاً.</li>
+  </ul>
+
+  <div class="gap"></div>
+
+  <div class="callout">
+    <p>
+      الذكاء الاصطناعي الجيّد لا يجعل المستخدم يشعر بأنه «مُسيَّر»، بل يشعر
+      بأنه أصبح «أكثر ذكاءً» باستخدامه للنظام. هذا هو الفرق بين الانبهار
+      والاعتماد.
+    </p>
+    <span class="by">— فلسفة المنتج الذكي</span>
+  </div>
+
+  <div class="gap"></div>
+
+  <h3>أمثلة حواريّة من المساعد الذكي</h3>
+  <div class="grid grid-2">
+    <div class="card tinted">
+      <p><strong>المدير:</strong> «من أكثر اللاعبين تحسّناً هذا الشهر؟»</p>
+      <p><strong>المساعد:</strong> «ثلاثة لاعبين برزوا: عبدالله (تطوّر +٢٢٪)،
+        فيصل (+١٨٪)، تركي (+١٤٪). الأرقام مبنية على تقييمات المدرّب.»</p>
+    </div>
+    <div class="card tinted">
+      <p><strong>الإداري:</strong> «من تأخّر في الدفع؟»</p>
+      <p><strong>المساعد:</strong> «٦ لاعبين بإجمالي ٤٫٢ ألف ريال. هل
+        أرسل لهم تذكيراً موحّداً؟»</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٠</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 21 — TECHNICAL IMPROVEMENTS
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الحادي عشر</span><span class="chip">تحسينات تقنية</span></div>
+
+  <span class="chapter-tag">الفصل الحادي عشر</span>
+  <div class="section-title">
+    <div class="kicker">Technical Foundation</div>
+    <h2>التحسينات التقنية المطلوبة</h2>
+  </div>
+
+  <p class="lead">
+    ندرج هنا التحسينات التقنية الجوهرية بلغة مبسّطة. كل تحسين له أثر
+    مباشر على تجربة المستخدم النهائي.
+  </p>
+
+  <h3>تحسين الأداء والسرعة</h3>
+  <ul class="clean">
+    <li><strong>التحميل التدريجي:</strong> الصفحات تظهر مباشرة مع
+      «هيكل أوّلي» ثم تُملأ تفاصيلها — يشعر المستخدم بسرعة فورية.</li>
+    <li><strong>التخزين المؤقت الذكي:</strong> البيانات المتكررة تُحفَظ
+      محلياً وتُحدَّث في الخلفية.</li>
+    <li><strong>الصور المحسّنة:</strong> اعتماد صيغ حديثة (WebP/AVIF)
+      وأحجام متعدّدة لكل صورة بحسب الجهاز.</li>
+    <li><strong>تقليل البيانات المنقولة:</strong> إرسال ما يحتاجه المستخدم
+      فعلاً فقط، لا قائمة كاملة لكل صفحة.</li>
+  </ul>
+
+  <div class="gap-sm"></div>
+
+  <h3>الأمان والاستقرار</h3>
+  <ul class="clean">
+    <li><strong>المصادقة الثنائية (2FA):</strong> اختيارية لجميع الحسابات،
+      إلزامية للأدوار الإدارية.</li>
+    <li><strong>تشفير البيانات الحساسة:</strong> أرقام الجوّال والمدفوعات
+      والملفات الطبية مشفّرة في قاعدة البيانات.</li>
+    <li><strong>صلاحيات دقيقة:</strong> كل مستخدم يرى ما يخصّ دوره فقط،
+      بدون أي إمكانية للوصول الجانبي.</li>
+    <li><strong>سجلّ الإجراءات (Audit Log):</strong> توثيق كل عملية حساسة
+      مع تاريخ ومستخدم، لتتبّع المسؤولية.</li>
+  </ul>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢١</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 22 — BACKUP, MONITORING, SCALE
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الحادي عشر</span><span class="chip">الاستدامة التقنية</span></div>
+
+  <h3>النسخ الاحتياطي ومراقبة الأخطاء</h3>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4>نسخ احتياطي يومي تلقائي</h4>
+      <p>نسخة كاملة لقاعدة البيانات تُحفَظ في موقعين جغرافيّين مختلفين،
+        مع إمكانية الاستعادة لأي يوم خلال آخر ٣٠ يوماً.</p>
+    </div>
+    <div class="card">
+      <h4>مراقبة الأخطاء آنياً</h4>
+      <p>أي خطأ يحدث لأي مستخدم يصل تلقائياً لفريق التطوير قبل أن
+        يُبلّغ عنه المستخدم نفسه.</p>
+    </div>
+    <div class="card">
+      <h4>مؤشرات الصحة العامة</h4>
+      <p>لوحة داخلية تعرض أداء الخوادم، سرعة الصفحات، وحالة قواعد
+        البيانات على مدار الساعة.</p>
+    </div>
+    <div class="card">
+      <h4>تنبيهات الانقطاع</h4>
+      <p>تنبيه فوري لفريق التشغيل عند أي بطء أو انقطاع، قبل أن يلاحظه
+        المستخدم.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <h3>قابلية التوسّع مستقبلاً</h3>
+
+  <p>صُمّمت التوصيات التقنية لتجنّب «جدار النمو» — وهي اللحظة التي
+    يضطر فيها الفريق لإعادة بناء النظام لأنه لم يعد يحتمل الحجم. مبادئنا:</p>
+
+  <ul class="clean">
+    <li><strong>عزل الأقسام:</strong> كل قسم (الحضور، المدفوعات، التقارير)
+      مستقل، يمكن تطويره أو تحديثه دون تأثير على الباقي.</li>
+    <li><strong>قواعد بيانات قابلة للتوسّع أفقياً:</strong> النظام يستوعب
+      من ١٠٠ لاعب إلى ١٠٠ ألف لاعب دون تغيير جوهري.</li>
+    <li><strong>واجهة برمجية موحّدة (API):</strong> كل عمليّة تمرّ من API
+      واحد، ما يُسهّل لاحقاً دمج تطبيقات الجوّال، أو شركاء خارجيين.</li>
+    <li><strong>عزل بيانات الأكاديميات:</strong> كل أكاديمية في عزلة
+      تامّة عن الأخرى — لا تسرّب ولا تداخل ولا حتى إمكانية وصول عرضي.</li>
+  </ul>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٢</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 23 — TECH METRICS
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الحادي عشر</span><span class="chip">مؤشرات الأداء</span></div>
+
+  <h3>مؤشرات الأداء التقنية المستهدفة</h3>
+
+  <p>لكل تحسين تقني، نحدّد مؤشّراً قابلاً للقياس. هذه أهدافنا الرقمية:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>المؤشّر</th>
+        <th>الوضع الحالي</th>
+        <th>الهدف</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>زمن تحميل أول شاشة</td><td>٣٫٢ ثانية</td><td>أقل من ١٫٥ ثانية</td></tr>
+      <tr><td>زمن الاستجابة لأي إجراء</td><td>٨٠٠ ميلي ثانية</td><td>أقل من ٢٠٠ ميلي ثانية</td></tr>
+      <tr><td>زمن التوفّر (Uptime)</td><td>٩٨٫٥٪</td><td>٩٩٫٩٪ على الأقل</td></tr>
+      <tr><td>عدد الأخطاء غير المعالَجة شهرياً</td><td>غير مُقاس</td><td>أقل من ٠٫١٪ من العمليات</td></tr>
+      <tr><td>زمن استعادة نسخة احتياطية</td><td>+ ٢٤ ساعة</td><td>أقل من ٣٠ دقيقة</td></tr>
+      <tr><td>عدد الزيارات المتزامنة</td><td>~٢٠٠</td><td>+٥,٠٠٠ دون تدهور</td></tr>
+    </tbody>
+  </table>
+
+  <div class="gap"></div>
+
+  <div class="callout">
+    <p>
+      المستخدم لا يقيس الأداء بالأرقام، لكنه يشعر به في كل نقرة. كل ميلي
+      ثانية نوفّرها هي «هدية صامتة» تُترجم إلى ثقة وراحة.
+    </p>
+    <span class="by">— مبدأ الأداء كتجربة</span>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٣</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 24 — MOBILE APP
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثاني عشر</span><span class="chip">الجوّال</span></div>
+
+  <span class="chapter-tag">الفصل الثاني عشر</span>
+  <div class="section-title">
+    <div class="kicker">Mobile</div>
+    <h2>تطوير تطبيق الجوّال</h2>
+  </div>
+
+  <p class="lead">
+    تطبيق الجوّال ليس «نسخة مصغّرة» من المنصة، بل منتج مستقلّ بأولويات
+    مختلفة. نقترح ثلاثة تطبيقات بنفس البنية التقنية:</p>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <h4>تطبيق المدرّب</h4>
+      <p>تركيز على الحصص اليومية: الحضور، التقييم، الملاحظات السريعة،
+        الإشعارات الميدانية.</p>
+    </div>
+    <div class="card">
+      <h4>تطبيق الإداري</h4>
+      <p>لوحة تنفيذية مختصرة، تنبيهات المدفوعات، الموافقات السريعة،
+        التواصل مع المدربين.</p>
+    </div>
+    <div class="card">
+      <h4>تطبيق ولي الأمر</h4>
+      <p>متابعة الابن، الحصص القادمة، التقارير الأسبوعية، الدفع، وقناة
+        تواصل مباشرة مع الأكاديمية.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <h3>المبادئ الخمسة لتطبيق جوال ناجح</h3>
+  <ul class="clean">
+    <li><strong>السرعة قبل كل شيء:</strong> فتح التطبيق وعرض المهمة الرئيسية
+      في أقلّ من ثانية.</li>
+    <li><strong>العمل دون إنترنت:</strong> تسجيل الحضور والملاحظات يعمل
+      حتى في الملاعب التي لا يصلها بثّ قوي، ثم يتزامن لاحقاً.</li>
+    <li><strong>تجربة لمسية أصيلة:</strong> أزرار كبيرة، سحب طبيعي، ردود فعل
+      لمسية (Haptic) للأفعال المهمّة.</li>
+    <li><strong>الإشعارات الذكية:</strong> ما يصلك يهمّك فعلاً، وفي توقيت
+      مدروس، ويمكن إيقافه بسهولة.</li>
+    <li><strong>الخصوصية:</strong> لا أذونات غير ضرورية، وكل صلاحية تُطلب
+      مع شرح واضح لسببها.</li>
+  </ul>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٤</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 25 — NOTIFICATIONS + REPORTS
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثاني عشر</span><span class="chip">إشعارات وتقارير</span></div>
+
+  <h3>الإشعارات الذكية</h3>
+
+  <p>الإشعارات الذكية هي «صوت المنصة» — يجب أن تكون مهذّبة ومفيدة
+    ودقيقة التوقيت. مبادئها:</p>
+
+  <div class="grid grid-2">
+    <div class="card tinted">
+      <h4>التوقيت المناسب</h4>
+      <p>تذكير ولي الأمر بحصة ابنه قبل ساعة، لا قبل ١٠ دقائق فقط.
+        تذكير المدفوعات صباحاً، لا منتصف الليل.</p>
+    </div>
+    <div class="card tinted">
+      <h4>المحتوى المخصّص</h4>
+      <p>«ابنك خالد لديه حصة الساعة ٥ مع الكابتن أحمد» — لا «لديك حدث».</p>
+    </div>
+    <div class="card tinted">
+      <h4>قنوات متعدّدة</h4>
+      <p>إشعار داخل التطبيق + رسالة SMS + إيميل، بحسب أهمية الإشعار
+        وتفضيل المستخدم.</p>
+    </div>
+    <div class="card tinted">
+      <h4>تجميع وعدم الإزعاج</h4>
+      <p>عدّة تنبيهات صغيرة تُجمّع في إشعار واحد ذكي بدل قصف المستخدم.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <h3>التقارير والتحليلات</h3>
+
+  <p>التقارير ليست جداول بيانات؛ إنها قصص بصرية. تصميمنا المقترح
+    يقوم على ثلاث طبقات:</p>
+
+  <ul class="numbered">
+    <li><strong>الطبقة الأولى — اللمحة السريعة:</strong> أربعة أرقام رئيسية
+      تختصر الأسبوع، مع مقارنة مع الأسبوع السابق.</li>
+    <li><strong>الطبقة الثانية — الرسوم البيانية:</strong> ٣–٤ رسوم رئيسية
+      أنيقة (حضور، إيرادات، تطوّر فرق، أداء مدربين).</li>
+    <li><strong>الطبقة الثالثة — التفاصيل عند الطلب:</strong> النقر يكشف
+      التفاصيل الكاملة لمن يريد التعمّق.</li>
+  </ul>
+
+  <div class="gap-sm"></div>
+
+  <p class="muted">
+    التقرير الأسبوعي PDF أنيق يُرسل تلقائياً صباح كل أحد للمالك بإيميله،
+    ليبدأ أسبوعه بصورة كاملة عن أكاديميته.
+  </p>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٥</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 26 — DAILY ACADEMY MANAGEMENT
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثالث عشر</span><span class="chip">الإدارة اليومية</span></div>
+
+  <span class="chapter-tag">الفصل الثالث عشر</span>
+  <div class="section-title">
+    <div class="kicker">Daily Operations Fit</div>
+    <h2>كيف نجعل النظام مناسباً للإدارة اليومية للأكاديميات؟</h2>
+  </div>
+
+  <p class="lead">
+    الأكاديمية كائن حيّ يتنفس صباحاً ويهدأ مساءً. النظام يجب أن يواكب
+    هذا الإيقاع، لا يكون عائقاً له.
+  </p>
+
+  <h3>يوم نموذجي في الأكاديمية بعد التحسينات</h3>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4>٧:٣٠ ص — المالك</h4>
+      <p>يفتح هاتفه ويرى التقرير الصباحي: حضور اليوم، إيرادات أمس،
+        ٣ مهام تحتاج موافقته. وقت القراءة: دقيقة واحدة.</p>
+    </div>
+    <div class="card">
+      <h4>٩:٠٠ ص — الإداري</h4>
+      <p>يفتح اللوحة فتُعرض عليه قائمة «اليوم» مرتّبة: مكالمات يجب
+        إجراؤها، فواتير للإصدار، طلبات تسجيل جديدة.</p>
+    </div>
+    <div class="card">
+      <h4>٤:٠٠ م — المدرّب</h4>
+      <p>يفتح تطبيقه فيرى حصّته القادمة، يسجّل الحضور بسحب الأسماء،
+        يكتب ملاحظة قصيرة عن كل لاعب أبدع.</p>
+    </div>
+    <div class="card">
+      <h4>٧:٠٠ م — ولي الأمر</h4>
+      <p>يصله إشعار: «خالد سجّل حضوراً ممتازاً اليوم، وأبدى تطوّراً في
+        التمرير. ملاحظة من الكابتن أحمد.»</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="callout">
+    <p>
+      حين يصبح كل دور في الأكاديمية «يحبّ» فتح المنصة لأنها تختصر يومه
+      وترفع جودة عمله، نكون قد حقّقنا الهدف الحقيقي للمنتج.
+    </p>
+    <span class="by">— محور المنتج المتمحور حول المستخدم</span>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٦</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 27 — DAILY KPIS
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الثالث عشر</span><span class="chip">مؤشرات النجاح</span></div>
+
+  <h3>مؤشّرات نجاح الإدارة اليومية</h3>
+
+  <p>هذه المؤشّرات تقيس قيمة المنصة من منظور المالك — وهي ما يجب
+    أن نلتزم به في كل قرار:</p>
+
+  <div class="grid grid-2">
+    <div class="kpi">
+      <div class="kpi-value">٨٠٪</div>
+      <div class="kpi-label">من المهام اليومية تتم عبر المنصة بدون مساعدة خارجية</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">−٤ ساعات</div>
+      <div class="kpi-label">من ساعات الإدارة الأسبوعية المُهدرة</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">+٢٥٪</div>
+      <div class="kpi-label">تحصيل أسرع للمدفوعات بفضل التذكيرات الذكية</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">٩٥٪</div>
+      <div class="kpi-label">من أولياء الأمور يصلهم تحديث أسبوعي عن أبنائهم</div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <h3>عناصر بناء الثقة والاحترافية</h3>
+
+  <ul class="clean">
+    <li><strong>الشفافية:</strong> ولي الأمر يرى أين تذهب اشتراكاته.</li>
+    <li><strong>الاتساق:</strong> كل ولي أمر يحصل على نفس مستوى المعلومة
+      ونفس وقت الإجابة.</li>
+    <li><strong>التميّز البصري:</strong> الفواتير والشهادات والتقارير
+      مصمّمة بهوية مرئية تليق بأكاديمية احترافية.</li>
+    <li><strong>الاستجابة الفورية:</strong> أي طلب من ولي أمر يُسجَّل
+      ويُتابَع، ولا يضيع في الزحام.</li>
+  </ul>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٧</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 28 — RECOMMENDATIONS + PRIORITIES
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الرابع عشر</span><span class="chip">التوصيات</span></div>
+
+  <span class="chapter-tag">الفصل الرابع عشر</span>
+  <div class="section-title">
+    <div class="kicker">Executive Recommendations</div>
+    <h2>التوصيات التنفيذية</h2>
+  </div>
+
+  <p class="lead">
+    بناءً على التحليل، نقدّم سبع توصيات تنفيذية مرتّبة بحسب الأثر
+    والقدرة على التنفيذ.
+  </p>
+
+  <ul class="numbered">
+    <li><strong>تكوين فريق منتج موحّد:</strong> مصمّم UX، مطوّر واجهة،
+      ومدير منتج يعملون كنواة واحدة، لا كأقسام منفصلة.</li>
+    <li><strong>إطلاق نظام تصميم رسمي:</strong> مكتبة مكونات قياسية
+      موثّقة، تُسرّع التطوير وتضمن الاتساق.</li>
+    <li><strong>إعادة تصميم لوحة التحكم الرئيسية:</strong> أول شيء يراه
+      المستخدم يجب أن يكون أفضل ما في المنتج.</li>
+    <li><strong>تقليل المهام اليومية لثلاث نقرات:</strong> مراجعة كل
+      مهمة متكرّرة وقياس نقراتها وتحسينها.</li>
+    <li><strong>إطلاق تطبيق المدرّب:</strong> أكثر دور يستخدم النظام
+      ميدانياً، يستحقّ تطبيقاً أصيلاً أولاً.</li>
+    <li><strong>بناء طبقة الذكاء الاصطناعي تدريجياً:</strong> البدء بميزة
+      واحدة (التلخيص الأسبوعي) ثم التوسّع.</li>
+    <li><strong>تأسيس قنوات الاستماع للمستخدمين:</strong> مقابلات شهرية
+      مع ٥ مستخدمين، ولوحة تعليقات داخل المنتج، وقياس NPS بشكل دوري.</li>
+  </ul>
+
+  <div class="gap"></div>
+
+  <h3>أولويات المرحلة الأولى (المكاسب السريعة)</h3>
+  <div class="grid grid-2">
+    <div class="card mint">
+      <h4>تحسين سرعة الصفحات</h4>
+      <p>تحقيق أقل من ٢ ثانية لتحميل أي صفحة. أثر فوري على رضا المستخدم.</p>
+    </div>
+    <div class="card mint">
+      <h4>زر التراجع لكل شيء</h4>
+      <p>تنفيذ في ٣–٤ أسابيع. يحلّ ٧٠٪ من شكاوى «حذفت بالخطأ».</p>
+    </div>
+    <div class="card mint">
+      <h4>البحث الشامل (Ctrl+K)</h4>
+      <p>توفير عشرات النقرات يومياً للمستخدمين المتقدّمين.</p>
+    </div>
+    <div class="card mint">
+      <h4>تقرير أحد صباحاً</h4>
+      <p>PDF أنيق أسبوعي يُرسَل للمالك. أثر تسويقي وإداري كبير بجهد بسيط.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٨</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 29 — ROADMAP (SHORT TERM)
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الرابع عشر</span><span class="chip">خارطة الطريق</span></div>
+
+  <div class="section-title">
+    <div class="kicker">Short-term Roadmap</div>
+    <h2>خارطة الطريق قصيرة المدى (٣–٦ أشهر)</h2>
+  </div>
+
+  <div class="roadmap">
+    <div class="road-item">
+      <span class="when">الشهر ١</span>
+      <h4>الأساسات السريعة</h4>
+      <p>تحسين سرعة التحميل، اعتماد نظام التصميم الأوّلي، إصلاح
+        المشاكل الحرجة في تجربة المستخدم.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ٢</span>
+      <h4>إعادة تصميم لوحة التحكم</h4>
+      <p>اللوحة الصباحية الذكية، البحث الشامل، زر التراجع، التقرير
+        الأسبوعي التلقائي.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ٣</span>
+      <h4>وضع التركيز للمدرّب</h4>
+      <p>تجربة محسّنة للمدرّب على الجوّال، تسجيل الحضور بالسحب،
+        ملاحظات سريعة للاعبين.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ٤</span>
+      <h4>الإشعارات الذكية</h4>
+      <p>نظام إشعارات مرتّب بحسب الأولوية والتوقيت، عبر التطبيق والإيميل
+        و SMS.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ٥</span>
+      <h4>المدفوعات الإلكترونية</h4>
+      <p>تكامل بوّابة دفع، تذكيرات تلقائية، فواتير منسّقة، تقارير
+        مالية للمالك.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ٦</span>
+      <h4>بوّابة ولي الأمر</h4>
+      <p>صفحة/تطبيق مخصّص لولي الأمر مع تقارير أسبوعية وإمكانية
+        التواصل المباشر.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٢٩</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 30 — ROADMAP (LONG TERM)
+═════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="topbar"><span>الفصل الرابع عشر</span><span class="chip">المدى البعيد</span></div>
+
+  <div class="section-title">
+    <div class="kicker">Long-term Roadmap</div>
+    <h2>خارطة الطريق طويلة المدى (٦–١٢ شهراً)</h2>
+  </div>
+
+  <div class="roadmap">
+    <div class="road-item">
+      <span class="when">الشهر ٧–٨</span>
+      <h4>الطبقة الأولى من الذكاء الاصطناعي</h4>
+      <p>إطلاق المساعد الذكي للأسئلة الإدارية، التلخيص الأسبوعي
+        التلقائي، وكشف الأنماط في الحضور والأداء.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ٩</span>
+      <h4>تطبيقات الجوّال الثلاثة</h4>
+      <p>إطلاق تطبيقات iOS و Android للمدرّب، الإداري، وولي الأمر بهوية
+        موحّدة وتجربة لمسية أصيلة.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ١٠</span>
+      <h4>التقييم الفنّي ومسار التطوّر</h4>
+      <p>نظام تقييم أسبوعي للاعبين، ملف تطوّر مرئي، شارات إنجاز،
+        وتقارير مهنية للاعب.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ١١</span>
+      <h4>التخصيص الكامل لكل أكاديمية</h4>
+      <p>هوية مرئية مخصّصة لكل أكاديمية، صلاحيات دقيقة، أدوار قابلة
+        للتعديل، تقارير قابلة للتخصيص.</p>
+    </div>
+    <div class="road-item">
+      <span class="when">الشهر ١٢</span>
+      <h4>التوسّع الإقليمي والمنظومة المفتوحة</h4>
+      <p>إطلاق API عام للشركاء، تكاملات مع منصّات تعليمية ورياضية،
+        وإطلاق نسخة متعدّدة اللغات للتوسّع الخليجي.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <h3>التوصيات المستقبلية (بعد سنة)</h3>
+  <ul class="clean">
+    <li>توسيع نطاق المنصة لتشمل رياضات أخرى غير كرة القدم.</li>
+    <li>إطلاق سوق المدربين والخبراء داخل المنصة.</li>
+    <li>تكامل مع أجهزة الاستشعار الرياضية (GPS، ساعات اللياقة).</li>
+    <li>برنامج اعتماد وشهادات للأكاديميات المتميّزة.</li>
+  </ul>
+
+  <div class="footer">
+    <div class="mark"><div class="dot"></div><span>تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num">٣٠</span>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     PAGE 31 — FINAL VISION
+═════════════════════════════════════════════════ -->
+<section class="page vision-page">
+  <span class="chapter-tag" style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);">الفصل الخامس عشر</span>
+  <div class="section-title" style="border-color:var(--mint);">
+    <div class="kicker" style="color:var(--mint);">Final Product Vision</div>
+    <h2>الرؤية النهائية للمنتج</h2>
+  </div>
+
+  <p class="lead">
+    في غضون اثني عشر شهراً، نتطلّع لأن تكون المنصة أكثر من نظام
+    إداري؛ أن تكون <strong>الشريك الذكي الذي تعتمد عليه كل أكاديمية
+    رياضية احترافية في المنطقة.</strong>
+  </p>
+
+  <div class="gap"></div>
+
+  <h3 style="color:var(--mint);">الركائز الأربعة للرؤية</h3>
+
+  <div class="grid grid-2">
+    <div class="pillar">
+      <h4>الفخامة كمعيار</h4>
+      <p>تجربة بصرية ولمسية تشعر معها الأكاديمية بأنها تستخدم
+        منتجاً يليق بتطلّعاتها، لا مجرد أداة عابرة.</p>
+    </div>
+    <div class="pillar">
+      <h4>الذكاء كصديق</h4>
+      <p>مساعد يفهم سياق الأكاديمية، يقترح ولا يفرض، ويوفّر ساعات
+        من العمل اليومي بصمت.</p>
+    </div>
+    <div class="pillar">
+      <h4>الراحة كأسلوب</h4>
+      <p>كل تفاعل مُصمَّم ليكون أسرع وأبسط وأمتع من البديل اليدوي،
+        بدون استثناء.</p>
+    </div>
+    <div class="pillar">
+      <h4>الثقة كأساس</h4>
+      <p>بنية تقنية صلبة، أمان حقيقي، شفافية كاملة، ومرونة لتنمو
+        مع نمو أكاديمياتنا.</p>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="callout" style="background:rgba(255,255,255,.08); border:1px solid rgba(99,192,176,.3);">
+    <p>
+      الهدف ليس بناء نظام إدارة، بل بناء <strong>منصّة يفخر مالك
+      الأكاديمية بأن يُريها لزواره</strong>. هذه هي اللحظة التي يتحوّل
+      فيها المنتج إلى ميزة تنافسية حقيقية.
+    </p>
+    <span class="by">— الرؤية الجوهرية</span>
+  </div>
+
+  <div class="endmark">
+    <div class="line"></div>
+    <p style="color:rgba(255,255,255,.55); font-size:9pt; margin:0;">
+      انتهى التقرير — لمزيد من التوضيحات أو الجلسات الاستراتيجية، يرجى التواصل مع فريق الاستراتيجية.
+    </p>
+  </div>
+
+  <div class="footer" style="border-color:rgba(255,255,255,.12); color:rgba(255,255,255,.6);">
+    <div class="mark"><div class="dot"></div><span style="color:rgba(255,255,255,.6);">تقرير استراتيجي • منصة الأكاديميات</span></div>
+    <span class="num" style="color:var(--mint);">٣١</span>
+  </div>
+</section>
+
+</body>
+</html>

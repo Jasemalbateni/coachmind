@@ -83,9 +83,15 @@ export default function DrillView({ drillId }: { drillId: string }) {
   const prevDrill = currentIdx > 0 ? drillList[currentIdx - 1] : null;
   const nextDrill = currentIdx < drillList.length - 1 ? drillList[currentIdx + 1] : null;
 
+  // View canvas height: pin to the pitch's natural aspect so the drill is
+  // drawn 1:1 with the editor — no vertical squashing, no horizontal padding
+  // bars. We previously capped at 480px which clipped tall pitches into a
+  // smaller box and made the View look "not fully shown" compared to the
+  // editor. The Konva canvas applies its own ResizeObserver-driven scale so
+  // it always fits the actual visible width regardless of the value here.
   const canvasHeight = isFullscreen
     ? '100vh'
-    : Math.max(300, Math.min(drill.pitch.height, 480));
+    : Math.max(360, Math.min(drill.pitch.height * 1.15, 640));
 
   // Print diagram size — fits comfortably in the left ~60% of A4 landscape.
   // Slightly narrower than the previous 700px to give the right info panel

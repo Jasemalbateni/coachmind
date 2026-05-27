@@ -29,7 +29,13 @@
       "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(powershell:*)",
-      "PowerShell(Remove-Item *)"
+      "PowerShell(Remove-Item *)",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}  resolved_ip=%{remote_ip}  total=%{time_total}s\\\\n\" --max-time 10 https://kyxyymtqfhkmxlwdexft.supabase.co/auth/v1/health)",
+      "Bash(curl -sS -o - -w \"\\\\n---STATUS %{http_code}---\\\\n\" --max-time 10 https://kyxyymtqfhkmxlwdexft.supabase.co/auth/v1/settings)",
+      "Bash(curl -sS -o /dev/null -w \"supabase.com   HTTP %{http_code}  ip=%{remote_ip}\\\\n\" --max-time 10 https://supabase.com)",
+      "Bash(curl -sS -o /dev/null -w \"supabase.co    HTTP %{http_code}  ip=%{remote_ip}\\\\n\" --max-time 10 https://supabase.co)",
+      "Bash(curl -sS -o /dev/null -w \"demo-project   HTTP %{http_code}  ip=%{remote_ip}\\\\n\" --max-time 10 https://abcdefghijklmnop.supabase.co)",
+      "Bash(nslookup kyxyymtqfhkmxlwdexft.supabase.co 8.8.8.8)"
     ]
   }
 }
