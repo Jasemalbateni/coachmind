@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
+import { mapAuthError, authDebug, redactEmail } from '@/lib/auth/authErrors';
 
 // useSearchParams() requires a Suspense boundary during static prerender.
 // We wrap the form in <Suspense> at the page boundary so the rest of the
@@ -30,11 +31,33 @@ function LoginPageInner() {
     if (e) setError(decodeURIComponent(e));
   }, [searchParams]);
 
+  // One-shot diagnostic log so we know in the console whether the build
+  // even has Supabase env vars. Helps triage "Failed to fetch" reports:
+  // a missing URL surfaces as `not-configured` (not "Failed to fetch"),
+  // so seeing "Failed to fetch" with `configured:true` immediately tells
+  // us it's a real network/CORS/paused-project issue.
+  useEffect(() => {
+    authDebug('mount', {
+      configured: isSupabaseConfigured(),
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '<unset>',
+      online: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    });
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    // 1. Client-side validation — fail fast before we touch the network.
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      setError('Please enter your email and password');
+      return;
+    }
+
+    // 2. Build-time configuration check.
     if (!isSupabaseConfigured()) {
+      authDebug('signin:not-configured');
       setError('Cloud sync is not configured on this build. The app runs in local-only mode.');
       return;
     }
@@ -43,13 +66,40 @@ function LoginPageInner() {
     if (!supabase) return;
 
     setLoading(true);
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    authDebug('signin:start', { email: redactEmail(trimmedEmail) });
+
+    // 3. The SDK normally returns `{ error }` for network/API failures, but
+    //    `try/catch` defends against unexpected throws (e.g. an aborted fetch
+    //    or a future SDK version that surfaces some errors as exceptions).
+    let authError: unknown = null;
+    try {
+      const result = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password,
+      });
+      authError = result.error;
+    } catch (thrown) {
+      authError = thrown;
+    }
     setLoading(false);
 
     if (authError) {
-      setError(authError.message);
+      const mapped = mapAuthError(authError);
+      // Safe lifecycle log — never includes the password, only the mapped
+      // classification and any error code returned by Supabase.
+      authDebug('signin:error', {
+        kind: mapped.kind,
+        code: mapped.code,
+        status: mapped.status,
+        // Raw message is preserved in the dev console so we can debug, but
+        // the user sees only the mapped, user-friendly copy.
+        rawMessage: (authError as { message?: string }).message,
+      });
+      setError(mapped.message);
       return;
     }
+
+    authDebug('signin:success', { email: redactEmail(trimmedEmail) });
 
     // Honour ?next=… so the middleware can bounce users back to where they
     // came from after sign-in.
