@@ -18,6 +18,8 @@ import InspectorPanel from './InspectorPanel';
 import DrillMetaPanel from './DrillMetaPanel';
 import PlayerDock from './PlayerDock';
 import FormationPicker from './FormationPicker';
+import { getTheme } from '@/lib/drawingThemes';
+import { useCustomThemesStore } from '@/store/customThemesStore';
 
 const PitchCanvas = dynamic(() => import('./PitchCanvas'), { ssr: false });
 
@@ -123,6 +125,8 @@ export default function DrillEditorPage({ drillId }: Props) {
 
   const drill = drills[drillId];
   const linkedTeam = drill?.teamId ? (teams[drill.teamId] ?? null) : null;
+  const customThemes = useCustomThemesStore((s) => s.themes);
+  const theme = getTheme(drill?.theme, customThemes);
 
   useEffect(() => {
     const t = setTimeout(() => { if (!drills[drillId]) router.push('/drills'); }, 1000);
@@ -727,7 +731,7 @@ export default function DrillEditorPage({ drillId }: Props) {
       handleAddObject({
         id: crypto.randomUUID(), type: 'arrow',
         startX: start.x, startY: start.y, endX: end.x, endY: end.y,
-        color: (defs.color as string) ?? '#ef4444',
+        color: (defs.color as string) ?? theme.arrowColor,
         style: (defs.style as 'solid' | 'dashed') ?? 'solid',
         headStyle: (defs.headStyle as 'filled' | 'open') ?? 'filled',
         strokeWidth: (defs.strokeWidth as number) ?? undefined,
@@ -737,20 +741,20 @@ export default function DrillEditorPage({ drillId }: Props) {
     if (tool === 'line') {
       const defs = toolDefaults['line'] ?? {};
       handleAddObject({ id: crypto.randomUUID(), type: 'line', startX: start.x, startY: start.y, endX: end.x, endY: end.y,
-        color: (defs.color as string) ?? '#ffffff', strokeWidth: (defs.strokeWidth as number) ?? 2 } as LineObject);
+        color: (defs.color as string) ?? theme.lineColor, strokeWidth: (defs.strokeWidth as number) ?? 2 } as LineObject);
       return true;
     }
     if (tool === 'rect') {
       const x = Math.min(start.x, end.x); const y = Math.min(start.y, end.y);
       const w = Math.abs(end.x - start.x); const h = Math.abs(end.y - start.y);
       if (w < 5 || h < 5) return false;
-      handleAddObject({ id: crypto.randomUUID(), type: 'rectangle', x, y, width: w, height: h, stroke: '#ffffff', strokeWidth: 2 } as RectangleObject);
+      handleAddObject({ id: crypto.randomUUID(), type: 'rectangle', x, y, width: w, height: h, stroke: theme.shapeStroke, strokeWidth: 2 } as RectangleObject);
       return true;
     }
     if (tool === 'circle') {
       const r = Math.hypot(end.x - start.x, end.y - start.y);
       if (r < 5) return false;
-      handleAddObject({ id: crypto.randomUUID(), type: 'circle', x: start.x, y: start.y, radius: r, stroke: '#ffffff', strokeWidth: 2 } as CircleShapeObject);
+      handleAddObject({ id: crypto.randomUUID(), type: 'circle', x: start.x, y: start.y, radius: r, stroke: theme.shapeStroke, strokeWidth: 2 } as CircleShapeObject);
       return true;
     }
     if (tool === 'focus-zone') {
@@ -769,16 +773,16 @@ export default function DrillEditorPage({ drillId }: Props) {
       const defs = toolDefaults['smart-cone-area'] ?? {};
       handleAddObject({
         id: crypto.randomUUID(), type: 'smart-cone-area', x, y, width: w, height: h,
-        coneColor: (defs.coneColor as string) ?? '#f97316',
+        coneColor: (defs.coneColor as string) ?? theme.coneColor,
         extraConesPerSide: (defs.extraConesPerSide as number) ?? 1,
         showBorder: (defs.showBorder as boolean) ?? true,
-        borderColor: (defs.borderColor as string) ?? 'rgba(255,255,255,0.35)',
+        borderColor: (defs.borderColor as string) ?? theme.zoneStroke,
         borderDashed: (defs.borderDashed as boolean) ?? true,
       } as SmartConeAreaObject);
       return true;
     }
     return false;
-  }, [handleAddObject, toolDefaults]);
+  }, [handleAddObject, toolDefaults, theme]);
 
   const handleCanvasPointClick = useCallback((pos: { x: number; y: number }, targetId: string | null) => {
     if (!drawTool) return;
@@ -794,7 +798,7 @@ export default function DrillEditorPage({ drillId }: Props) {
         const link: LinkObject = {
           id: crypto.randomUUID(), type: 'link',
           fromPlayerId: linkFromId, toPlayerId: targetId!,
-          color: '#ffffff', dashed: false,
+          color: theme.lineColor, dashed: false,
         };
         handleAddObject(link);
       }
@@ -813,10 +817,10 @@ export default function DrillEditorPage({ drillId }: Props) {
         fontFamily: 'sans-serif',
         fontWeight: 'normal',
         fontStyle: 'normal',
-        color: '#ffffff',
+        color: theme.labelColor,
         align: 'left',
         showBox: false,
-        boxBorderColor: '#ffffff',
+        boxBorderColor: theme.labelColor,
         boxBorderWidth: 1.5,
         width: 150,
       } as TextObject);
@@ -842,7 +846,7 @@ export default function DrillEditorPage({ drillId }: Props) {
         startX: drawFirstPoint.x, startY: drawFirstPoint.y,
         cpX: pos.x, cpY: pos.y,
         endX: drawSecondPoint.x, endY: drawSecondPoint.y,
-        color: '#00b8d4', strokeWidth: 2.5,
+        color: theme.curvedColor, strokeWidth: 2.5,
       };
       handleAddObject(obj);
       setDrawFirstPoint(null);
@@ -861,7 +865,7 @@ export default function DrillEditorPage({ drillId }: Props) {
       return;
     }
     setDrawTool(null);
-  }, [drawTool, drawFirstPoint, drawSecondPoint, linkFromId, activeObjects, handleAddObject, commitTwoPointShape]);
+  }, [drawTool, drawFirstPoint, drawSecondPoint, linkFromId, activeObjects, handleAddObject, commitTwoPointShape, theme]);
 
   /**
    * Drag-flow commit. Always receives the press position as `start` and the
@@ -927,20 +931,20 @@ export default function DrillEditorPage({ drillId }: Props) {
 
   const handleDropAtPoint = useCallback((type: string, data: Record<string, unknown>, pos: { x: number; y: number }) => {
     if (type === 'cone') {
-      handleAddObject({ id: crypto.randomUUID(), type: 'cone', ...pos, color: (data.color as string) ?? '#f97316', imageVariant: (data.imageVariant as string) ?? 'cone', size: 16 } as ConeObject);
+      handleAddObject({ id: crypto.randomUUID(), type: 'cone', ...pos, color: (data.color as string) ?? theme.coneColor, imageVariant: (data.imageVariant as string) ?? 'cone', size: 16 } as ConeObject);
     } else if (type === 'ball') {
       handleAddObject({ id: crypto.randomUUID(), type: 'ball', ...pos, size: 16 } as BallObject);
     } else if (type === 'goal') {
       const gs = (data.size as 'full' | 'small') ?? 'small';
       handleAddObject({ id: crypto.randomUUID(), type: 'goal', ...pos, size: gs, imgW: gs === 'full' ? 22 : 20, imgH: gs === 'full' ? 52 : 38 } as GoalObject);
     } else if (type === 'zone') {
-      handleAddObject({ id: crypto.randomUUID(), type: 'zone', x: pos.x - 80, y: pos.y - 60, width: 160, height: 120, fill: '#8b5cf6', opacity: 0.25, label: 'Zone' } as ZoneObject);
+      handleAddObject({ id: crypto.randomUUID(), type: 'zone', x: pos.x - 80, y: pos.y - 60, width: 160, height: 120, fill: theme.zoneFill, opacity: 0.25, label: 'Zone', strokeColor: theme.zoneStroke } as ZoneObject);
     } else if (type === 'player') {
       const { id: _id, ...rest } = data as Record<string, unknown>;
       void _id;
       handleAddObject({ id: crypto.randomUUID(), ...(rest as Omit<PlayerObject, 'id'>), ...pos } as PlayerObject);
     }
-  }, [handleAddObject]);
+  }, [handleAddObject, theme]);
 
   // ─── Play simulation ──────────────────────────────────────────────────────────
 
@@ -1030,6 +1034,7 @@ export default function DrillEditorPage({ drillId }: Props) {
         onDrillInfoOpen={() => setShowDrillInfo(true)}
         onPlay={handlePlay}
         onStop={handleStop}
+        onThemeChange={(themeId) => updateDrill(drillId, { theme: themeId })}
       />
 
       {/* `relative` so the inspector drawer can absolute-position itself
@@ -1038,10 +1043,10 @@ export default function DrillEditorPage({ drillId }: Props) {
       <div className="flex-1 flex min-h-0 relative">
         <PaletteSidebar
           drawTool={drawTool}
-          onAddCone={(variant) => handleAddObject({ id: crypto.randomUUID(), type: 'cone', ...center(), color: '#f97316', imageVariant: variant ?? 'cone', size: 16 } as ConeObject)}
+          onAddCone={(variant) => handleAddObject({ id: crypto.randomUUID(), type: 'cone', ...center(), color: theme.coneColor, imageVariant: variant ?? 'cone', size: 16 } as ConeObject)}
           onAddBall={() => handleAddObject({ id: crypto.randomUUID(), type: 'ball', ...center(), size: 16 } as BallObject)}
           onAddGoal={(size) => handleAddObject({ id: crypto.randomUUID(), type: 'goal', ...center(), size, imgW: size === 'full' ? 22 : 20, imgH: size === 'full' ? 52 : 38 } as GoalObject)}
-          onAddZone={() => handleAddObject({ id: crypto.randomUUID(), type: 'zone', x: drill.pitch.width / 2 - 80, y: drill.pitch.height / 2 - 60, width: 160, height: 120, fill: '#8b5cf6', opacity: 0.25, label: 'Zone' } as ZoneObject)}
+          onAddZone={() => handleAddObject({ id: crypto.randomUUID(), type: 'zone', x: drill.pitch.width / 2 - 80, y: drill.pitch.height / 2 - 60, width: 160, height: 120, fill: theme.zoneFill, opacity: 0.25, label: 'Zone', strokeColor: theme.zoneStroke } as ZoneObject)}
           onSetDrawTool={handleSetDrawTool}
           onDuplicate={handleDuplicate}
           canDuplicate={canDuplicate}
@@ -1102,6 +1107,7 @@ export default function DrillEditorPage({ drillId }: Props) {
             zoom={zoom}
             showNames={showNames}
             playerScale={drill.playerScale ?? 1}
+            themeId={drill.theme}
             positionOverrides={simPositions}
             onSelect={handleSelect}
             onMultiSelect={handleMultiSelect}
@@ -1159,6 +1165,7 @@ export default function DrillEditorPage({ drillId }: Props) {
             selectedIds={selectedIds}
             allObjects={activeObjects}
             playerScale={drill.playerScale ?? 1}
+            themeId={drill.theme}
             onUpdate={(updates) => selectedId && handleUpdateObject(selectedId, updates)}
             onUpdateById={(id, updates) => handleUpdateObject(id, updates)}
             onDelete={() => selectedId && handleDeleteObject(selectedId)}

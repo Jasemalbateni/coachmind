@@ -59,6 +59,9 @@ import type {
   GroupObject,
   CanvasObject,
 } from '@/types';
+import { getTheme } from '@/lib/drawingThemes';
+import { useCustomThemesStore } from '@/store/customThemesStore';
+import { FIELD_ASSET_PATHS } from '@/lib/fieldAssets';
 
 interface Props {
   drill: Drill;
@@ -120,15 +123,46 @@ function smartConePoints(w: number, h: number, extra: number): { cx: number; cy:
   return pts;
 }
 
-/** Triangle cone in logical pitch px. */
-function ConeShape({ cx, cy, size, color, opacity = 1 }: { cx: number; cy: number; size: number; color: string; opacity?: number }) {
-  const h = size; // tip-to-base height in editor matches polygon used in canvas (radius = size/2)
+/**
+ * Cone renderer. When the variant maps to a real /field-assets asset we render
+ * it as an SVG <image>; the triangle polygon is only used as a last-resort
+ * fallback when the asset key is unknown (or could not be resolved). This
+ * keeps preview / print / view visually identical to the Konva editor where
+ * the same PNG asset is drawn.
+ */
+function ConeShape({
+  cx, cy, size, color, variant = 'cone', rotation = 0, opacity = 1,
+}: {
+  cx: number;
+  cy: number;
+  size: number;
+  color: string;
+  variant?: string;
+  rotation?: number;
+  opacity?: number;
+}) {
+  const assetPath = FIELD_ASSET_PATHS[variant];
+  if (assetPath) {
+    return (
+      <image
+        href={assetPath}
+        x={cx - size / 2}
+        y={cy - size / 2}
+        width={size}
+        height={size}
+        opacity={opacity}
+        transform={rotation ? `rotate(${rotation} ${cx} ${cy})` : undefined}
+        preserveAspectRatio="xMidYMid meet"
+      />
+    );
+  }
   const halfBase = size / 2;
   return (
     <polygon
-      points={`${cx},${cy - h / 2} ${cx - halfBase},${cy + h / 2} ${cx + halfBase},${cy + h / 2}`}
+      points={`${cx},${cy - size / 2} ${cx - halfBase},${cy + size / 2} ${cx + halfBase},${cy + size / 2}`}
       fill={color}
       opacity={opacity}
+      transform={rotation ? `rotate(${rotation} ${cx} ${cy})` : undefined}
     />
   );
 }
@@ -137,11 +171,13 @@ function ConeShape({ cx, cy, size, color, opacity = 1 }: { cx: number; cy: numbe
 function PlayerShape({ p }: { p: PlayerObject }) {
   const isGK = p.isGoalkeeper || p.number === '1' || p.number === '12';
   const fill = isGK ? '#d97706' : teamFallbackColor(p);
-  const stroke = p.strokeColor ?? 'rgba(255,255,255,0.9)';
+  const strokeOn = p.strokeEnabled !== false;
+  const stroke = strokeOn ? (p.strokeColor ?? 'rgba(255,255,255,0.9)') : 'none';
+  const strokeW = strokeOn ? (p.strokeWidth ?? PLAYER_STROKE_W) : 0;
   const r = PLAYER_R;
   return (
     <g transform={`translate(${p.x} ${p.y})${p.rotation ? ` rotate(${p.rotation})` : ''}`}>
-      <circle r={r} fill={fill} stroke={stroke} strokeWidth={PLAYER_STROKE_W} />
+      <circle r={r} fill={fill} stroke={stroke} strokeWidth={strokeW} />
       {p.showNumber !== false && p.number && (
         <text
           x={0}
@@ -198,7 +234,9 @@ export default function MiniPitchPreview({
 
   // Pitch markings appear LIGHTER than the editor's white lines so the
   // thumbnail reads quickly without overwhelming the actual drill elements.
-  const grass = drill.pitch.colors?.grass ?? '#1e5c35';
+  const customThemes = useCustomThemesStore((s) => s.themes);
+  const theme = getTheme(drill.theme, customThemes);
+  const grass = drill.pitch.colors?.grass ?? theme.fieldBackground;
   const line = 'rgba(255,255,255,0.32)';
 
   // Recursively flatten groups so we can sort the full object list into
@@ -431,7 +469,7 @@ function renderShape(obj: CanvasObject): React.ReactNode {
           />
         )}
         {pts.map((p, i) => (
-          <ConeShape key={i} cx={p.cx} cy={p.cy} size={CONE_DEFAULT_SIZE} color={a.coneColor} />
+          <ConeShape key={i} cx={p.cx} cy={p.cy} size={CONE_DEFAULT_SIZE} color={a.coneColor} variant={a.coneVariant ?? 'cone'} />
         ))}
       </g>
     );
@@ -524,11 +562,38 @@ function renderTop(obj: CanvasObject): React.ReactNode {
   }
   if (obj.type === 'cone') {
     const c = obj as ConeObject;
-    return <ConeShape key={c.id} cx={c.x} cy={c.y} size={c.size ?? CONE_DEFAULT_SIZE} color={c.color} />;
+    return (
+      <ConeShape
+        key={c.id}
+        cx={c.x}
+        cy={c.y}
+        size={c.size ?? CONE_DEFAULT_SIZE}
+        color={c.color}
+        variant={c.imageVariant ?? 'cone'}
+        rotation={c.rotation ?? 0}
+      />
+    );
   }
   if (obj.type === 'ball') {
     const b = obj as BallObject;
-    const r = (b.size ?? BALL_DEFAULT_SIZE) / 2;
+    const sz = b.size ?? BALL_DEFAULT_SIZE;
+    const assetPath = FIELD_ASSET_PATHS['ball'];
+    if (assetPath) {
+      return (
+        <image
+          key={b.id}
+          href={assetPath}
+          x={b.x - sz / 2}
+          y={b.y - sz / 2}
+          width={sz}
+          height={sz}
+          transform={b.rotation ? `rotate(${b.rotation} ${b.x} ${b.y})` : undefined}
+          preserveAspectRatio="xMidYMid meet"
+        />
+      );
+    }
+    // Asset missing — minimal primitive fallback
+    const r = sz / 2;
     return (
       <g key={b.id} transform={`translate(${b.x} ${b.y})${b.rotation ? ` rotate(${b.rotation})` : ''}`}>
         <circle r={r} fill="white" stroke="#1a1a2e" strokeWidth={1.5} />
@@ -545,6 +610,22 @@ function renderTop(obj: CanvasObject): React.ReactNode {
     const isFull = g.size === 'full';
     const gw = g.imgW ?? (isFull ? GOAL_FULL_W : GOAL_SMALL_W);
     const gh = g.imgH ?? (isFull ? GOAL_FULL_H : GOAL_SMALL_H);
+    const assetPath = FIELD_ASSET_PATHS[isFull ? 'large-goal' : 'mini-goal'];
+    if (assetPath) {
+      return (
+        <image
+          key={g.id}
+          href={assetPath}
+          x={g.x - gw / 2}
+          y={g.y - gh / 2}
+          width={gw}
+          height={gh}
+          transform={g.rotation ? `rotate(${g.rotation} ${g.x} ${g.y})` : undefined}
+          preserveAspectRatio="xMidYMid meet"
+        />
+      );
+    }
+    // Asset missing — minimal primitive fallback
     return (
       <g key={g.id} transform={`translate(${g.x} ${g.y})${g.rotation ? ` rotate(${g.rotation})` : ''}`}>
         <rect

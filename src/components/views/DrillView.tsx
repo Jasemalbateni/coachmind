@@ -287,6 +287,8 @@ export default function DrillView({ drillId }: { drillId: string }) {
             snapToGrid={false}
             zoom={1}
             showNames={true}
+            themeId={drill.theme}
+            playerScale={drill.playerScale ?? 1}
             onSelect={() => {}}
             onUpdateObject={() => {}}
             onAddObject={() => {}}

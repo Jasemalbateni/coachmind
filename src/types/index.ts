@@ -34,6 +34,10 @@ export interface PlayerObject {
   showNumber?: boolean;
   /** Custom stroke color for the player circle. Default: white */
   strokeColor?: string;
+  /** Whether the outline ring is drawn. Default: true. Set false to render a fill-only circle. */
+  strokeEnabled?: boolean;
+  /** Outline ring width in logical px. Default: 1.5. */
+  strokeWidth?: number;
   /** Custom number text color. Default: white */
   numberColor?: string;
   /** True when color was inherited from team settings (allows auto-sync) */
@@ -334,6 +338,12 @@ export interface Drill {
   sortOrder?: number;
   /** Global player marker scale (0.5–2.0, default 1). Applied to all players on the canvas. */
   playerScale?: number;
+  /**
+   * Drawing theme id (see `src/lib/drawingThemes.ts`). When set, new objects
+   * pick their default colors from this theme. Existing objects are not
+   * auto-mutated. Undefined → default theme is used implicitly.
+   */
+  theme?: string;
   // Drill relationships
   parentDrillId?: string | null;
   relationType?: DrillRelationType | null;

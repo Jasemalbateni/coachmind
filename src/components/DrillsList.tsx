@@ -357,11 +357,14 @@ export default function DrillsList() {
   useEffect(() => { seedIfEmpty(); seedTeams(); }, [seedIfEmpty, seedTeams]);
 
   const allDrills = Object.values(drills).sort((a, b) => {
-    // Sort by sortOrder if set, then by updatedAt desc
+    // Sort by explicit sortOrder when set (user-controlled drag-to-reorder),
+    // otherwise fall back to createdAt desc — never updatedAt. Using updatedAt
+    // as the default order causes cards to jump to the top whenever the user
+    // edits a drill, losing scroll context. createdAt is stable across edits.
     if (a.sortOrder !== undefined && b.sortOrder !== undefined) return a.sortOrder - b.sortOrder;
     if (a.sortOrder !== undefined) return -1;
     if (b.sortOrder !== undefined) return 1;
-    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
   const folderList = Object.values(folders).sort((a, b) => a.name.localeCompare(b.name));
   const teamList = Object.values(teams);

@@ -12,6 +12,8 @@ import type {
   ArrowObject, ZoneObject, CircleShapeObject, RectangleObject, LineObject, CurvedLineObject, LinkObject,
   FocusZoneObject, SmartConeAreaObject, TextObject, GroupObject,
 } from '@/types';
+import { getTheme } from '@/lib/drawingThemes';
+import { useCustomThemesStore } from '@/store/customThemesStore';
 
 export type DrawTool =
   | 'arrow' | 'line' | 'curved' | 'rect' | 'circle' | 'link'
@@ -265,11 +267,12 @@ function boundsIntersect(a: Bounds, b: Bounds): boolean {
 
 // ─── Pitch Background ─────────────────────────────────────────────────────────
 
-function PitchBackground({ pitch }: { pitch: Drill['pitch'] }) {
+function PitchBackground({ pitch, themeId, customThemes }: { pitch: Drill['pitch']; themeId?: string; customThemes: Record<string, ReturnType<typeof getTheme>> }) {
   const { type, width: W, height: H, colors } = pitch;
-  const grassColor = colors?.grass ?? '#2d6a4f';
-  const grassSecondary = colors?.grassSecondary;
-  const lineColor = colors?.lines ?? 'rgba(255,255,255,0.75)';
+  const theme = getTheme(themeId, customThemes);
+  const grassColor = colors?.grass ?? theme.fieldBackground;
+  const grassSecondary = colors?.grassSecondary ?? theme.fieldBackgroundSecondary;
+  const lineColor = colors?.lines ?? theme.fieldLines;
 
   if (type === 'plain') {
     return (
@@ -397,6 +400,8 @@ export interface PitchCanvasProps {
   stageRef: React.RefObject<Konva.Stage>;
   /** Global player scale factor (0.5–2.0, default 1) */
   playerScale?: number;
+  /** Drawing theme id — used to resolve pitch background defaults */
+  themeId?: string;
 }
 
 export default function PitchCanvas({
@@ -408,7 +413,9 @@ export default function PitchCanvas({
   onContextMenuObject, onAltDragCopy,
   stageRef,
   playerScale = 1,
+  themeId,
 }: PitchCanvasProps) {
+  const customThemes = useCustomThemesStore((s) => s.themes);
   const containerRef = useRef<HTMLDivElement>(null);
   const trRef = useRef<Konva.Transformer>(null);
   const [containerSize, setContainerSize] = useState({ w: 840, h: 540 });
@@ -1197,8 +1204,13 @@ export default function PitchCanvas({
         const r = 16 * ps;
         const isGK = o.isGoalkeeper || o.number === '1' || o.number === '12';
         const fillColor = isGK ? '#d97706' : o.color;
-        const circleStroke = s ? selStroke : ms ? multiStroke : (o.strokeColor ?? 'white');
-        const circleStrokeWidth = s ? 3 : ms ? 2.5 : 1.5;
+        // Stroke is enabled by default; user can disable to render a fill-only circle.
+        // Selection halos still render normally so the circle is visually selectable.
+        const strokeOn = o.strokeEnabled !== false;
+        const baseStrokeColor = strokeOn ? (o.strokeColor ?? 'white') : 'rgba(0,0,0,0)';
+        const baseStrokeWidth = strokeOn ? (o.strokeWidth ?? 1.5) : 0;
+        const circleStroke = s ? selStroke : ms ? multiStroke : baseStrokeColor;
+        const circleStrokeWidth = s ? 3 : ms ? 2.5 : baseStrokeWidth;
         const showNum = o.showNumber !== false;
         const rx = positionOverrides[o.id]?.x ?? o.x;
         const ry = positionOverrides[o.id]?.y ?? o.y;
@@ -1385,18 +1397,11 @@ export default function PitchCanvas({
             onDragMove={(e) => handleDragMove(e, o.id)}
             onDragEnd={(e) => handleDragEnd(e, o.id)}
             onTransformEnd={(e) => handleTransformEnd(e, o)}>
-            {/* Fill — non-listening so interior clicks/drags pass through to stage */}
-            <Rect width={o.width} height={o.height} fill={o.fill} opacity={o.opacity} listening={false} />
-            {/* Border — border-only hit via hitFunc; interior is fully pass-through */}
-            <Rect width={o.width} height={o.height} fillEnabled={false}
-              stroke={zStrokeColor} strokeWidth={zStrokeW}
-              hitFunc={(ctx, shape) => {
-                const w = o.width; const h = o.height; const t = 8;
-                ctx.beginPath();
-                ctx.rect(0, 0, w, t); ctx.rect(0, h - t, w, t);
-                ctx.rect(0, t, t, h - 2 * t); ctx.rect(w - t, t, t, h - 2 * t);
-                ctx.fillStrokeShape(shape);
-              }} />
+            {/* Single hit-testable rect — entire interior selects the zone, regardless
+                of stroke width or fill opacity. Konva hit-tests transparent fills when
+                listening is true, so zones with opacity=0 are still selectable. */}
+            <Rect width={o.width} height={o.height} fill={o.fill} opacity={o.opacity}
+              stroke={zStrokeColor} strokeWidth={zStrokeW} />
             {o.label && <Text text={o.label} fontSize={12} fill="rgba(255,255,255,0.9)" align="center" verticalAlign="middle" width={o.width} height={o.height} listening={false} />}
           </Group>
         );
@@ -1432,20 +1437,12 @@ export default function PitchCanvas({
             onDragMove={(e) => handleDragMove(e, o.id)}
             onDragEnd={(e) => handleDragEnd(e, o.id)}
             onTransformEnd={(e) => handleTransformEnd(e, o)}>
-            {/* Fill — non-listening */}
-            <Rect width={o.width} height={o.height} fill={o.fill ?? 'transparent'} opacity={o.fillOpacity ?? 1}
-              dash={o.dashed ? [8, 4] : undefined} listening={false} />
-            {/* Border — border-only hit via hitFunc; interior is fully pass-through */}
-            <Rect width={o.width} height={o.height} fillEnabled={false}
+            {/* Single hit-testable rect — entire interior selects the rectangle, even
+                when fill is transparent or stroke width is 0. */}
+            <Rect width={o.width} height={o.height}
+              fill={o.fill ?? 'rgba(0,0,0,0)'} fillOpacity={o.fillOpacity ?? 1}
               stroke={rStrokeColor} strokeWidth={rStrokeW}
-              dash={o.dashed ? [8, 4] : undefined}
-              hitFunc={(ctx, shape) => {
-                const w = o.width; const h = o.height; const t = 8;
-                ctx.beginPath();
-                ctx.rect(0, 0, w, t); ctx.rect(0, h - t, w, t);
-                ctx.rect(0, t, t, h - 2 * t); ctx.rect(w - t, t, t, h - 2 * t);
-                ctx.fillStrokeShape(shape);
-              }} />
+              dash={o.dashed ? [8, 4] : undefined} />
           </Group>
         );
       }
@@ -1522,20 +1519,11 @@ export default function PitchCanvas({
             onDragMove={(e) => handleDragMove(e, o.id)}
             onDragEnd={(e) => handleDragEnd(e, o.id)}
             onTransformEnd={(e) => handleTransformEnd(e, o)}>
-            {/* Interior — non-listening so marquee drag works inside */}
-            <Rect width={o.width} height={o.height} fill="transparent" listening={false} />
-            {/* Border — border-only hit via hitFunc; interior is fully pass-through */}
-            <Rect width={o.width} height={o.height} fillEnabled={false}
+            {/* Single hit-testable rect — interior selects the focus zone. */}
+            <Rect width={o.width} height={o.height} fill="rgba(0,0,0,0)"
               stroke={s ? selStroke : ms ? multiStroke : 'rgba(255,255,255,0.28)'}
               strokeWidth={s ? 2 : ms ? 1.5 : 1}
-              dash={[8, 4]}
-              hitFunc={(ctx, shape) => {
-                const w = o.width; const h = o.height; const t = 8;
-                ctx.beginPath();
-                ctx.rect(0, 0, w, t); ctx.rect(0, h - t, w, t);
-                ctx.rect(0, t, t, h - 2 * t); ctx.rect(w - t, t, t, h - 2 * t);
-                ctx.fillStrokeShape(shape);
-              }} />
+              dash={[8, 4]} />
           </Group>
         );
       }
@@ -1555,20 +1543,11 @@ export default function PitchCanvas({
             onDragMove={(e) => handleDragMove(e, o.id)}
             onDragEnd={(e) => handleDragEnd(e, o.id)}
             onTransformEnd={(e) => handleTransformEnd(e, o)}>
-            {/* Interior — non-listening so marquee works inside */}
-            <Rect width={o.width} height={o.height} fill="transparent" listening={false} />
-            {/* Border — border-only hit via hitFunc; interior is fully pass-through */}
-            <Rect width={o.width} height={o.height} fillEnabled={false}
+            {/* Single hit-testable rect — interior selects the smart cone area. */}
+            <Rect width={o.width} height={o.height} fill="rgba(0,0,0,0)"
               stroke={s ? selStroke : ms ? multiStroke : (showBorder ? (o.borderColor ?? 'rgba(255,255,255,0.35)') : 'rgba(0,0,0,0)')}
               strokeWidth={s ? 2 : ms ? 1.5 : (showBorder ? 1 : 0.5)}
-              dash={(!s && !ms && (o.borderDashed !== false) && showBorder) ? [8, 4] : undefined}
-              hitFunc={(ctx, shape) => {
-                const w = o.width; const h = o.height; const t = 8;
-                ctx.beginPath();
-                ctx.rect(0, 0, w, t); ctx.rect(0, h - t, w, t);
-                ctx.rect(0, t, t, h - 2 * t); ctx.rect(w - t, t, t, h - 2 * t);
-                ctx.fillStrokeShape(shape);
-              }} />
+              dash={(!s && !ms && (o.borderDashed !== false) && showBorder) ? [8, 4] : undefined} />
             {/* Cones */}
             {conePts.map(({ cx, cy }, i) => (
               coneImg
@@ -1682,9 +1661,12 @@ export default function PitchCanvas({
               if ('x' in child && child.type === 'player') {
                 const p = child as PlayerObject; const ps = playerScale; const r = 16 * ps;
                 const isGKChild = p.isGoalkeeper || p.number === '1' || p.number === '12';
+                const childStrokeOn = p.strokeEnabled !== false;
                 return (
                   <Group key={child.id} x={p.x} y={p.y} listening={false}>
-                    <Circle radius={r} fill={isGKChild ? '#d97706' : p.color} stroke={p.strokeColor ?? 'white'} strokeWidth={1.5} />
+                    <Circle radius={r} fill={isGKChild ? '#d97706' : p.color}
+                      stroke={childStrokeOn ? (p.strokeColor ?? 'white') : 'rgba(0,0,0,0)'}
+                      strokeWidth={childStrokeOn ? (p.strokeWidth ?? 1.5) : 0} />
                     {p.showNumber !== false && p.number && (
                       <Text text={p.number} fontSize={Math.round(11 * ps)} fontStyle="bold" fill={p.numberColor ?? 'white'} align="center" verticalAlign="middle" width={r * 2} height={r * 2} x={-r} y={-r} listening={false} />
                     )}
@@ -1918,7 +1900,7 @@ export default function PitchCanvas({
         }}
       >
         <Layer x={offsetX} y={offsetY} scaleX={scale} scaleY={scale}>
-          <PitchBackground pitch={drill.pitch} />
+          <PitchBackground pitch={drill.pitch} themeId={themeId} customThemes={customThemes} />
 
           {/* Focus zone spotlight — 4 dark overlay rects surrounding the focus area */}
           {focusZone && (() => {

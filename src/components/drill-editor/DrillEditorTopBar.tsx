@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Drill } from '@/types';
+import ThemePicker from './ThemePicker';
 
 interface Props {
   drill: Drill;
@@ -29,6 +30,7 @@ interface Props {
   onDrillInfoOpen: () => void;
   onPlay: () => void;
   onStop: () => void;
+  onThemeChange: (themeId: string) => void;
 }
 
 const ZOOM_PRESETS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -37,7 +39,7 @@ export default function DrillEditorTopBar({
   drill, saveStatus, zoom, snapToGrid, showNames, undoCount, redoCount, playerScale,
   isPlaying, hasPlayTargets, focusActive,
   onTitleChange, onExportPNG, onExport4K, onZoomChange, onToggleSnap, onToggleNames, onToggleFocus, onUndo, onRedo,
-  onPlayerScaleChange, onDrillInfoOpen, onPlay, onStop,
+  onPlayerScaleChange, onDrillInfoOpen, onPlay, onStop, onThemeChange,
 }: Props) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(drill.title);
@@ -139,6 +141,11 @@ export default function DrillEditorTopBar({
           &#9654; Play
         </button>
       )}
+
+      <div className="h-4 w-px bg-white/10 mx-1 shrink-0" />
+
+      {/* Theme picker */}
+      <ThemePicker value={drill.theme} onChange={onThemeChange} />
 
       <div className="h-4 w-px bg-white/10 mx-1 shrink-0" />
 

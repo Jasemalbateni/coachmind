@@ -6,6 +6,8 @@ import type {
   FocusZoneObject, SmartConeAreaObject, TextObject,
 } from '@/types';
 import { CONE_VARIANTS } from '@/lib/fieldAssets';
+import { getTheme, type DrawingTheme, type ThemeColorRole } from '@/lib/drawingThemes';
+import { useCustomThemesStore } from '@/store/customThemesStore';
 
 export type AlignType =
   | 'left' | 'center-x' | 'right'
@@ -17,6 +19,8 @@ interface Props {
   selectedIds?: string[];
   allObjects?: CanvasObject[];
   playerScale?: number;
+  /** Active drawing theme id — used to show the "use theme color" affordance. */
+  themeId?: string;
   onUpdate: (updates: Partial<CanvasObject>) => void;
   /** Bulk update by id — used by the multi-select bulk-style editor so it can
    * apply the same color / stroke width to every selected line/arrow/curved. */
@@ -71,13 +75,38 @@ function getObjectSize(obj: CanvasObject, playerScale = 1): { w: number; h: numb
 const Row = ({ children }: { children: React.ReactNode }) => <div className="mb-3">{children}</div>;
 const Label = ({ children }: { children: React.ReactNode }) => <label className="text-xs text-gray-500 mb-1 block">{children}</label>;
 
-function ColorInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function ColorInput({
+  value, onChange, theme, themeRole,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  /** When provided alongside themeRole, a small button appears that snaps the
+   * color to the theme's value for that role. */
+  theme?: DrawingTheme;
+  themeRole?: ThemeColorRole;
+}) {
+  const themeValue = theme && themeRole ? theme[themeRole] : undefined;
+  const isThemeValue = typeof themeValue === 'string' && themeValue.toLowerCase() === value.toLowerCase();
   return (
     <div className="flex items-center gap-2">
       <input type="color" value={value.startsWith('#') ? value : '#ffffff'} onChange={(e) => onChange(e.target.value)}
         className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0" />
       <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
         className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs font-mono focus:outline-none focus:border-emerald-500" />
+      {themeValue && (
+        <button
+          type="button"
+          onClick={() => onChange(themeValue)}
+          title={`Use theme color (${themeValue})`}
+          className={`shrink-0 w-7 h-7 rounded border transition-colors flex items-center justify-center ${
+            isThemeValue
+              ? 'border-emerald-500 bg-emerald-500/15'
+              : 'border-gray-700 hover:border-emerald-500'
+          }`}
+        >
+          <span className="block w-3.5 h-3.5 rounded-sm border border-black/30" style={{ background: themeValue }} />
+        </button>
+      )}
     </div>
   );
 }
@@ -108,9 +137,11 @@ function LockRow({ locked, onUpdate }: { locked?: boolean; onUpdate: (u: Partial
   );
 }
 
-function PlayerInspector({ obj, onUpdate }: { obj: PlayerObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function PlayerInspector({ obj, onUpdate, theme }: { obj: PlayerObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   const isGK = obj.isGoalkeeper || obj.number === '1' || obj.number === '12';
   const showNumber = obj.showNumber !== false;
+  const strokeOn = obj.strokeEnabled !== false;
+  const strokeWidth = obj.strokeWidth ?? 1.5;
 
   return (
     <>
@@ -146,12 +177,34 @@ function PlayerInspector({ obj, onUpdate }: { obj: PlayerObject; onUpdate: (u: P
         )}
       </Row>
       <Row>
-        <Label>Stroke Color</Label>
-        <ColorInput value={obj.strokeColor ?? '#ffffff'} onChange={(v) => onUpdate({ strokeColor: v } as Partial<PlayerObject>)} />
+        <Label>Stroke</Label>
+        <TogglePair
+          options={[{ v: 'true', l: 'Show' }, { v: 'false', l: 'None' }]}
+          value={String(strokeOn)}
+          onChange={(v) => onUpdate({ strokeEnabled: v === 'true' } as Partial<PlayerObject>)}
+        />
       </Row>
+      {strokeOn && (
+        <>
+          <Row>
+            <Label>Stroke Color</Label>
+            <ColorInput value={obj.strokeColor ?? '#ffffff'} onChange={(v) => onUpdate({ strokeColor: v } as Partial<PlayerObject>)}
+              theme={theme} themeRole="playerStroke" />
+          </Row>
+          <Row>
+            <Label>Stroke Width — {strokeWidth}</Label>
+            <div className="flex items-center gap-2">
+              <input type="range" min={0.5} max={5} step={0.5} value={strokeWidth}
+                onChange={(e) => onUpdate({ strokeWidth: Number(e.target.value) } as Partial<PlayerObject>)} className="flex-1 accent-emerald-500" />
+              <span className="text-xs text-gray-500 w-8 text-right">{strokeWidth}</span>
+            </div>
+          </Row>
+        </>
+      )}
       <Row>
         <Label>Number Color</Label>
-        <ColorInput value={obj.numberColor ?? '#ffffff'} onChange={(v) => onUpdate({ numberColor: v } as Partial<PlayerObject>)} />
+        <ColorInput value={obj.numberColor ?? '#ffffff'} onChange={(v) => onUpdate({ numberColor: v } as Partial<PlayerObject>)}
+          theme={theme} themeRole="playerNumberColor" />
       </Row>
       <Row>
         <Label>Team</Label>
@@ -276,7 +329,7 @@ function GoalInspector({ obj, onUpdate }: { obj: GoalObject; onUpdate: (u: Parti
   );
 }
 
-function ArrowInspector({ obj, onUpdate }: { obj: ArrowObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function ArrowInspector({ obj, onUpdate, theme }: { obj: ArrowObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   return (
     <>
       {obj.arrowShape === 'zigzag' && (
@@ -294,7 +347,8 @@ function ArrowInspector({ obj, onUpdate }: { obj: ArrowObject; onUpdate: (u: Par
           Tactic: {obj.tacticType}
         </div>
       )}
-      <Row><Label>Color</Label><ColorInput value={obj.color} onChange={(v) => onUpdate({ color: v } as Partial<ArrowObject>)} /></Row>
+      <Row><Label>Color</Label><ColorInput value={obj.color} onChange={(v) => onUpdate({ color: v } as Partial<ArrowObject>)}
+        theme={theme} themeRole="arrowColor" /></Row>
       <Row>
         <Label>Style</Label>
         <TogglePair options={[{ v: 'solid', l: 'Solid' }, { v: 'dashed', l: 'Dashed' }]} value={obj.style}
@@ -318,16 +372,18 @@ function ArrowInspector({ obj, onUpdate }: { obj: ArrowObject; onUpdate: (u: Par
   );
 }
 
-function ZoneInspector({ obj, onUpdate }: { obj: ZoneObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function ZoneInspector({ obj, onUpdate, theme }: { obj: ZoneObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   return (
     <>
-      <Row><Label>Fill Color</Label><ColorInput value={obj.fill} onChange={(v) => onUpdate({ fill: v } as Partial<ZoneObject>)} /></Row>
+      <Row><Label>Fill Color</Label><ColorInput value={obj.fill} onChange={(v) => onUpdate({ fill: v } as Partial<ZoneObject>)}
+        theme={theme} themeRole="zoneFill" /></Row>
       <Row>
         <Label>Opacity — {Math.round(obj.opacity * 100)}%</Label>
         <input type="range" min={0} max={1} step={0.05} value={obj.opacity}
           onChange={(e) => onUpdate({ opacity: parseFloat(e.target.value) } as Partial<ZoneObject>)} className="w-full accent-emerald-500" />
       </Row>
-      <Row><Label>Stroke Color</Label><ColorInput value={obj.strokeColor ?? 'rgba(255,255,255,0.35)'} onChange={(v) => onUpdate({ strokeColor: v } as Partial<ZoneObject>)} /></Row>
+      <Row><Label>Stroke Color</Label><ColorInput value={obj.strokeColor ?? 'rgba(255,255,255,0.35)'} onChange={(v) => onUpdate({ strokeColor: v } as Partial<ZoneObject>)}
+        theme={theme} themeRole="zoneStroke" /></Row>
       <Row>
         <Label>Stroke Width</Label>
         <div className="flex items-center gap-2">
@@ -346,10 +402,11 @@ function ZoneInspector({ obj, onUpdate }: { obj: ZoneObject; onUpdate: (u: Parti
   );
 }
 
-function CircleInspector({ obj, onUpdate }: { obj: CircleShapeObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function CircleInspector({ obj, onUpdate, theme }: { obj: CircleShapeObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   return (
     <>
-      <Row><Label>Stroke Color</Label><ColorInput value={obj.stroke} onChange={(v) => onUpdate({ stroke: v } as Partial<CircleShapeObject>)} /></Row>
+      <Row><Label>Stroke Color</Label><ColorInput value={obj.stroke} onChange={(v) => onUpdate({ stroke: v } as Partial<CircleShapeObject>)}
+        theme={theme} themeRole="shapeStroke" /></Row>
       <Row>
         <Label>Stroke Width</Label>
         <div className="flex items-center gap-2">
@@ -391,10 +448,11 @@ function CircleInspector({ obj, onUpdate }: { obj: CircleShapeObject; onUpdate: 
   );
 }
 
-function RectInspector({ obj, onUpdate }: { obj: RectangleObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function RectInspector({ obj, onUpdate, theme }: { obj: RectangleObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   return (
     <>
-      <Row><Label>Stroke Color</Label><ColorInput value={obj.stroke} onChange={(v) => onUpdate({ stroke: v } as Partial<RectangleObject>)} /></Row>
+      <Row><Label>Stroke Color</Label><ColorInput value={obj.stroke} onChange={(v) => onUpdate({ stroke: v } as Partial<RectangleObject>)}
+        theme={theme} themeRole="shapeStroke" /></Row>
       <Row>
         <Label>Stroke Width</Label>
         <div className="flex items-center gap-2">
@@ -436,7 +494,7 @@ function RectInspector({ obj, onUpdate }: { obj: RectangleObject; onUpdate: (u: 
   );
 }
 
-function LineInspector({ obj, onUpdate }: { obj: LineObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function LineInspector({ obj, onUpdate, theme }: { obj: LineObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   return (
     <>
       {obj.tacticType && (
@@ -444,7 +502,8 @@ function LineInspector({ obj, onUpdate }: { obj: LineObject; onUpdate: (u: Parti
           Tactic: {obj.tacticType}
         </div>
       )}
-      <Row><Label>Color</Label><ColorInput value={obj.color} onChange={(v) => onUpdate({ color: v } as Partial<LineObject>)} /></Row>
+      <Row><Label>Color</Label><ColorInput value={obj.color} onChange={(v) => onUpdate({ color: v } as Partial<LineObject>)}
+        theme={theme} themeRole="lineColor" /></Row>
       <Row>
         <Label>Width</Label>
         <div className="flex items-center gap-2">
@@ -463,13 +522,14 @@ function LineInspector({ obj, onUpdate }: { obj: LineObject; onUpdate: (u: Parti
   );
 }
 
-function CurvedInspector({ obj, onUpdate }: { obj: CurvedLineObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function CurvedInspector({ obj, onUpdate, theme }: { obj: CurvedLineObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   return (
     <>
       <div className="mb-3 px-2 py-1.5 bg-cyan-900/20 border border-cyan-800/40 rounded text-xs text-cyan-400 leading-relaxed">
         Drag the 3 cyan handles on the field to reshape the curve.
       </div>
-      <Row><Label>Color</Label><ColorInput value={obj.color} onChange={(v) => onUpdate({ color: v } as Partial<CurvedLineObject>)} /></Row>
+      <Row><Label>Color</Label><ColorInput value={obj.color} onChange={(v) => onUpdate({ color: v } as Partial<CurvedLineObject>)}
+        theme={theme} themeRole="curvedColor" /></Row>
       <Row>
         <Label>Width</Label>
         <div className="flex items-center gap-2">
@@ -488,10 +548,11 @@ function CurvedInspector({ obj, onUpdate }: { obj: CurvedLineObject; onUpdate: (
   );
 }
 
-function LinkInspector({ obj, onUpdate }: { obj: LinkObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function LinkInspector({ obj, onUpdate, theme }: { obj: LinkObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   return (
     <>
-      <Row><Label>Color</Label><ColorInput value={obj.color} onChange={(v) => onUpdate({ color: v } as Partial<LinkObject>)} /></Row>
+      <Row><Label>Color</Label><ColorInput value={obj.color} onChange={(v) => onUpdate({ color: v } as Partial<LinkObject>)}
+        theme={theme} themeRole="lineColor" /></Row>
       <Row>
         <Label>Style</Label>
         <TogglePair options={[{ v: 'false', l: 'Solid' }, { v: 'true', l: 'Dashed' }]}
@@ -521,6 +582,7 @@ function AlignBtn({ label, title, onClick }: { label: string; title: string; onC
 function MultiSelectPanel({
   selectedIds,
   objects,
+  theme,
   onAlignDistribute,
   onDuplicate,
   onDeleteSelected,
@@ -528,6 +590,7 @@ function MultiSelectPanel({
 }: {
   selectedIds: string[];
   objects: CanvasObject[];
+  theme: DrawingTheme;
   onAlignDistribute: (type: AlignType) => void;
   onDuplicate: () => void;
   onDeleteSelected: () => void;
@@ -541,6 +604,9 @@ function MultiSelectPanel({
   const posCount = selectedObjs.filter((o) => 'x' in o).length;
   // All selected items belong to the line/arrow/curved family → show shared style controls
   const allLineLike = selectedObjs.length > 0 && selectedObjs.every((o) => LINE_TYPES.has(o.type));
+  // All selected items are players → show shared player controls (stroke etc.)
+  const allPlayers = selectedObjs.length > 0 && selectedObjs.every((o) => o.type === 'player');
+  const firstPlayer = allPlayers ? (selectedObjs[0] as PlayerObject) : undefined;
 
   // Pick representative starting values from the first line-like object so the
   // controls have a sensible initial display.
@@ -570,7 +636,8 @@ function MultiSelectPanel({
           <p className="text-xs text-gray-600 uppercase tracking-wider mb-1.5">Shared style</p>
           <Row>
             <Label>Color (applies to all)</Label>
-            <ColorInput value={firstLine.color} onChange={(v) => bulkSet({ color: v } as Partial<CanvasObject>)} />
+            <ColorInput value={firstLine.color} onChange={(v) => bulkSet({ color: v } as Partial<CanvasObject>)}
+              theme={theme} themeRole="lineColor" />
           </Row>
           <Row>
             <Label>Width (applies to all) — {firstLine.strokeWidth ?? 2}</Label>
@@ -589,6 +656,41 @@ function MultiSelectPanel({
               onChange={(v) => bulkSet({ dashed: v === 'true' } as Partial<CanvasObject>)}
             />
           </Row>
+        </div>
+      )}
+
+      {/* Shared player controls — when every selected object is a player.
+          Lets the coach toggle the stroke ring across a whole formation at once. */}
+      {allPlayers && firstPlayer && onUpdateById && (
+        <div className="mb-4 pb-4 border-b border-gray-800">
+          <p className="text-xs text-gray-600 uppercase tracking-wider mb-1.5">Shared player style</p>
+          <Row>
+            <Label>Stroke (applies to all)</Label>
+            <TogglePair
+              options={[{ v: 'true', l: 'Show' }, { v: 'false', l: 'None' }]}
+              value={String(firstPlayer.strokeEnabled !== false)}
+              onChange={(v) => bulkSet({ strokeEnabled: v === 'true' } as Partial<CanvasObject>)}
+            />
+          </Row>
+          {firstPlayer.strokeEnabled !== false && (
+            <>
+              <Row>
+                <Label>Stroke Color (applies to all)</Label>
+                <ColorInput value={firstPlayer.strokeColor ?? '#ffffff'}
+                  onChange={(v) => bulkSet({ strokeColor: v } as Partial<CanvasObject>)}
+                  theme={theme} themeRole="playerStroke" />
+              </Row>
+              <Row>
+                <Label>Stroke Width — {firstPlayer.strokeWidth ?? 1.5}</Label>
+                <div className="flex items-center gap-2">
+                  <input type="range" min={0.5} max={5} step={0.5} value={firstPlayer.strokeWidth ?? 1.5}
+                    onChange={(e) => bulkSet({ strokeWidth: Number(e.target.value) } as Partial<CanvasObject>)}
+                    className="flex-1 accent-emerald-500" />
+                  <span className="text-xs text-gray-500 w-8 text-right">{firstPlayer.strokeWidth ?? 1.5}</span>
+                </div>
+              </Row>
+            </>
+          )}
         </div>
       )}
 
@@ -651,7 +753,7 @@ function FocusZoneInspector({ obj, onUpdate }: { obj: FocusZoneObject; onUpdate:
   );
 }
 
-function SmartConeAreaInspector({ obj, onUpdate }: { obj: SmartConeAreaObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function SmartConeAreaInspector({ obj, onUpdate, theme }: { obj: SmartConeAreaObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   return (
     <>
       <div className="mb-3 px-2 py-2 bg-orange-900/20 border border-orange-800/40 rounded text-xs text-orange-400 leading-relaxed">
@@ -676,7 +778,8 @@ function SmartConeAreaInspector({ obj, onUpdate }: { obj: SmartConeAreaObject; o
       </Row>
       <Row>
         <Label>Cone Color (fallback)</Label>
-        <ColorInput value={obj.coneColor ?? '#f97316'} onChange={(v) => onUpdate({ coneColor: v } as Partial<SmartConeAreaObject>)} />
+        <ColorInput value={obj.coneColor ?? '#f97316'} onChange={(v) => onUpdate({ coneColor: v } as Partial<SmartConeAreaObject>)}
+          theme={theme} themeRole="coneColor" />
       </Row>
       <Row>
         <Label>Extra Cones per Side — {obj.extraConesPerSide ?? 1}</Label>
@@ -704,7 +807,8 @@ function SmartConeAreaInspector({ obj, onUpdate }: { obj: SmartConeAreaObject; o
       {obj.showBorder !== false && (
         <>
           <Row><Label>Border Color</Label>
-            <ColorInput value={obj.borderColor ?? 'rgba(255,255,255,0.35)'} onChange={(v) => onUpdate({ borderColor: v } as Partial<SmartConeAreaObject>)} />
+            <ColorInput value={obj.borderColor ?? 'rgba(255,255,255,0.35)'} onChange={(v) => onUpdate({ borderColor: v } as Partial<SmartConeAreaObject>)}
+              theme={theme} themeRole="zoneStroke" />
           </Row>
           <Row>
             <Label>Border Style</Label>
@@ -719,7 +823,7 @@ function SmartConeAreaInspector({ obj, onUpdate }: { obj: SmartConeAreaObject; o
   );
 }
 
-function TextInspector({ obj, onUpdate }: { obj: TextObject; onUpdate: (u: Partial<CanvasObject>) => void }) {
+function TextInspector({ obj, onUpdate, theme }: { obj: TextObject; onUpdate: (u: Partial<CanvasObject>) => void; theme: DrawingTheme }) {
   const FONTS = ['sans-serif', 'serif', 'monospace', 'Arial', 'Georgia', 'Verdana', 'Impact'];
   return (
     <>
@@ -733,7 +837,8 @@ function TextInspector({ obj, onUpdate }: { obj: TextObject; onUpdate: (u: Parti
           className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-gray-200 resize-none focus:outline-none focus:border-emerald-500"
         />
       </Row>
-      <Row><Label>Color</Label><ColorInput value={obj.color ?? '#ffffff'} onChange={(v) => onUpdate({ color: v } as Partial<TextObject>)} /></Row>
+      <Row><Label>Color</Label><ColorInput value={obj.color ?? '#ffffff'} onChange={(v) => onUpdate({ color: v } as Partial<TextObject>)}
+        theme={theme} themeRole="labelColor" /></Row>
       <Row>
         <Label>Font Size — {obj.fontSize}px</Label>
         <div className="flex items-center gap-2">
@@ -776,7 +881,8 @@ function TextInspector({ obj, onUpdate }: { obj: TextObject; onUpdate: (u: Parti
       </Row>
       {obj.showBox && (
         <>
-          <Row><Label>Border Color</Label><ColorInput value={obj.boxBorderColor ?? '#ffffff'} onChange={(v) => onUpdate({ boxBorderColor: v } as Partial<TextObject>)} /></Row>
+          <Row><Label>Border Color</Label><ColorInput value={obj.boxBorderColor ?? '#ffffff'} onChange={(v) => onUpdate({ boxBorderColor: v } as Partial<TextObject>)}
+            theme={theme} themeRole="labelColor" /></Row>
           <Row>
             <Label>Border Width</Label>
             <div className="flex items-center gap-2">
@@ -800,9 +906,11 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default function InspectorPanel({
-  selectedObject, selectedIds = [], allObjects = [], playerScale = 1,
+  selectedObject, selectedIds = [], allObjects = [], playerScale = 1, themeId,
   onUpdate, onUpdateById, onDelete, onDuplicate, onDeleteSelected, onAlignDistribute,
 }: Props) {
+  const customThemes = useCustomThemesStore((s) => s.themes);
+  const theme = getTheme(themeId, customThemes);
   // Multi-select panel takes priority when 2+ items are selected
   const isMulti = selectedIds.length >= 2;
 
@@ -817,6 +925,7 @@ export default function InspectorPanel({
         <MultiSelectPanel
           selectedIds={selectedIds}
           objects={allObjects}
+          theme={theme}
           onAlignDistribute={onAlignDistribute}
           onDuplicate={onDuplicate}
           onDeleteSelected={onDeleteSelected}
@@ -865,20 +974,20 @@ export default function InspectorPanel({
       )}
 
       <div className="px-2.5 xl:px-4 overflow-y-auto">
-        {selectedObject.type === 'player' && <PlayerInspector obj={selectedObject} onUpdate={onUpdate} />}
+        {selectedObject.type === 'player' && <PlayerInspector obj={selectedObject} onUpdate={onUpdate} theme={theme} />}
         {selectedObject.type === 'cone' && <ConeInspector obj={selectedObject} onUpdate={onUpdate} />}
         {selectedObject.type === 'ball' && <BallInspector obj={selectedObject} onUpdate={onUpdate} />}
         {selectedObject.type === 'goal' && <GoalInspector obj={selectedObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'arrow' && <ArrowInspector obj={selectedObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'zone' && <ZoneInspector obj={selectedObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'circle' && <CircleInspector obj={selectedObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'rectangle' && <RectInspector obj={selectedObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'line' && <LineInspector obj={selectedObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'curved' && <CurvedInspector obj={selectedObject as CurvedLineObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'link' && <LinkInspector obj={selectedObject} onUpdate={onUpdate} />}
+        {selectedObject.type === 'arrow' && <ArrowInspector obj={selectedObject} onUpdate={onUpdate} theme={theme} />}
+        {selectedObject.type === 'zone' && <ZoneInspector obj={selectedObject} onUpdate={onUpdate} theme={theme} />}
+        {selectedObject.type === 'circle' && <CircleInspector obj={selectedObject} onUpdate={onUpdate} theme={theme} />}
+        {selectedObject.type === 'rectangle' && <RectInspector obj={selectedObject} onUpdate={onUpdate} theme={theme} />}
+        {selectedObject.type === 'line' && <LineInspector obj={selectedObject} onUpdate={onUpdate} theme={theme} />}
+        {selectedObject.type === 'curved' && <CurvedInspector obj={selectedObject as CurvedLineObject} onUpdate={onUpdate} theme={theme} />}
+        {selectedObject.type === 'link' && <LinkInspector obj={selectedObject} onUpdate={onUpdate} theme={theme} />}
         {selectedObject.type === 'focus-zone' && <FocusZoneInspector obj={selectedObject as FocusZoneObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'smart-cone-area' && <SmartConeAreaInspector obj={selectedObject as SmartConeAreaObject} onUpdate={onUpdate} />}
-        {selectedObject.type === 'text' && <TextInspector obj={selectedObject as TextObject} onUpdate={onUpdate} />}
+        {selectedObject.type === 'smart-cone-area' && <SmartConeAreaInspector obj={selectedObject as SmartConeAreaObject} onUpdate={onUpdate} theme={theme} />}
+        {selectedObject.type === 'text' && <TextInspector obj={selectedObject as TextObject} onUpdate={onUpdate} theme={theme} />}
       </div>
 
       <div className="px-2.5 xl:px-4 pb-3 xl:pb-4 pt-2 border-t border-gray-800 flex gap-2 shrink-0">
